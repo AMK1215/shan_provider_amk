@@ -32,6 +32,9 @@ class DatabaseSeeder extends Seeder
             PoneWineBetsTableSeeder::class, 
             PoneWinePlayerBetsTableSeeder::class, 
             PoneWineBetInfosTableSeeder::class,
+            GameTypeTableSeeder::class,
+            ProductTableSeeder::class,
+            GameTypeProductTableSeeder::class,
 
         ]);
     }

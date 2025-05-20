@@ -1,0 +1,58 @@
+sudo nano /etc/postgresql/16/main/postgresql.conf
+sudo nano /etc/postgresql/16/main/pg_hba.conf # Replace 14 with your version
+sudo systemctl restart postgresql
+sudo systemctl enable postgresql # Ensure it starts on boot
+sudo systemctl status postgresql # Check if it's running
+sudo apt install php8.3-pgsql
+sudo systemctl restart php8.3-fpm # Replace 8.1 with your PHP version
+sudo systemctl restart nginx
+
+// create user and db 
+sudo -i -u postgres
+psql
+\q
+
+sudo -u postgres psql
+sudo systemctl stop mysql
+sudo systemctl disable mysql
+sudo -u postgres psql -c "\l gsc_plus_one"
+-- Create the user if it doesn't exist (replace with a strong password)
+CREATE USER postgres WITH PASSWORD 'gscplus@#$2025one';
+
+-- Grant all privileges on the database to this new user
+GRANT ALL PRIVILEGES ON DATABASE gsc_plus_one TO postgres;
+
+-- Grant create permission on the public schema (crucial for migrations)
+GRANT CREATE ON SCHEMA public TO gsc_plus_user;
+
+psql -h 127.0.0.1 -U amk -d gsc_plus_one
+
+sudo chown -R www-data:www-data /var/www/gsc_plus/storage
+sudo chown -R www-data:www-data /var/www/gsc_plus/bootstrap/cache
+sudo chmod -R 775 /var/www/gsc_plus/storage
+sudo chmod -R 775 /var/www/gsc_plus/bootstrap/cache
+
+ALTER ROLE amk SET client_encoding TO 'utf8';
+ALTER ROLE amk SET default_transaction_isolation TO 'read committed';
+ALTER ROLE amk SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE gsc_plus_one TO amk;
+
+sudo -u postgres psql -c "\l gsc_plus_one"
+sudo -u postgres psql -c "\dn+ public"
+
+-- Grant all privileges on the public schema
+GRANT ALL PRIVILEGES ON SCHEMA public TO amk;
+
+-- Grant all privileges on all tables (current and future)
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO amk;
+
+-- Grant privileges on sequences
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO amk;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO amk;
+
+-- Grant privileges on functions
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO amk;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON FUNCTIONS TO amk;
+
+-- Exit
+\q
