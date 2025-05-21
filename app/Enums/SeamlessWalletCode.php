@@ -14,5 +14,5 @@ enum SeamlessWalletCode: int
     case GameListNotFound = 1005; // API not getting game list
     case BetNotExist = 1006; // API bet does not exist
     case ProductUnderMaintenance = 2000; // API product is under maintenance
-    case InvalidCurrency = 2001; // Invalid currency
+    
 } 

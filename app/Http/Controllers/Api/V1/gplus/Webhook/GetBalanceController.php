@@ -41,8 +41,9 @@ class GetBalanceController extends Controller
         $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         if (!in_array($request->currency, $allowedCurrencies)) {
             return ApiResponseService::error(
-                \App\Enums\SeamlessWalletCode::InvalidCurrency,
-                'Invalid Currency'
+                \App\Enums\SeamlessWalletCode::InternalServerError,
+                'Invalid Currency',
+                []
             );
         }
 
