@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
-
+use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,4 +26,5 @@ Route::get('operators/provider-games', [GameListController::class, 'index']);
 
 Route::prefix('v1/api/seamless')->group(function () {
     Route::post('balance', [GetBalanceController::class, 'getBalance']);
+    Route::post('withdraw', [WithdrawController::class, 'withdraw']);
 });
