@@ -37,6 +37,15 @@ class GetBalanceController extends Controller
             );
         }
 
+        // Allowed currencies
+        $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+        if (!in_array($request->currency, $allowedCurrencies)) {
+            return ApiResponseService::error(
+                SeamlessWalletCode::InvalidCurrency,
+                'Invalid Currency'
+            );
+        }
+
         $results = [];
         $specialCurrencies = ['IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         foreach ($request->batch_requests as $req) {
@@ -52,13 +61,16 @@ class GetBalanceController extends Controller
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
                     'balance' => $balance,
+                    'code' => 0,
+                    'message' => 'Success',
                 ];
             } else {
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                    'balance' => null,
-                    'error' => 'Member not found'
+                    'balance' => '0.00',
+                    'code' => 101, // or your error code for member not found
+                    'message' => 'Member not found',
                 ];
             }
         }
