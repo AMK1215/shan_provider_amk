@@ -61,7 +61,7 @@ class GetBalanceController extends Controller
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
                     'balance' => $balance,
-                    'code' => 0,
+                    'code' => \App\Enums\SeamlessWalletCode::Success->value,
                     'message' => 'Success',
                 ];
             } else {
@@ -69,7 +69,7 @@ class GetBalanceController extends Controller
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
                     'balance' => '0.00',
-                    'code' => 101, // or your error code for member not found
+                    'code' => \App\Enums\SeamlessWalletCode::MemberNotExist->value,
                     'message' => 'Member not found',
                 ];
             }
