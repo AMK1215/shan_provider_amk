@@ -32,7 +32,7 @@ class GetBalanceController extends Controller
         );
         if (strtolower($request->sign) !== strtolower($expectedSign)) {
             return ApiResponseService::error(
-                SeamlessWalletCode::InvalidSignature,
+                \App\Enums\SeamlessWalletCode::InvalidSignature,
                 'Invalid signature'
             );
         }
@@ -41,7 +41,7 @@ class GetBalanceController extends Controller
         $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         if (!in_array($request->currency, $allowedCurrencies)) {
             return ApiResponseService::error(
-                SeamlessWalletCode::InvalidCurrency,
+                \App\Enums\SeamlessWalletCode::InvalidCurrency,
                 'Invalid Currency'
             );
         }
