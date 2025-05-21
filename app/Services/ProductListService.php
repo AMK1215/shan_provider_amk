@@ -13,7 +13,7 @@ class ProductListService
         $api_url = rtrim(config('seamless_key.api_url'), '/');
         $date = new \DateTime('now', new \DateTimeZone('Asia/Shanghai'));
         $request_time = $date->getTimestamp();
-        $sign_str = $request_time . $secret_key . 'product list' . $operator_code;
+        $sign_str = $request_time . $secret_key . 'productlist' . $operator_code;
         $sign = md5($sign_str);
 
         // Debug logging for signature generation
