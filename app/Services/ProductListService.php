@@ -15,6 +15,15 @@ class ProductListService
         $sign_str = $request_time . $secret_key . 'product list' . $operator_code;
         $sign = md5($sign_str);
 
+        // Debug logging for signature generation
+        \Log::info('ProductListService Signature Debug', [
+            'request_time' => $request_time,
+            'secret_key' => $secret_key,
+            'operator_code' => $operator_code,
+            'sign_str' => $sign_str,
+            'sign' => $sign,
+        ]);
+
         $params = [
             'operator_code' => $operator_code,
             'sign' => $sign,
