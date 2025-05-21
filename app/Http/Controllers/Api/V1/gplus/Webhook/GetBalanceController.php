@@ -33,7 +33,8 @@ class GetBalanceController extends Controller
         if (strtolower($request->sign) !== strtolower($expectedSign)) {
             return ApiResponseService::error(
                 \App\Enums\SeamlessWalletCode::InvalidSignature,
-                'Invalid signature'
+                'Incorrect Signature',
+                []
             );
         }
 
