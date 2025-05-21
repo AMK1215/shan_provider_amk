@@ -12,16 +12,14 @@ class GameListController extends Controller
         $request->validate([
             'product_code' => 'required|integer',
             'operator_code' => 'required|string',
-            'offset' => 'integer',
-            'size' => 'integer',
             'game_type' => 'string|nullable',
         ]);
 
         $product_code = $request->input('product_code');
         $operator_code = $request->input('operator_code');
         $game_type = $request->input('game_type');
-        $offset = $request->input('offset', 0);
-        $size = $request->input('size');
+        $offset = $request->has('offset') ? (int)$request->input('offset') : 0;
+        $size = $request->has('size') ? (int)$request->input('size') : null;
 
         $result = GameListService::getGameList($product_code, $operator_code, $game_type, $offset, $size);
         return response()->json($result);
