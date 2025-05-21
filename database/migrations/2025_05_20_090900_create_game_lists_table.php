@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('game_lists', function (Blueprint $table) {
             $table->id();
+            $table->string('game_code');
+            $table->string('game_name');
+            $table->string('game_type');
+            $table->string('image_url');
+            $table->unsignedBigInteger('product_id');
+            $table->integer('product_code');
+            $table->string('support_currency');
+            $table->string('status');
+            $table->string('provider')->nullable();
             $table->timestamps();
         });
     }
@@ -24,4 +33,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('game_lists');
     }
-};
+}; 

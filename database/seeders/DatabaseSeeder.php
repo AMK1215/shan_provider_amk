@@ -35,7 +35,9 @@ class DatabaseSeeder extends Seeder
             GameTypeTableSeeder::class,
             GscPlusProductTableSeeder::class,
             GameTypeProductTableSeeder::class,
-
+            PragmaticPlaySlotGameListSeeder::class,
+            SEOGameListSeeder::class,
+            YEEBETGameListSeeder::class,
         ]);
     }
 }
