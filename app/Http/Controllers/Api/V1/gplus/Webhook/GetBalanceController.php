@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use App\Enums\SeamlessWalletCode;
 
-class SeamlessWalletController extends Controller
+class GetBalanceController extends Controller
 {
     public function getBalance(Request $request)
     {
