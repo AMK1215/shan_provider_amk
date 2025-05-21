@@ -149,7 +149,7 @@ code	name	GameType
 		
 		
 		
-		
+		hi sir, please check database/seeder/GameTypeTableSeeder - ProductTableSeeder and update correctly with matching product_id and game_type_id in GameTypeProductTableSeeder. i wil provide product_id and game_type_id '
 		
 		
 		
