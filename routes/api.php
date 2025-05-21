@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
+use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,3 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('product-list', [ProductListController::class, 'index']);
 Route::get('operators/provider-games', [GameListController::class, 'index']);
+
+Route::prefix('v1/api/seamless')->group(function () {
+    Route::post('balance', [GetBalanceController::class, 'getBalance']);
+});

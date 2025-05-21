@@ -74,3 +74,13 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON FUNCTIONS TO a
 
 -- Exit
 \q
+
+php -r "file_put_contents('/var/www/gsc_plus/storage/logs/laravel.log', '');"
+// created dev branch for kzt
+
+php artisan migrate:rollback --path=database/migrations/2024_03_10_135549_create_reports_table.php
+// tail log
+
+tail -f /var/www/gsc_plus/storage/logs/laravel.log
+mv app/Http/Controllers/Api/V1/gplus/Webhook/SeamlessWalletController.php app/Http/Controllers/Api/V1/gplus/Webhook/GetBalanceController.php
+GET /api/operators/provider-games?product_code=...&operator_code=...&offset=...&size=...&game_type=...

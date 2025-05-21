@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('product_code');
             $table->string('support_currency');
             $table->string('status');
+            $table->boolean('is_active')->default(true);
             $table->string('provider')->nullable();
             $table->timestamps();
         });
