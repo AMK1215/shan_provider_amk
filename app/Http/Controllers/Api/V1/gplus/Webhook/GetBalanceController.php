@@ -31,21 +31,21 @@ class GetBalanceController extends Controller
             $secretKey
         );
         if (strtolower($request->sign) !== strtolower($expectedSign)) {
-            return ApiResponseService::error(
-                \App\Enums\SeamlessWalletCode::InvalidSignature,
-                'Incorrect Signature',
-                []
-            );
+            return [
+                'code' => \App\Enums\SeamlessWalletCode::InvalidSignature->value,
+                'message' => 'Incorrect Signature',
+                'data' => [],
+            ];
         }
 
         // Allowed currencies
         $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         if (!in_array($request->currency, $allowedCurrencies)) {
-            return ApiResponseService::error(
-                \App\Enums\SeamlessWalletCode::InternalServerError,
-                'Invalid Currency',
-                []
-            );
+            return [
+                'code' => \App\Enums\SeamlessWalletCode::InternalServerError->value,
+                'message' => 'Invalid Currency',
+                'data' => [],
+            ];
         }
 
         $results = [];
