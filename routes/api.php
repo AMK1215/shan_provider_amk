@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
+use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,3 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('product-list', [ProductListController::class, 'index']);
+Route::get('operators/provider-games', [GameListController::class, 'index']);
