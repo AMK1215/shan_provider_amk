@@ -38,13 +38,20 @@ class GetBalanceController extends Controller
         }
 
         $results = [];
+        $specialCurrencies = ['IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         foreach ($request->batch_requests as $req) {
             $user = User::where('user_name', $req['member_account'])->first();
             if ($user && $user->wallet) {
+                $balance = $user->wallet->balanceFloat;
+                if (in_array($request->currency, $specialCurrencies)) {
+                    $balance = number_format($balance / 1000, 4, '.', '');
+                } else {
+                    $balance = number_format($balance, 2, '.', '');
+                }
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                    'balance' => $user->wallet->balanceFloat,
+                    'balance' => $balance,
                 ];
             } else {
                 $results[] = [
