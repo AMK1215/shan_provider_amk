@@ -72,8 +72,8 @@ class WithdrawController extends Controller
                 $before = $user->wallet->balanceFloat;
                 $tx = $req['transactions'][0] ?? null;
 
-                // Check for duplicate transaction by tx_id
-                $existingTx = WalletTransaction::where('uuid', $tx['id'] ?? null)->first();
+                // Check for duplicate transaction by external transaction ID
+                $existingTx = WalletTransaction::where('seamless_transaction_id', $tx['id'] ?? null)->first();
                 if ($existingTx) {
                     $results[] = [
                         'member_account' => $req['member_account'],
@@ -101,7 +101,7 @@ class WithdrawController extends Controller
 
                 DB::beginTransaction();
                 $user->wallet->withdrawFloat($amount, [
-                    'uuid' => $tx['id'] ?? null,
+                    'seamless_transaction_id' => $tx['id'] ?? null,
                     'action' => $tx['action'] ?? null,
                     'wager_code' => $tx['wager_code'] ?? null,
                     'product_code' => $req['product_code'],
