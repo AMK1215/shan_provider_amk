@@ -11,7 +11,8 @@ class ProductListService
         $operator_code = config('seamless_key.agent_code');
         $secret_key = config('seamless_key.secret_key');
         $api_url = rtrim(config('seamless_key.api_url'), '/');
-        $request_time = time();
+        $date = new \DateTime('now', new \DateTimeZone('Asia/Shanghai'));
+        $request_time = $date->getTimestamp();
         $sign_str = $request_time . $secret_key . 'product list' . $operator_code;
         $sign = md5($sign_str);
 
