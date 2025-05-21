@@ -21,12 +21,12 @@ class ApiResponseService
     /**
      * Return a standardized API error response using SeamlessWalletCode.
      */
-    public static function error(SeamlessWalletCode $code, string $message, mixed $data = null)
+    public static function error(SeamlessWalletCode $code, string $message, mixed $data = [])
     {
         return [
             'code' => $code->value,
             'message' => $message,
-            'data' => $data,
+            'data' => $data ?? [],
         ];
     }
 } 
