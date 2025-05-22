@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\TransactionLog;
 use App\Services\WalletService;
 use App\Enums\TransactionType;
+use App\Enums\TransactionName;
 
 class WithdrawController extends Controller
 {
@@ -161,7 +162,7 @@ class WithdrawController extends Controller
                     }
                     Log::info('Processing withdraw', ['member_account' => $req['member_account'], 'amount' => $amount]);
                     DB::beginTransaction();
-                    $walletService->withdraw($user, $amount, TransactionType::Withdraw, [
+                    $walletService->withdraw($user, $amount, TransactionName::Withdraw, [
                         'seamless_transaction_id' => $tx['id'] ?? null,
                         'action' => $tx['action'] ?? null,
                         'wager_code' => $tx['wager_code'] ?? null,
@@ -184,7 +185,7 @@ class WithdrawController extends Controller
                 if ($amount < 0) {
                     Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => abs($amount)]);
                     DB::beginTransaction();
-                    $walletService->deposit($user, abs($amount), TransactionType::Deposit, [
+                    $walletService->deposit($user, abs($amount), TransactionName::Deposit, [
                         'seamless_transaction_id' => $tx['id'] ?? null,
                         'action' => $tx['action'] ?? null,
                         'wager_code' => $tx['wager_code'] ?? null,
