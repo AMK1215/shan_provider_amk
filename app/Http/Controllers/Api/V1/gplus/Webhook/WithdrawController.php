@@ -105,145 +105,149 @@ class WithdrawController extends Controller
                 }
 
                 $before = $user->wallet->balanceFloat;
-                $tx = $req['transactions'][0] ?? null;
-                $action = strtoupper($tx['action'] ?? '');
-                Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
+                $transactions = $req['transactions'] ?? [];
+                foreach ($transactions as $tx) {
+                    $action = strtoupper($tx['action'] ?? '');
+                    Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
 
-                $transactionId = $tx['id'] ?? null;
-                $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
-                $duplicateInTransactions = WalletTransaction::where('seamless_transaction_id', $transactionId)->first();
-                if ($duplicateInPlaceBets || $duplicateInTransactions) {
-                    Log::warning('Duplicate transaction detected in place_bets or transactions', ['tx_id' => $transactionId]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $before,
-                        'code' => SeamlessWalletCode::DuplicateTransaction->value,
-                        'message' => 'Duplicate transaction',
-                    ];
-                    continue;
-                }
-
-                if (!in_array($action, $allowedActions)) {
-                    Log::warning('Invalid action', ['action' => $action, 'member_account' => $req['member_account']]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $before,
-                        'code' => SeamlessWalletCode::BetNotExist->value,
-                        'message' => 'Invalid action',
-                    ];
-                    continue;
-                }
-
-                $amount = floatval($tx['amount'] ?? 0);
-                $withdrawActions = ['BET', 'TIP', 'BET_PRESERVE'];
-                $depositActions = ['SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND'];
-
-                if (in_array($action, $withdrawActions)) {
-                    if ($amount <= 0) {
-                        Log::warning('Withdraw action with non-positive amount', ['member_account' => $req['member_account'], 'action' => $action, 'amount' => $amount]);
+                    $transactionId = $tx['id'] ?? null;
+                    $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
+                    $duplicateInTransactions = WalletTransaction::where('seamless_transaction_id', $transactionId)->first();
+                    if ($duplicateInPlaceBets || $duplicateInTransactions) {
+                        Log::warning('Duplicate transaction detected in place_bets or transactions', ['tx_id' => $transactionId]);
                         $results[] = [
                             'member_account' => $req['member_account'],
                             'product_code' => $req['product_code'],
                             'before_balance' => $before,
                             'balance' => $before,
-                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
-                            'message' => 'Withdraw amount must be positive',
+                            'code' => SeamlessWalletCode::DuplicateTransaction->value,
+                            'message' => 'Duplicate transaction',
                         ];
                         continue;
                     }
-                    if ($amount > $before) {
-                        Log::warning('Insufficient balance', ['member_account' => $req['member_account'], 'amount' => $amount, 'before_balance' => $before]);
+
+                    if (!in_array($action, $allowedActions)) {
+                        Log::warning('Invalid action', ['action' => $action, 'member_account' => $req['member_account']]);
                         $results[] = [
                             'member_account' => $req['member_account'],
                             'product_code' => $req['product_code'],
                             'before_balance' => $before,
                             'balance' => $before,
-                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
-                            'message' => 'Insufficient balance',
+                            'code' => SeamlessWalletCode::BetNotExist->value,
+                            'message' => 'Invalid action',
                         ];
                         continue;
                     }
-                    Log::info('Processing withdraw', ['member_account' => $req['member_account'], 'amount' => $amount]);
-                    DB::beginTransaction();
-                    $walletService->withdraw($user, $amount, TransactionName::Withdraw, [
-                        'seamless_transaction_id' => $transactionId,
-                        'action' => $tx['action'] ?? null,
-                        'wager_code' => $tx['wager_code'] ?? null,
-                        'product_code' => $req['product_code'],
-                        'game_type' => $req['game_type'] ?? null,
-                    ]);
-                    // Store in place_bets for audit/duplicate check
-                    PlaceBet::create([
-                        'transaction_id' => $transactionId,
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'amount' => $amount,
-                        'action' => $action,
-                        'status' => 'completed',
-                        'meta' => $tx,
-                    ]);
-                    DB::commit();
-                    $after = $user->wallet->balanceFloat;
-                    Log::info('Withdraw successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $after,
-                        'code' => SeamlessWalletCode::Success->value,
-                        'message' => '',
-                    ];
-                    continue;
-                } elseif (in_array($action, $depositActions)) {
-                    if ($amount <= 0) {
-                        Log::warning('Deposit action with non-positive amount', ['member_account' => $req['member_account'], 'action' => $action, 'amount' => $amount]);
+
+                    $amount = floatval($tx['amount'] ?? 0);
+                    $withdrawActions = ['BET', 'TIP', 'BET_PRESERVE'];
+                    $depositActions = ['SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND'];
+
+                    if (in_array($action, $withdrawActions)) {
+                        if ($amount <= 0) {
+                            Log::warning('Withdraw action with non-positive amount', ['member_account' => $req['member_account'], 'action' => $action, 'amount' => $amount]);
+                            $results[] = [
+                                'member_account' => $req['member_account'],
+                                'product_code' => $req['product_code'],
+                                'before_balance' => $before,
+                                'balance' => $before,
+                                'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                                'message' => 'Withdraw amount must be positive',
+                            ];
+                            continue;
+                        }
+                        if ($amount > $before) {
+                            Log::warning('Insufficient balance', ['member_account' => $req['member_account'], 'amount' => $amount, 'before_balance' => $before]);
+                            $results[] = [
+                                'member_account' => $req['member_account'],
+                                'product_code' => $req['product_code'],
+                                'before_balance' => $before,
+                                'balance' => $before,
+                                'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                                'message' => 'Insufficient balance',
+                            ];
+                            continue;
+                        }
+                        Log::info('Processing withdraw', ['member_account' => $req['member_account'], 'amount' => $amount]);
+                        DB::beginTransaction();
+                        $walletService->withdraw($user, $amount, TransactionName::Withdraw, [
+                            'seamless_transaction_id' => $transactionId,
+                            'action' => $tx['action'] ?? null,
+                            'wager_code' => $tx['wager_code'] ?? null,
+                            'product_code' => $req['product_code'],
+                            'game_type' => $req['game_type'] ?? null,
+                        ]);
+                        // Store in place_bets for audit/duplicate check
+                        PlaceBet::create([
+                            'transaction_id' => $transactionId,
+                            'member_account' => $req['member_account'],
+                            'product_code' => $req['product_code'],
+                            'amount' => $amount,
+                            'action' => $action,
+                            'status' => 'completed',
+                            'meta' => $tx,
+                        ]);
+                        DB::commit();
+                        $after = $user->wallet->balanceFloat;
+                        Log::info('Withdraw successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
+                        $results[] = [
+                            'member_account' => $req['member_account'],
+                            'product_code' => $req['product_code'],
+                            'before_balance' => $before,
+                            'balance' => $after,
+                            'code' => SeamlessWalletCode::Success->value,
+                            'message' => '',
+                        ];
+                        $before = $after;
+                        continue;
+                    } elseif (in_array($action, $depositActions)) {
+                        if ($amount <= 0) {
+                            Log::warning('Deposit action with non-positive amount', ['member_account' => $req['member_account'], 'action' => $action, 'amount' => $amount]);
+                            $results[] = [
+                                'member_account' => $req['member_account'],
+                                'product_code' => $req['product_code'],
+                                'before_balance' => $before,
+                                'balance' => $before,
+                                'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                                'message' => 'Deposit amount must be positive',
+                            ];
+                            continue;
+                        }
+                        Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => $amount]);
+                        DB::beginTransaction();
+                        $walletService->deposit($user, $amount, TransactionName::Deposit, [
+                            'seamless_transaction_id' => $transactionId,
+                            'action' => $tx['action'] ?? null,
+                            'wager_code' => $tx['wager_code'] ?? null,
+                            'product_code' => $req['product_code'],
+                            'game_type' => $req['game_type'] ?? null,
+                            'from_admin' => $admin->id,
+                        ]);
+                        DB::commit();
+                        $after = $user->wallet->balanceFloat;
+                        Log::info('Deposit successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
+                        $results[] = [
+                            'member_account' => $req['member_account'],
+                            'product_code' => $req['product_code'],
+                            'before_balance' => $before,
+                            'balance' => $after,
+                            'code' => SeamlessWalletCode::Success->value,
+                            'message' => '',
+                        ];
+                        $before = $after;
+                        continue;
+                    } else {
+                        Log::warning('Unknown or unsupported action', ['member_account' => $req['member_account'], 'action' => $action]);
                         $results[] = [
                             'member_account' => $req['member_account'],
                             'product_code' => $req['product_code'],
                             'before_balance' => $before,
                             'balance' => $before,
-                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
-                            'message' => 'Deposit amount must be positive',
+                            'code' => SeamlessWalletCode::InvalidAction->value,
+                            'message' => 'Invalid or unsupported action',
                         ];
                         continue;
                     }
-                    Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => $amount]);
-                    DB::beginTransaction();
-                    $walletService->deposit($user, $amount, TransactionName::Deposit, [
-                        'seamless_transaction_id' => $tx['id'] ?? null,
-                        'action' => $tx['action'] ?? null,
-                        'wager_code' => $tx['wager_code'] ?? null,
-                        'product_code' => $req['product_code'],
-                        'game_type' => $req['game_type'] ?? null,
-                        'from_admin' => $admin->id,
-                    ]);
-                    DB::commit();
-                    $after = $user->wallet->balanceFloat;
-                    Log::info('Deposit successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $after,
-                        'code' => SeamlessWalletCode::Success->value,
-                        'message' => '',
-                    ];
-                    continue;
-                } else {
-                    Log::warning('Unknown or unsupported action', ['member_account' => $req['member_account'], 'action' => $action]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $before,
-                        'code' => SeamlessWalletCode::InvalidAction->value,
-                        'message' => 'Invalid or unsupported action',
-                    ];
-                    continue;
                 }
             } catch (\Exception $e) {
                 DB::rollBack();
