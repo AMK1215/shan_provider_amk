@@ -107,9 +107,6 @@ class WithdrawController extends Controller
                 $before = $user->wallet->balanceFloat;
                 $transactions = $req['transactions'] ?? [];
                 foreach ($transactions as $tx) {
-                    $action = strtoupper($tx['action'] ?? '');
-                    Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
-
                     $transactionId = $tx['id'] ?? null;
                     $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
                     $duplicateInTransactions = WalletTransaction::where('seamless_transaction_id', $transactionId)->first();
@@ -125,6 +122,8 @@ class WithdrawController extends Controller
                         ];
                         continue;
                     }
+                    $action = strtoupper($tx['action'] ?? '');
+                    Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
 
                     if (!in_array($action, $allowedActions)) {
                         Log::warning('Invalid action', ['action' => $action, 'member_account' => $req['member_account']]);
