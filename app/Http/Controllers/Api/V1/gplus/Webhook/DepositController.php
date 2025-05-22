@@ -143,33 +143,36 @@ class DepositController extends Controller
                     'product_code' => $req['product_code'],
                     'game_type' => $req['game_type'] ?? null,
                 ]);
-                // Store in place_bets for audit/duplicate check
-                PlaceBet::create([
-                    // Batch-level
-                    'member_account'    => $req['member_account'],
-                    'product_code'      => $req['product_code'],
-                    'game_type'         => $req['game_type'] ?? '',
-                    'operator_code'     => $request->operator_code,
-                    'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
-                    'sign'              => $request->sign,
-                    'currency'          => $request->currency,
+                // Store all data in place_bets for every transaction (success, fail, or duplicate)
+                PlaceBet::updateOrCreate(
+                    ['transaction_id' => $tx['id'] ?? ''],
+                    [
+                        // Batch-level
+                        'member_account'    => $req['member_account'],
+                        'product_code'      => $req['product_code'],
+                        'game_type'         => $req['game_type'] ?? '',
+                        'operator_code'     => $request->operator_code,
+                        'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
+                        'sign'              => $request->sign,
+                        'currency'          => $request->currency,
 
-                    // Transaction-level
-                    'transaction_id'    => $tx['id'] ?? '',
-                    'action'            => $tx['action'] ?? '',
-                    'amount'            => $tx['amount'] ?? '',
-                    'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
-                    'bet_amount'        => $tx['bet_amount'] ?? null,
-                    'prize_amount'      => $tx['prize_amount'] ?? null,
-                    'tip_amount'        => $tx['tip_amount'] ?? null,
-                    'wager_code'        => $tx['wager_code'] ?? null,
-                    'wager_status'      => $tx['wager_status'] ?? null,
-                    'round_id'          => $tx['round_id'] ?? null,
-                    'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
-                    'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
-                    'game_code'         => $tx['game_code'] ?? null,
-                    'channel_code'      => $tx['channel_code'] ?? null,
-                ]);
+                        // Transaction-level
+                        'action'            => $tx['action'] ?? '',
+                        'amount'            => $tx['amount'] ?? '',
+                        'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
+                        'bet_amount'        => $tx['bet_amount'] ?? null,
+                        'prize_amount'      => $tx['prize_amount'] ?? null,
+                        'tip_amount'        => $tx['tip_amount'] ?? null,
+                        'wager_code'        => $tx['wager_code'] ?? null,
+                        'wager_status'      => $tx['wager_status'] ?? null,
+                        'round_id'          => $tx['round_id'] ?? null,
+                        'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
+                        'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
+                        'game_code'         => $tx['game_code'] ?? null,
+                        'channel_code'      => $tx['channel_code'] ?? null,
+                        'status'            => isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::Success->value ? 'completed' : (isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::DuplicateTransaction->value ? 'duplicate' : 'failed'),
+                    ]
+                );
                 DB::commit();
                 $after = $user->wallet->balanceFloat;
                 Log::info('Deposit successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);

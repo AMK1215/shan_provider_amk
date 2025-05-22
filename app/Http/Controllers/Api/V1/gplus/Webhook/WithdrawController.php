@@ -129,30 +129,32 @@ class WithdrawController extends Controller
                             'message' => 'Duplicate transaction',
                         ];
                         // Store the duplicate attempt as well
-                        PlaceBet::create([
-                            'member_account'    => $req['member_account'],
-                            'product_code'      => $req['product_code'],
-                            'game_type'         => $req['game_type'] ?? '',
-                            'operator_code'     => $request->operator_code,
-                            'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
-                            'sign'              => $request->sign,
-                            'currency'          => $request->currency,
-                            'transaction_id'    => $transactionId,
-                            'action'            => $tx['action'] ?? '',
-                            'amount'            => $tx['amount'] ?? '',
-                            'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
-                            'bet_amount'        => $tx['bet_amount'] ?? null,
-                            'prize_amount'      => $tx['prize_amount'] ?? null,
-                            'tip_amount'        => $tx['tip_amount'] ?? null,
-                            'wager_code'        => $tx['wager_code'] ?? null,
-                            'wager_status'      => $tx['wager_status'] ?? null,
-                            'round_id'          => $tx['round_id'] ?? null,
-                            'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
-                            'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
-                            'game_code'         => $tx['game_code'] ?? null,
-                            'channel_code'      => $tx['channel_code'] ?? null,
-                            'status'            => 'duplicate',
-                        ]);
+                        PlaceBet::updateOrCreate(
+                            ['transaction_id' => $transactionId],
+                            [
+                                'member_account'    => $req['member_account'],
+                                'product_code'      => $req['product_code'],
+                                'game_type'         => $req['game_type'] ?? '',
+                                'operator_code'     => $request->operator_code,
+                                'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
+                                'sign'              => $request->sign,
+                                'currency'          => $request->currency,
+                                'action'            => $tx['action'] ?? '',
+                                'amount'            => $tx['amount'] ?? '',
+                                'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
+                                'bet_amount'        => $tx['bet_amount'] ?? null,
+                                'prize_amount'      => $tx['prize_amount'] ?? null,
+                                'tip_amount'        => $tx['tip_amount'] ?? null,
+                                'wager_code'        => $tx['wager_code'] ?? null,
+                                'wager_status'      => $tx['wager_status'] ?? null,
+                                'round_id'          => $tx['round_id'] ?? null,
+                                'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
+                                'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
+                                'game_code'         => $tx['game_code'] ?? null,
+                                'channel_code'      => $tx['channel_code'] ?? null,
+                                'status'            => 'duplicate',
+                            ]
+                        );
                         continue;
                     }
                     Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
@@ -209,30 +211,32 @@ class WithdrawController extends Controller
                             'game_type' => $req['game_type'] ?? null,
                         ]);
                         // Store in place_bets for audit/duplicate check
-                        PlaceBet::create([
-                            'member_account'    => $req['member_account'],
-                            'product_code'      => $req['product_code'],
-                            'game_type'         => $req['game_type'] ?? '',
-                            'operator_code'     => $request->operator_code,
-                            'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
-                            'sign'              => $request->sign,
-                            'currency'          => $request->currency,
-                            'transaction_id'    => $transactionId,
-                            'action'            => $tx['action'] ?? '',
-                            'amount'            => $tx['amount'] ?? '',
-                            'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
-                            'bet_amount'        => $tx['bet_amount'] ?? null,
-                            'prize_amount'      => $tx['prize_amount'] ?? null,
-                            'tip_amount'        => $tx['tip_amount'] ?? null,
-                            'wager_code'        => $tx['wager_code'] ?? null,
-                            'wager_status'      => $tx['wager_status'] ?? null,
-                            'round_id'          => $tx['round_id'] ?? null,
-                            'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
-                            'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
-                            'game_code'         => $tx['game_code'] ?? null,
-                            'channel_code'      => $tx['channel_code'] ?? null,
-                            'status'            => 'completed',
-                        ]);
+                        PlaceBet::updateOrCreate(
+                            ['transaction_id' => $transactionId],
+                            [
+                                'member_account'    => $req['member_account'],
+                                'product_code'      => $req['product_code'],
+                                'game_type'         => $req['game_type'] ?? '',
+                                'operator_code'     => $request->operator_code,
+                                'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
+                                'sign'              => $request->sign,
+                                'currency'          => $request->currency,
+                                'action'            => $tx['action'] ?? '',
+                                'amount'            => $tx['amount'] ?? '',
+                                'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
+                                'bet_amount'        => $tx['bet_amount'] ?? null,
+                                'prize_amount'      => $tx['prize_amount'] ?? null,
+                                'tip_amount'        => $tx['tip_amount'] ?? null,
+                                'wager_code'        => $tx['wager_code'] ?? null,
+                                'wager_status'      => $tx['wager_status'] ?? null,
+                                'round_id'          => $tx['round_id'] ?? null,
+                                'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
+                                'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
+                                'game_code'         => $tx['game_code'] ?? null,
+                                'channel_code'      => $tx['channel_code'] ?? null,
+                                'status'            => 'completed',
+                            ]
+                        );
                         DB::commit();
                         $after = $user->wallet->balanceFloat;
                         Log::info('Withdraw successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
@@ -294,30 +298,32 @@ class WithdrawController extends Controller
                     }
 
                     // After each result (success or fail), store the transaction in place_bets if not already stored
-                    PlaceBet::create([
-                        'member_account'    => $req['member_account'],
-                        'product_code'      => $req['product_code'],
-                        'game_type'         => $req['game_type'] ?? '',
-                        'operator_code'     => $request->operator_code,
-                        'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
-                        'sign'              => $request->sign,
-                        'currency'          => $request->currency,
-                        'transaction_id'    => $transactionId,
-                        'action'            => $tx['action'] ?? '',
-                        'amount'            => $tx['amount'] ?? '',
-                        'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
-                        'bet_amount'        => $tx['bet_amount'] ?? null,
-                        'prize_amount'      => $tx['prize_amount'] ?? null,
-                        'tip_amount'        => $tx['tip_amount'] ?? null,
-                        'wager_code'        => $tx['wager_code'] ?? null,
-                        'wager_status'      => $tx['wager_status'] ?? null,
-                        'round_id'          => $tx['round_id'] ?? null,
-                        'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
-                        'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
-                        'game_code'         => $tx['game_code'] ?? null,
-                        'channel_code'      => $tx['channel_code'] ?? null,
-                        'status'            => isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::Success->value ? 'completed' : 'failed',
-                    ]);
+                    PlaceBet::updateOrCreate(
+                        ['transaction_id' => $transactionId],
+                        [
+                            'member_account'    => $req['member_account'],
+                            'product_code'      => $req['product_code'],
+                            'game_type'         => $req['game_type'] ?? '',
+                            'operator_code'     => $request->operator_code,
+                            'request_time'      => $request->request_time ? now()->setTimestamp($request->request_time) : null,
+                            'sign'              => $request->sign,
+                            'currency'          => $request->currency,
+                            'action'            => $tx['action'] ?? '',
+                            'amount'            => $tx['amount'] ?? '',
+                            'valid_bet_amount'  => $tx['valid_bet_amount'] ?? null,
+                            'bet_amount'        => $tx['bet_amount'] ?? null,
+                            'prize_amount'      => $tx['prize_amount'] ?? null,
+                            'tip_amount'        => $tx['tip_amount'] ?? null,
+                            'wager_code'        => $tx['wager_code'] ?? null,
+                            'wager_status'      => $tx['wager_status'] ?? null,
+                            'round_id'          => $tx['round_id'] ?? null,
+                            'payload'           => isset($tx['payload']) ? json_encode($tx['payload']) : null,
+                            'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
+                            'game_code'         => $tx['game_code'] ?? null,
+                            'channel_code'      => $tx['channel_code'] ?? null,
+                            'status'            => isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::Success->value ? 'completed' : (isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::DuplicateTransaction->value ? 'duplicate' : 'failed'),
+                        ]
+                    );
                 }
             } catch (\Exception $e) {
                 DB::rollBack();
