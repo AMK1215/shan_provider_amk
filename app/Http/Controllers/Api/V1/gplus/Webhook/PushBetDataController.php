@@ -18,7 +18,7 @@ class PushBetDataController extends Controller
 
         $request->validate([
             'operator_code' => 'required|string',
-            'transactions' => 'required|array',
+            'wagers' => 'required|array',
             'sign' => 'required|string',
             'request_time' => 'required|integer',
         ]);
@@ -38,10 +38,10 @@ class PushBetDataController extends Controller
             ]);
         }
 
-        foreach ($request->transactions as $tx) {
-            $transactionId = $tx['id'] ?? null;
+        foreach ($request->wagers as $tx) {
+            $transactionId = $tx['wager_code'] ?? null;
             if (!$transactionId) {
-                Log::warning('Transaction missing id', ['tx' => $tx]);
+                Log::warning('Transaction missing wager_code', ['tx' => $tx]);
                 continue;
             }
             $placeBet = PlaceBet::where('transaction_id', $transactionId)->first();
@@ -50,8 +50,8 @@ class PushBetDataController extends Controller
                 $placeBet->update([
                     'member_account' => $tx['member_account'] ?? $placeBet->member_account,
                     'product_code' => $tx['product_code'] ?? $placeBet->product_code,
-                    'amount' => $tx['amount'] ?? $placeBet->amount,
-                    'action' => $tx['action'] ?? $placeBet->action,
+                    'amount' => $tx['bet_amount'] ?? $placeBet->amount,
+                    'action' => $tx['wager_type'] ?? $placeBet->action,
                     'status' => $tx['wager_status'] ?? $placeBet->status,
                     'meta' => $tx,
                     'wager_status' => $tx['wager_status'] ?? $placeBet->wager_status,
@@ -70,8 +70,8 @@ class PushBetDataController extends Controller
                     'transaction_id' => $transactionId,
                     'member_account' => $tx['member_account'] ?? '',
                     'product_code' => $tx['product_code'] ?? 0,
-                    'amount' => $tx['amount'] ?? 0,
-                    'action' => $tx['action'] ?? '',
+                    'amount' => $tx['bet_amount'] ?? 0,
+                    'action' => $tx['wager_type'] ?? '',
                     'status' => $tx['wager_status'] ?? '',
                     'meta' => $tx,
                     'wager_status' => $tx['wager_status'] ?? '',
