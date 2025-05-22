@@ -9,10 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use App\Enums\SeamlessWalletCode;
-use App\Enums\TransactionType;
 use App\Models\Transaction as WalletTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Models\TransactionLog;
+use App\Services\WalletService;
+use App\Enums\TransactionName;
+use App\Enums\TransactionType;
 
 class DepositController extends Controller
 {
@@ -37,6 +39,7 @@ class DepositController extends Controller
             );
         }
 
+        // Signature check
         $secretKey = Config::get('seamless_key.secret_key');
         $expectedSign = md5(
             $request->operator_code .
@@ -44,24 +47,51 @@ class DepositController extends Controller
             'deposit' .
             $secretKey
         );
-        if (strtolower($request->sign) !== strtolower($expectedSign)) {
-            Log::warning('Deposit API Invalid Signature', ['provided' => $request->sign, 'expected' => $expectedSign]);
-            return ApiResponseService::error(
-                SeamlessWalletCode::InvalidSignature,
-                'Invalid signature'
-            );
-        }
+        $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
+
+        // Allowed currencies
+        $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+        $isValidCurrency = in_array($request->currency, $allowedCurrencies);
 
         $results = [];
+        $walletService = app(WalletService::class);
         foreach ($request->batch_requests as $req) {
             try {
-                $user = User::where('user_name', $req['member_account'])->first();
-                if (!$user || !$user->wallet) {
+                Log::debug('Processing batch request', ['req' => $req]);
+                if (!$isValidSign) {
+                    Log::warning('Invalid signature for member', ['member_account' => $req['member_account'], 'provided' => $request->sign, 'expected' => $expectedSign]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
-                        'before_balance' => null,
-                        'balance' => null,
+                        'before_balance' => 0.0,
+                        'balance' => 0.0,
+                        'code' => SeamlessWalletCode::InvalidSignature->value,
+                        'message' => 'Invalid signature',
+                    ];
+                    continue;
+                }
+
+                if (!$isValidCurrency) {
+                    Log::warning('Invalid currency for member', ['member_account' => $req['member_account'], 'currency' => $request->currency]);
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => 0.0,
+                        'balance' => 0.0,
+                        'code' => SeamlessWalletCode::InternalServerError->value,
+                        'message' => 'Invalid Currency',
+                    ];
+                    continue;
+                }
+
+                $user = User::where('user_name', $req['member_account'])->first();
+                if (!$user || !$user->wallet) {
+                    Log::warning('Member not found or wallet missing', ['member_account' => $req['member_account']]);
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => 0.0,
+                        'balance' => 0.0,
                         'code' => SeamlessWalletCode::MemberNotExist->value,
                         'message' => 'Member not found',
                     ];
@@ -70,10 +100,13 @@ class DepositController extends Controller
 
                 $before = $user->wallet->balanceFloat;
                 $tx = $req['transactions'][0] ?? null;
+                $action = strtoupper($tx['action'] ?? '');
+                Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
 
                 // Check for duplicate transaction by external transaction ID
                 $existingTx = WalletTransaction::where('seamless_transaction_id', $tx['id'] ?? null)->first();
                 if ($existingTx) {
+                    Log::warning('Duplicate transaction detected', ['tx_id' => $tx['id'] ?? null]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -86,21 +119,22 @@ class DepositController extends Controller
                 }
 
                 $amount = floatval($tx['amount'] ?? 0);
-                $type = TransactionType::fromAction($tx['action'] ?? '', $amount);
-                if ($type !== TransactionType::Deposit) {
+                if ($amount <= 0) {
+                    Log::warning('Deposit with non-positive amount', ['member_account' => $req['member_account'], 'amount' => $amount]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
                         'before_balance' => $before,
                         'balance' => $before,
-                        'code' => SeamlessWalletCode::InternalServerError->value,
-                        'message' => 'Invalid deposit action',
+                        'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                        'message' => 'Deposit amount must be positive',
                     ];
                     continue;
                 }
 
+                Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => $amount]);
                 DB::beginTransaction();
-                $user->wallet->depositFloat($amount, [
+                $walletService->deposit($user, $amount, TransactionName::Deposit, [
                     'seamless_transaction_id' => $tx['id'] ?? null,
                     'action' => $tx['action'] ?? null,
                     'wager_code' => $tx['wager_code'] ?? null,
@@ -109,6 +143,7 @@ class DepositController extends Controller
                 ]);
                 DB::commit();
                 $after = $user->wallet->balanceFloat;
+                Log::info('Deposit successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
@@ -123,8 +158,8 @@ class DepositController extends Controller
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                    'before_balance' => $before ?? null,
-                    'balance' => $before ?? null,
+                    'before_balance' => $before ?? 0.0,
+                    'balance' => $before ?? 0.0,
                     'code' => SeamlessWalletCode::InternalServerError->value,
                     'message' => $e->getMessage(),
                 ];
@@ -139,6 +174,7 @@ class DepositController extends Controller
             'status' => 'success',
         ]);
 
+        // Log the response
         Log::info('Deposit API Response', ['response' => $results]);
 
         return ApiResponseService::success($results);
