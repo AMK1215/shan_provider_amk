@@ -61,7 +61,9 @@ class WithdrawController extends Controller
         ];
         foreach ($request->batch_requests as $req) {
             try {
+                Log::debug('Processing batch request', ['req' => $req]);
                 if (!$isValidSign) {
+                    Log::warning('Invalid signature for member', ['member_account' => $req['member_account'], 'provided' => $request->sign, 'expected' => $expectedSign]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -74,6 +76,7 @@ class WithdrawController extends Controller
                 }
 
                 if (!$isValidCurrency) {
+                    Log::warning('Invalid currency for member', ['member_account' => $req['member_account'], 'currency' => $request->currency]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -87,6 +90,7 @@ class WithdrawController extends Controller
 
                 $user = User::where('user_name', $req['member_account'])->first();
                 if (!$user || !$user->wallet) {
+                    Log::warning('Member not found or wallet missing', ['member_account' => $req['member_account']]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -101,7 +105,9 @@ class WithdrawController extends Controller
                 $before = $user->wallet->balanceFloat;
                 $tx = $req['transactions'][0] ?? null;
                 $action = strtoupper($tx['action'] ?? '');
+                Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
                 if (!in_array($action, $allowedActions)) {
+                    Log::warning('Invalid action', ['action' => $action, 'member_account' => $req['member_account']]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -113,9 +119,9 @@ class WithdrawController extends Controller
                     continue;
                 }
 
-                // Check for duplicate transaction by external transaction ID
                 $existingTx = WalletTransaction::where('seamless_transaction_id', $tx['id'] ?? null)->first();
                 if ($existingTx) {
+                    Log::warning('Duplicate transaction detected', ['tx_id' => $tx['id'] ?? null]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -129,6 +135,7 @@ class WithdrawController extends Controller
 
                 $amount = floatval($tx['amount'] ?? 0);
                 if ($amount == 0) {
+                    Log::warning('Zero amount transaction', ['member_account' => $req['member_account']]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -141,6 +148,7 @@ class WithdrawController extends Controller
                 }
                 if ($amount > 0) {
                     if ($amount > $before) {
+                        Log::warning('Insufficient balance', ['member_account' => $req['member_account'], 'amount' => $amount, 'before_balance' => $before]);
                         $results[] = [
                             'member_account' => $req['member_account'],
                             'product_code' => $req['product_code'],
@@ -151,6 +159,7 @@ class WithdrawController extends Controller
                         ];
                         continue;
                     }
+                    Log::info('Processing withdraw', ['member_account' => $req['member_account'], 'amount' => $amount]);
                     DB::beginTransaction();
                     $walletService->withdraw($user, $amount, TransactionType::Withdraw, [
                         'seamless_transaction_id' => $tx['id'] ?? null,
@@ -161,6 +170,7 @@ class WithdrawController extends Controller
                     ]);
                     DB::commit();
                     $after = $user->wallet->balanceFloat;
+                    Log::info('Withdraw successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -172,6 +182,7 @@ class WithdrawController extends Controller
                     continue;
                 }
                 if ($amount < 0) {
+                    Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => abs($amount)]);
                     DB::beginTransaction();
                     $walletService->deposit($user, abs($amount), TransactionType::Deposit, [
                         'seamless_transaction_id' => $tx['id'] ?? null,
@@ -183,6 +194,7 @@ class WithdrawController extends Controller
                     ]);
                     DB::commit();
                     $after = $user->wallet->balanceFloat;
+                    Log::info('Deposit successful', ['member_account' => $req['member_account'], 'before' => $before, 'after' => $after]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
