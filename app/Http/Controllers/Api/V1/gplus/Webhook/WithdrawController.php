@@ -45,17 +45,39 @@ class WithdrawController extends Controller
             'withdraw' .
             $secretKey
         );
-        if (strtolower($request->sign) !== strtolower($expectedSign)) {
-            Log::warning('Withdraw API Invalid Signature', ['provided' => $request->sign, 'expected' => $expectedSign]);
-            return ApiResponseService::error(
-                SeamlessWalletCode::InvalidSignature,
-                'Invalid signature'
-            );
-        }
+        $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
+
+        // Allowed currencies
+        $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+        $isValidCurrency = in_array($request->currency, $allowedCurrencies);
 
         $results = [];
         foreach ($request->batch_requests as $req) {
             try {
+                if (!$isValidSign) {
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => 0.0,
+                        'balance' => 0.0,
+                        'code' => SeamlessWalletCode::InvalidSignature->value,
+                        'message' => 'Invalid signature',
+                    ];
+                    continue;
+                }
+
+                if (!$isValidCurrency) {
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => 0.0,
+                        'balance' => 0.0,
+                        'code' => SeamlessWalletCode::InternalServerError->value,
+                        'message' => 'Invalid Currency',
+                    ];
+                    continue;
+                }
+
                 $user = User::where('user_name', $req['member_account'])->first();
                 if (!$user || !$user->wallet) {
                     $results[] = [
@@ -93,7 +115,7 @@ class WithdrawController extends Controller
                         'product_code' => $req['product_code'],
                         'before_balance' => $before,
                         'balance' => $before,
-                        'code' => SeamlessWalletCode::InsufficientBalance->value,
+                        'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
                         'message' => 'Insufficient balance',
                     ];
                     continue;
