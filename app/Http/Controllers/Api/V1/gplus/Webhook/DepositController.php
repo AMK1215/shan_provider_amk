@@ -19,9 +19,9 @@ use App\Models\PlaceBet;
 class DepositController extends Controller
 {
     private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
-    private array $withdrawActions = ['BET', 'TIP', 'BET_PRESERVE', 'ROLLBACK', 'CANCEL', 'ADJUSTMENT']; // All possible actions
-    private array $depositActions = ['WIN', 'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND']; // Actions considered as deposits
-    private array $allowedWagerStatuses = ['SETTLED', 'UNSETTLED', 'PENDING', 'CANCELLED']; // Common wager statuses
+    // All possible actions, including those that might be refunds/credits
+    private array $depositActions = ['WIN', 'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND', 'CANCEL']; // Added CANCEL
+    private array $allowedWagerStatuses = ['SETTLED', 'UNSETTLED', 'PENDING', 'CANCELLED', 'VOID']; // Added VOID
 
     public function deposit(Request $request)
     {
@@ -130,8 +130,8 @@ class DepositController extends Controller
                     // Duplicate check by transaction_id in PlaceBet table
                     $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
                     // Also check if the transaction is already recorded in the wallet's internal transactions
-                    $duplicateInWalletTransactions = WalletTransaction::whereJsonContains('meta->seamless_transaction_id', $transactionId)->first(); // Use jsonContains for meta
-                    
+                    $duplicateInWalletTransactions = WalletTransaction::whereJsonContains('meta->seamless_transaction_id', $transactionId)->first();
+
                     if ($duplicateInPlaceBets || $duplicateInWalletTransactions) {
                         Log::warning('Duplicate transaction ID detected in place_bets or wallet_transactions', ['tx_id' => $transactionId, 'member_account' => $memberAccount]);
                         $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::DuplicateTransaction, 'Duplicate transaction');
@@ -140,7 +140,6 @@ class DepositController extends Controller
                     }
 
                     // Check for invalid action type or wager status
-                    // Only process deposit actions for the deposit endpoint
                     if (!$this->isValidActionForDeposit($action) || !$this->isValidWagerStatus($transactionRequest['wager_status'] ?? null)) {
                         Log::warning('Invalid action or wager status for deposit endpoint', ['action' => $action, 'wager_status' => $transactionRequest['wager_status'] ?? 'N/A', 'member_account' => $memberAccount]);
                         $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Invalid action type or wager status for deposit');
@@ -307,6 +306,10 @@ class DepositController extends Controller
         $requestTimeInSeconds = $requestTime ? floor($requestTime / 1000) : null;
         $settleAtTime = $transactionRequest['settle_at'] ?? $transactionRequest['settled_at'] ?? null;
         $settleAtInSeconds = $settleAtTime ? floor($settleAtTime / 1000) : null;
+        // Assuming 'created_at' from provider is also a timestamp in milliseconds
+        $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
+        $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
+
 
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
@@ -316,7 +319,6 @@ class DepositController extends Controller
                 'product_code'      => $batchRequest['product_code'] ?? 0,
                 'game_type'         => $batchRequest['game_type'] ?? '',
                 'operator_code'     => $fullRequest->operator_code,
-                // FIX: Convert request_time from milliseconds to seconds if it's in milliseconds
                 'request_time'      => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
                 'sign'              => $fullRequest->sign,
                 'currency'          => $fullRequest->currency,
@@ -332,13 +334,12 @@ class DepositController extends Controller
                 'wager_status'      => $transactionRequest['wager_status'] ?? null,
                 'round_id'          => $transactionRequest['round_id'] ?? null,
                 'payload'           => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
-                // FIX: Convert settle_at/settled_at from milliseconds to seconds if it's in milliseconds
                 'settle_at'         => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
+                'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
                 'game_code'         => $transactionRequest['game_code'] ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
-                // Add error_message column to PlaceBet table if you want to store it
-                // 'error_message' => $errorMessage,
+                //'error_message'     => $errorMessage, // Store the error message
             ]
         );
     }
