@@ -12,7 +12,6 @@ enum TransactionName: string
     case Stake = 'stake';
     case Payout = 'payout';
     case Bonus = 'bonus';
-    case JackPot = 'jack_pot';
     case Cancel = 'cancel';
     case Rollback = 'rollback';
     case BuyIn = 'buy_in';
@@ -28,4 +27,14 @@ enum TransactionName: string
     case DebitAdjustment = 'debit_adjustment';
     case Win = 'win';
     case Loss = 'loss';
+
+    case Deposit = 'deposit';
+    case Withdraw = 'withdraw';
+
+    case Settled = 'settled';
+    case Jackpot = 'jackpot';
+    case Promo = 'promo';
+    case Leaderboard = 'leaderboard';
+    case Freebet = 'freebet';
+    case PreserveRefund = 'preserve_refund';
 }
