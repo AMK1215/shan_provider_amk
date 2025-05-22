@@ -9,10 +9,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use App\Enums\SeamlessWalletCode;
-use App\Models\Transaction; // Assuming you have a Transaction model to record these operations
+use App\Services\WalletService;
+use App\Enums\TransactionName;
 
 class WithdrawController extends Controller
 {
+    protected $walletService;
+
+    public function __construct(WalletService $walletService)
+    {
+        $this->walletService = $walletService;
+    }
+
     public function withdraw(Request $request)
     {
         Log::info('Withdraw API Request', ['request' => $request->all()]);
@@ -23,12 +31,12 @@ class WithdrawController extends Controller
                 'batch_requests' => 'required|array',
                 'sign' => 'required|string',
                 'request_time' => 'required|integer',
-                'currency' => 'required|string', // Based on documentation, currency is a top-level parameter for balance
+                'currency' => 'required|string',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Withdraw API Validation Failed', ['errors' => $e->errors()]);
             return ApiResponseService::error(
-                SeamlessWalletCode::BadRequest, // Use a more appropriate code for validation failures
+                SeamlessWalletCode::BadRequest,
                 'Validation failed',
                 $e->errors()
             );
@@ -38,7 +46,7 @@ class WithdrawController extends Controller
         $expectedSign = md5(
             $request->operator_code .
             $request->request_time .
-            'withdraw' . // The method name for signature generation
+            'withdraw' .
             $secretKey
         );
 
@@ -54,108 +62,89 @@ class WithdrawController extends Controller
             $productCode = $batchRequest['product_code'] ?? null;
             $transactions = $batchRequest['transactions'] ?? [];
 
-            $user = User::where('user_name', $memberAccount)->first();
+            $user = User::where('user_name', $memberAccount)->with('wallet')->first();
 
             if (!$user) {
                 Log::warning('Member not found for withdraw/bet request', ['member_account' => $memberAccount]);
                 $responseData[] = [
                     'member_account' => $memberAccount,
                     'product_code' => $productCode,
-                    'before_balance' => number_format(0.00, 2, '.', ''), // Provide a default or actual balance if available
+                    'before_balance' => number_format(0.00, 2, '.', ''),
                     'balance' => number_format(0.00, 2, '.', ''),
                     'code' => SeamlessWalletCode::MemberNotExist->value,
                     'message' => 'Member not found',
                 ];
-                continue; // Continue to the next batch request
+                continue;
             }
 
             foreach ($transactions as $tx) {
-                $transactionId = $tx['id'] ?? null; // Using 'id' as transaction ID
+                $transactionId = $tx['id'] ?? null;
                 $action = $tx['action'] ?? null;
                 $amount = $tx['amount'] ?? null;
+                $wagerCode = $tx['wager_code'] ?? null;
 
                 if (!$transactionId || !$action || $amount === null) {
                     Log::warning('Missing crucial data in transaction for withdraw/bet', ['tx' => $tx]);
                      $responseData[] = [
                         'member_account' => $memberAccount,
                         'product_code' => $productCode,
-                        'before_balance' => number_format($user->balance, 2, '.', ''),
-                        'balance' => number_format($user->balance, 2, '.', ''),
-                        'code' => SeamlessWalletCode::BadRequest->value, // Bad Request for missing data
+                        'before_balance' => number_format($user->balanceFloat, 2, '.', ''),
+                        'balance' => number_format($user->balanceFloat, 2, '.', ''),
+                        'code' => SeamlessWalletCode::BadRequest->value,
                         'message' => 'Missing transaction data (id, action, or amount)',
                     ];
                     continue;
                 }
 
-                $currentBalance = $user->balance;
+                $currentBalance = $user->balanceFloat;
                 $newBalance = $currentBalance;
                 $transactionCode = SeamlessWalletCode::Success->value;
                 $transactionMessage = '';
 
-                // Handle the action type
+                $meta = [
+                    'seamless_transaction_id' => $transactionId,
+                    'action_type' => $action,
+                    'product_code' => $productCode,
+                    'wager_code' => $wagerCode,
+                    'round_id' => $tx['round_id'] ?? null, // Added round_id to meta
+                    'game_code' => $tx['game_code'] ?? null, // Added game_code to meta
+                    'channel_code' => $tx['channel_code'] ?? null, // Added channel_code to meta
+                    'raw_payload' => $tx,
+                ];
+
+                // If only 'BET' actions are expected here, we can simplify this.
+                // Assuming 'BET' is the only action type this endpoint handles for deductions.
                 if ($action === 'BET') {
-                    // For a BET action, the 'amount' field in the request (e.g., -10) represents the bet amount.
-                    // We need to take its absolute value and ensure it's positive.
-                    $betAmount = abs($amount);
+                    $betAmount = abs($amount); // Always treat the bet amount as positive for the wallet package
 
                     if ($betAmount <= 0) {
-                        $transactionCode = SeamlessWalletCode::BadRequest->value; // Or a more specific code like InvalidAmount
+                        $transactionCode = SeamlessWalletCode::BadRequest->value;
                         $transactionMessage = 'Bet amount must be positive and greater than zero.';
                         Log::warning('Invalid bet amount received', ['transaction_id' => $transactionId, 'amount' => $amount]);
-                    } elseif ($currentBalance < $betAmount) {
+                    } elseif ($user->balanceFloat < $betAmount) {
                         $transactionCode = SeamlessWalletCode::BalanceNotEnough->value;
                         $transactionMessage = 'Insufficient balance';
                         Log::warning('Insufficient balance for bet', ['member_account' => $memberAccount, 'bet_amount' => $betAmount, 'current_balance' => $currentBalance]);
                     } else {
-                        $newBalance = $currentBalance - $betAmount;
-                        $user->balance = $newBalance;
-                        $user->save();
-
-                        // Record the transaction
-                        // Assuming your Transaction model has fillable fields like:
-                        // user_id, type (e.g., 'bet'), amount, old_balance, new_balance, reference_id (wager_code/transaction_id)
-                        Transaction::create([
-                            'user_id' => $user->id,
-                            'type' => 'bet',
-                            'amount' => $betAmount,
-                            'old_balance' => $currentBalance,
-                            'new_balance' => $newBalance,
-                            'reference_id' => $transactionId,
-                            'status' => 'completed', // Or 'pending'/'settled' depending on your flow
-                            'meta' => $tx, // Store the full transaction payload for debugging
-                        ]);
-                        Log::info('Successfully processed bet transaction', ['transaction_id' => $transactionId, 'member_account' => $memberAccount, 'bet_amount' => $betAmount, 'new_balance' => $newBalance]);
-                    }
-                } elseif ($action === 'WITHDRAWAL') { // Assuming you might have a 'WITHDRAWAL' action
-                    if ($amount <= 0) {
-                        $transactionCode = SeamlessWalletCode::InvalidAmount->value;
-                        $transactionMessage = 'Withdrawal amount must be positive.';
-                        Log::warning('Invalid withdrawal amount received', ['transaction_id' => $transactionId, 'amount' => $amount]);
-                    } elseif ($currentBalance < $amount) {
-                        $transactionCode = SeamlessWalletCode::BalanceNotEnough->value;
-                        $transactionMessage = 'Insufficient balance for withdrawal';
-                        Log::warning('Insufficient balance for withdrawal', ['member_account' => $memberAccount, 'withdrawal_amount' => $amount, 'current_balance' => $currentBalance]);
-                    } else {
-                        $newBalance = $currentBalance - $amount;
-                        $user->balance = $newBalance;
-                        $user->save();
-
-                        Transaction::create([
-                            'user_id' => $user->id,
-                            'type' => 'withdrawal',
-                            'amount' => $amount,
-                            'old_balance' => $currentBalance,
-                            'new_balance' => $newBalance,
-                            'reference_id' => $transactionId,
-                            'status' => 'completed',
-                            'meta' => $tx,
-                        ]);
-                        Log::info('Successfully processed withdrawal transaction', ['transaction_id' => $transactionId, 'member_account' => $memberAccount, 'withdrawal_amount' => $amount, 'new_balance' => $newBalance]);
+                        try {
+                            $this->walletService->withdraw($user, $betAmount, TransactionName::Bet, $meta);
+                            $newBalance = $user->balanceFloat;
+                            Log::info('Successfully processed bet transaction via WalletService', ['transaction_id' => $transactionId, 'member_account' => $memberAccount, 'bet_amount' => $betAmount, 'new_balance' => $newBalance]);
+                        } catch (\Bavix\Wallet\Exceptions\InsufficientFunds $e) {
+                             $transactionCode = SeamlessWalletCode::BalanceNotEnough->value;
+                             $transactionMessage = 'Insufficient balance (Wallet package)';
+                             Log::error('Wallet Insufficient Funds for bet', ['transaction_id' => $transactionId, 'error' => $e->getMessage()]);
+                        } catch (\Throwable $e) {
+                            $transactionCode = SeamlessWalletCode::ServerError->value;
+                            $transactionMessage = 'Failed to process bet transaction: ' . $e->getMessage();
+                            Log::error('Error processing bet transaction via WalletService', ['transaction_id' => $transactionId, 'error' => $e->getMessage()]);
+                        }
                     }
                 } else {
+                    // If any other action type is sent to this endpoint, it's unexpected.
                     $transactionCode = SeamlessWalletCode::BadRequest->value;
-                    $transactionMessage = 'Unsupported action type';
-                    Log::warning('Unsupported action type received', ['transaction_id' => $transactionId, 'action' => $action]);
+                    $transactionMessage = 'Unsupported action type for this endpoint: ' . $action;
+                    Log::warning('Unsupported action type received on withdraw endpoint', ['transaction_id' => $transactionId, 'action' => $action]);
                 }
 
                 $responseData[] = [
@@ -171,8 +160,8 @@ class WithdrawController extends Controller
 
         return response()->json([
             'code' => SeamlessWalletCode::Success->value,
-            'message' => 'Processed batch requests', // General success message
-            'data' => $responseData, // Return individual transaction results
+            'message' => 'Processed batch requests',
+            'data' => $responseData,
         ]);
     }
 }
