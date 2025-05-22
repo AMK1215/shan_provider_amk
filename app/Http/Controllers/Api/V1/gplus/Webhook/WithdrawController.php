@@ -114,7 +114,7 @@ class WithdrawController extends Controller
                         'product_code' => $req['product_code'],
                         'before_balance' => $before,
                         'balance' => $before,
-                        'code' => SeamlessWalletCode::InvalidAction->value,
+                        'code' => SeamlessWalletCode::BetNotExist->value,
                         'message' => 'Invalid action',
                     ];
                     continue;
