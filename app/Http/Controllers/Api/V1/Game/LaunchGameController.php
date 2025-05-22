@@ -108,10 +108,8 @@ class LaunchGameController extends Controller
         // Validate the incoming request data from your frontend/client
         try {
             $validatedData = $request->validate([
-                'game_code' => 'required|string',
                 'product_code' => 'required|string',
                 'game_type' => 'required|string',
-                // Removed 'sign' and 'nickname' from validation
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Launch Game API Validation Failed', ['errors' => $e->errors()]);
@@ -142,6 +140,7 @@ class LaunchGameController extends Controller
 
         // Generate a secure token for this game session
         $gameToken = $this->generateGameToken($user);
+        $game_code = null;
 
         // Since 'sign' is no longer validated as a required field,
         // we'll check if it's provided and then verify it.
@@ -158,7 +157,7 @@ class LaunchGameController extends Controller
             'password' => $gameToken, // Using secure token instead of actual password
             'nickname' => $request->input('nickname') ?? $user->name, // Access nickname directly from request or fallback
             'currency' => $apiCurrency,
-            'game_code' => $validatedData['game_code'],
+            'game_code' => $game_code,
             'product_code' => $validatedData['product_code'],
             'game_type' => $validatedData['game_type'],
             'language_code' => self::LANGUAGE_CODE,
