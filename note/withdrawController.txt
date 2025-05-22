@@ -12,8 +12,6 @@ use App\Enums\SeamlessWalletCode;
 use App\Models\Transaction as WalletTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Models\TransactionLog;
-use App\Services\WalletService;
-use App\Enums\TransactionName;
 
 class WithdrawController extends Controller
 {
@@ -54,11 +52,6 @@ class WithdrawController extends Controller
         $isValidCurrency = in_array($request->currency, $allowedCurrencies);
 
         $results = [];
-        $walletService = app(WalletService::class);
-        $admin = User::adminUser();
-        $allowedActions = [
-            'BET', 'WIN', 'ROLLBACK', 'CANCEL', 'ADJUSTMENT', 'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD'
-        ];
         foreach ($request->batch_requests as $req) {
             try {
                 if (!$isValidSign) {
@@ -100,18 +93,6 @@ class WithdrawController extends Controller
 
                 $before = $user->wallet->balanceFloat;
                 $tx = $req['transactions'][0] ?? null;
-                $action = strtoupper($tx['action'] ?? '');
-                if (!in_array($action, $allowedActions)) {
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $before,
-                        'code' => SeamlessWalletCode::InvalidAction->value,
-                        'message' => 'Invalid action',
-                    ];
-                    continue;
-                }
 
                 // Check for duplicate transaction by external transaction ID
                 $existingTx = WalletTransaction::where('seamless_transaction_id', $tx['id'] ?? null)->first();
@@ -128,7 +109,7 @@ class WithdrawController extends Controller
                 }
 
                 $amount = floatval($tx['amount'] ?? 0);
-                if ($amount == 0) {
+                if ($amount <= 0) {
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -139,68 +120,44 @@ class WithdrawController extends Controller
                     ];
                     continue;
                 }
-                if ($amount > 0) {
-                    if ($amount > $before) {
-                        $results[] = [
-                            'member_account' => $req['member_account'],
-                            'product_code' => $req['product_code'],
-                            'before_balance' => $before,
-                            'balance' => $before,
-                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
-                            'message' => 'Insufficient balance',
-                        ];
-                        continue;
-                    }
-                    DB::beginTransaction();
-                    $walletService->withdraw($user, $amount, TransactionName::Withdraw, [
-                        'seamless_transaction_id' => $tx['id'] ?? null,
-                        'action' => $tx['action'] ?? null,
-                        'wager_code' => $tx['wager_code'] ?? null,
-                        'product_code' => $req['product_code'],
-                        'game_type' => $req['game_type'] ?? null,
-                    ]);
-                    DB::commit();
-                    $after = $user->wallet->balanceFloat;
+                if ($amount > $before) {
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
                         'before_balance' => $before,
-                        'balance' => $after,
-                        'code' => SeamlessWalletCode::Success->value,
-                        'message' => '',
+                        'balance' => $before,
+                        'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                        'message' => 'Insufficient balance',
                     ];
                     continue;
                 }
-                if ($amount < 0) {
-                    DB::beginTransaction();
-                    $walletService->deposit($user, abs($amount), TransactionName::Deposit, [
-                        'seamless_transaction_id' => $tx['id'] ?? null,
-                        'action' => $tx['action'] ?? null,
-                        'wager_code' => $tx['wager_code'] ?? null,
-                        'product_code' => $req['product_code'],
-                        'game_type' => $req['game_type'] ?? null,
-                        'from_admin' => $admin->id,
-                    ]);
-                    DB::commit();
-                    $after = $user->wallet->balanceFloat;
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $after,
-                        'code' => SeamlessWalletCode::Success->value,
-                        'message' => '',
-                    ];
-                    continue;
-                }
+
+                DB::beginTransaction();
+                $user->wallet->withdrawFloat($amount, [
+                    'seamless_transaction_id' => $tx['id'] ?? null,
+                    'action' => $tx['action'] ?? null,
+                    'wager_code' => $tx['wager_code'] ?? null,
+                    'product_code' => $req['product_code'],
+                    'game_type' => $req['game_type'] ?? null,
+                ]);
+                DB::commit();
+                $after = $user->wallet->balanceFloat;
+                $results[] = [
+                    'member_account' => $req['member_account'],
+                    'product_code' => $req['product_code'],
+                    'before_balance' => $before,
+                    'balance' => $after,
+                    'code' => SeamlessWalletCode::Success->value,
+                    'message' => '',
+                ];
             } catch (\Exception $e) {
                 DB::rollBack();
                 Log::error('Withdraw API Exception', ['error' => $e->getMessage(), 'request' => $req]);
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                    'before_balance' => $before ?? 0.0,
-                    'balance' => $before ?? 0.0,
+                    'before_balance' => $before ?? null,
+                    'balance' => $before ?? null,
                     'code' => SeamlessWalletCode::InternalServerError->value,
                     'message' => $e->getMessage(),
                 ];

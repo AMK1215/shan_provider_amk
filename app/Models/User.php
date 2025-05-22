@@ -12,7 +12,7 @@ use Bavix\Wallet\Interfaces\Wallet;
 use Bavix\Wallet\Traits\HasWalletFloat;
 use App\Models\Admin\Role;
 use App\Models\Admin\Permission;
-
+use App\Enums\UserType;
 
 class User extends Authenticatable implements Wallet
 {
@@ -84,6 +84,11 @@ class User extends Authenticatable implements Wallet
     public function poneWinePlayer()
     {
         return $this->hasMany(PoneWinePlayerBet::class);
+    }
+
+    public static function adminUser()
+    {
+        return self::where('type', UserType::SystemWallet)->first();
     }
     
 }
