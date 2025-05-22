@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use App\Enums\SeamlessWalletCode;
+use App\Models\User;
 
 class PushBetDataController extends Controller
 {
@@ -39,6 +40,15 @@ class PushBetDataController extends Controller
         }
 
         foreach ($request->wagers as $tx) {
+            $memberAccount = $tx['member_account'] ?? null;
+            $user = User::where('user_name', $memberAccount)->first();
+            if (!$user) {
+                Log::warning('Member not found', ['member_account' => $memberAccount]);
+                return response()->json([
+                    'code' => SeamlessWalletCode::MemberNotExist->value,
+                    'message' => 'Member not found',
+                ]);
+            }
             $transactionId = $tx['wager_code'] ?? null;
             if (!$transactionId) {
                 Log::warning('Transaction missing wager_code', ['tx' => $tx]);
