@@ -108,7 +108,7 @@ class LaunchGameController extends Controller
         // Validate the incoming request data from your frontend/client
         try {
             $validatedData = $request->validate([
-                'product_code' => 'required|string',
+                'product_code' => 'required|integer',
                 'game_type' => 'required|string',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
