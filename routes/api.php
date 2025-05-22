@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,9 +20,10 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/player-change-password', [AuthController::class, 'playerChangePassword']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::get('product-list', [ProductListController::class, 'index']);
 Route::get('operators/provider-games', [GameListController::class, 'index']);
