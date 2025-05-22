@@ -147,6 +147,25 @@ class DepositController extends Controller
                         continue;
                     }
 
+                    // Specific handling for 'CANCEL' action: Check if the original bet exists
+                    if ($action === 'CANCEL') {
+                        // For a CANCEL action, the 'wager_code' in the request refers to the original bet that is being cancelled.
+                        // We need to check if this original bet exists in our 'place_bets' table.
+                        $originalBet = PlaceBet::where('wager_code', $wagerCode)
+                                                ->where('member_account', $memberAccount)
+                                                ->first();
+
+                        if (!$originalBet) {
+                            Log::warning('Original bet not found for CANCEL action', ['wager_code' => $wagerCode, 'member_account' => $memberAccount, 'transaction_id' => $transactionId]);
+                            $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Original bet not found for cancellation');
+                            $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Original bet not found for cancellation');
+                            continue; // Skip processing this CANCEL if original bet doesn't exist
+                        }
+                        // Optionally, you might want to check the status of the original bet here (e.g., if it's already settled or cancelled)
+                        // If ($originalBet->status === 'CANCELLED') { ... return duplicate or already cancelled error ... }
+                    }
+
+
                     // Start a database transaction for each individual transaction request
                     DB::beginTransaction();
                     try {
@@ -339,7 +358,7 @@ class DepositController extends Controller
                 'game_code'         => $transactionRequest['game_code'] ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
-                //'error_message'     => $errorMessage, // Store the error message
+                'error_message'     => $errorMessage, // Store the error message
             ]
         );
     }
