@@ -15,6 +15,7 @@ use App\Models\TransactionLog;
 use App\Services\WalletService;
 use App\Enums\TransactionType;
 use App\Enums\TransactionName;
+use App\Models\PlaceBet;
 
 class WithdrawController extends Controller
 {
@@ -107,6 +108,21 @@ class WithdrawController extends Controller
                 $tx = $req['transactions'][0] ?? null;
                 $action = strtoupper($tx['action'] ?? '');
                 Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
+
+                $transactionId = $tx['id'] ?? null;
+                if (PlaceBet::where('transaction_id', $transactionId)->exists()) {
+                    Log::warning('Duplicate transaction detected in place_bets', ['tx_id' => $transactionId]);
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => $before,
+                        'balance' => $before,
+                        'code' => SeamlessWalletCode::DuplicateTransaction->value,
+                        'message' => 'Duplicate transaction',
+                    ];
+                    continue;
+                }
+
                 if (!in_array($action, $allowedActions)) {
                     Log::warning('Invalid action', ['action' => $action, 'member_account' => $req['member_account']]);
                     $results[] = [
@@ -116,20 +132,6 @@ class WithdrawController extends Controller
                         'balance' => $before,
                         'code' => SeamlessWalletCode::BetNotExist->value,
                         'message' => 'Invalid action',
-                    ];
-                    continue;
-                }
-
-                $existingTx = WalletTransaction::where('seamless_transaction_id', $tx['id'] ?? null)->first();
-                if ($existingTx) {
-                    Log::warning('Duplicate transaction detected', ['tx_id' => $tx['id'] ?? null]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $before,
-                        'code' => SeamlessWalletCode::DuplicateTransaction->value,
-                        'message' => 'Duplicate transaction',
                     ];
                     continue;
                 }
@@ -166,11 +168,21 @@ class WithdrawController extends Controller
                     Log::info('Processing withdraw', ['member_account' => $req['member_account'], 'amount' => $amount]);
                     DB::beginTransaction();
                     $walletService->withdraw($user, $amount, TransactionName::Withdraw, [
-                        'seamless_transaction_id' => $tx['id'] ?? null,
+                        'seamless_transaction_id' => $transactionId,
                         'action' => $tx['action'] ?? null,
                         'wager_code' => $tx['wager_code'] ?? null,
                         'product_code' => $req['product_code'],
                         'game_type' => $req['game_type'] ?? null,
+                    ]);
+                    // Store in place_bets for audit/duplicate check
+                    PlaceBet::create([
+                        'transaction_id' => $transactionId,
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'amount' => $amount,
+                        'action' => $action,
+                        'status' => 'completed',
+                        'meta' => $tx,
                     ]);
                     DB::commit();
                     $after = $user->wallet->balanceFloat;
