@@ -15,6 +15,7 @@ use App\Models\TransactionLog;
 use App\Services\WalletService;
 use App\Enums\TransactionName;
 use App\Enums\TransactionType;
+use App\Models\PlaceBet;
 
 class DepositController extends Controller
 {
@@ -103,10 +104,9 @@ class DepositController extends Controller
                 $action = strtoupper($tx['action'] ?? '');
                 Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
 
-                // Check for duplicate transaction by external transaction ID
-                $existingTx = WalletTransaction::where('seamless_transaction_id', $tx['id'] ?? null)->first();
-                if ($existingTx) {
-                    Log::warning('Duplicate transaction detected', ['tx_id' => $tx['id'] ?? null]);
+                $transactionId = $tx['id'] ?? null;
+                if (PlaceBet::where('transaction_id', $transactionId)->exists()) {
+                    Log::warning('Duplicate transaction detected in place_bets', ['tx_id' => $transactionId]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
@@ -135,11 +135,21 @@ class DepositController extends Controller
                 Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => $amount]);
                 DB::beginTransaction();
                 $walletService->deposit($user, $amount, TransactionName::Deposit, [
-                    'seamless_transaction_id' => $tx['id'] ?? null,
+                    'seamless_transaction_id' => $transactionId,
                     'action' => $tx['action'] ?? null,
                     'wager_code' => $tx['wager_code'] ?? null,
                     'product_code' => $req['product_code'],
                     'game_type' => $req['game_type'] ?? null,
+                ]);
+                // Store in place_bets for audit/duplicate check
+                PlaceBet::create([
+                    'transaction_id' => $transactionId,
+                    'member_account' => $req['member_account'],
+                    'product_code' => $req['product_code'],
+                    'amount' => $amount,
+                    'action' => $action,
+                    'status' => 'completed',
+                    'meta' => $tx,
                 ]);
                 DB::commit();
                 $after = $user->wallet->balanceFloat;
