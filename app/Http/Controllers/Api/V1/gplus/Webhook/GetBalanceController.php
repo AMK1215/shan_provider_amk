@@ -30,29 +30,38 @@ class GetBalanceController extends Controller
             'getbalance' .
             $secretKey
         );
-       
+        $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
+
+        // Allowed currencies
+        $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+        $isValidCurrency = in_array($request->currency, $allowedCurrencies);
 
         $results = [];
         $specialCurrencies = ['IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         foreach ($request->batch_requests as $req) {
-            $user = User::where('user_name', $req['member_account'])->first();
-            if (strtolower($request->sign) !== strtolower($expectedSign)) {
-                return [
+            if (!$isValidSign) {
+                $results[] = [
+                    'member_account' => $req['member_account'],
+                    'product_code' => $req['product_code'],
+                    'balance' => '0.00',
                     'code' => \App\Enums\SeamlessWalletCode::InvalidSignature->value,
                     'message' => 'Incorrect Signature',
-                    'data' => [],
                 ];
+                continue;
             }
-    
-            // Allowed currencies
-            $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
-            if (!in_array($request->currency, $allowedCurrencies)) {
-                return [
+
+            if (!$isValidCurrency) {
+                $results[] = [
+                    'member_account' => $req['member_account'],
+                    'product_code' => $req['product_code'],
+                    'balance' => '0.00',
                     'code' => \App\Enums\SeamlessWalletCode::InternalServerError->value,
                     'message' => 'Invalid Currency',
-                    'data' => [],
                 ];
+                continue;
             }
+
+            $user = User::where('user_name', $req['member_account'])->first();
             if ($user && $user->wallet) {
                 $balance = $user->wallet->balanceFloat;
                 if (in_array($request->currency, $specialCurrencies)) {
