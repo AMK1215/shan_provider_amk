@@ -105,8 +105,10 @@ class DepositController extends Controller
                 Log::debug('Transaction details', ['action' => $action, 'amount' => $tx['amount'] ?? null, 'tx' => $tx]);
 
                 $transactionId = $tx['id'] ?? null;
-                if (PlaceBet::where('transaction_id', $transactionId)->exists()) {
-                    Log::warning('Duplicate transaction detected in place_bets', ['tx_id' => $transactionId]);
+                $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
+                $duplicateInTransactions = WalletTransaction::where('seamless_transaction_id', $transactionId)->first();
+                if ($duplicateInPlaceBets || $duplicateInTransactions) {
+                    Log::warning('Duplicate transaction detected in place_bets or transactions', ['tx_id' => $transactionId]);
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
