@@ -146,8 +146,8 @@ class WithdrawController extends Controller
                             'product_code' => $req['product_code'],
                             'before_balance' => $before,
                             'balance' => $before,
-                            'code' => SeamlessWalletCode::BetNotExist->value,
-                            'message' => 'Invalid action',
+                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                            'message' => 'Withdraw amount must be positive',
                         ];
                         continue;
                     }
