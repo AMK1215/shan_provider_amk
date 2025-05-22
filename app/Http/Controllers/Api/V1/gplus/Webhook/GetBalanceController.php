@@ -30,28 +30,29 @@ class GetBalanceController extends Controller
             'getbalance' .
             $secretKey
         );
-        if (strtolower($request->sign) !== strtolower($expectedSign)) {
-            return [
-                'code' => \App\Enums\SeamlessWalletCode::InvalidSignature->value,
-                'message' => 'Incorrect Signature',
-                'data' => [],
-            ];
-        }
-
-        // Allowed currencies
-        $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
-        if (!in_array($request->currency, $allowedCurrencies)) {
-            return [
-                'code' => \App\Enums\SeamlessWalletCode::InternalServerError->value,
-                'message' => 'Invalid Currency',
-                'data' => [],
-            ];
-        }
+       
 
         $results = [];
         $specialCurrencies = ['IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         foreach ($request->batch_requests as $req) {
             $user = User::where('user_name', $req['member_account'])->first();
+            if (strtolower($request->sign) !== strtolower($expectedSign)) {
+                return [
+                    'code' => \App\Enums\SeamlessWalletCode::InvalidSignature->value,
+                    'message' => 'Incorrect Signature',
+                    'data' => [],
+                ];
+            }
+    
+            // Allowed currencies
+            $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+            if (!in_array($request->currency, $allowedCurrencies)) {
+                return [
+                    'code' => \App\Enums\SeamlessWalletCode::InternalServerError->value,
+                    'message' => 'Invalid Currency',
+                    'data' => [],
+                ];
+            }
             if ($user && $user->wallet) {
                 $balance = $user->wallet->balanceFloat;
                 if (in_array($request->currency, $specialCurrencies)) {
