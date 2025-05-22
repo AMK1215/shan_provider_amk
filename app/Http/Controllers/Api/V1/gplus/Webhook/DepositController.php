@@ -170,7 +170,6 @@ class DepositController extends Controller
                         'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
                         'game_code'         => $tx['game_code'] ?? null,
                         'channel_code'      => $tx['channel_code'] ?? null,
-                        'status'            => isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::Success->value ? 'completed' : (isset($results[count($results)-1]['code']) && $results[count($results)-1]['code'] === SeamlessWalletCode::DuplicateTransaction->value ? 'duplicate' : 'failed'),
                     ]
                 );
                 DB::commit();
