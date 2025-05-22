@@ -135,19 +135,22 @@ class WithdrawController extends Controller
                 }
 
                 $amount = floatval($tx['amount'] ?? 0);
-                if ($amount == 0) {
-                    Log::warning('Zero amount transaction', ['member_account' => $req['member_account']]);
-                    $results[] = [
-                        'member_account' => $req['member_account'],
-                        'product_code' => $req['product_code'],
-                        'before_balance' => $before,
-                        'balance' => $before,
-                        'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
-                        'message' => 'The price should be positive',
-                    ];
-                    continue;
-                }
-                if ($amount > 0) {
+                $withdrawActions = ['BET', 'TIP', 'BET_PRESERVE'];
+                $depositActions = ['SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND'];
+
+                if (in_array($action, $withdrawActions)) {
+                    if ($amount <= 0) {
+                        Log::warning('Withdraw action with non-positive amount', ['member_account' => $req['member_account'], 'action' => $action, 'amount' => $amount]);
+                        $results[] = [
+                            'member_account' => $req['member_account'],
+                            'product_code' => $req['product_code'],
+                            'before_balance' => $before,
+                            'balance' => $before,
+                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                            'message' => 'Withdraw amount must be positive',
+                        ];
+                        continue;
+                    }
                     if ($amount > $before) {
                         Log::warning('Insufficient balance', ['member_account' => $req['member_account'], 'amount' => $amount, 'before_balance' => $before]);
                         $results[] = [
@@ -181,11 +184,22 @@ class WithdrawController extends Controller
                         'message' => '',
                     ];
                     continue;
-                }
-                if ($amount < 0) {
-                    Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => abs($amount)]);
+                } elseif (in_array($action, $depositActions)) {
+                    if ($amount <= 0) {
+                        Log::warning('Deposit action with non-positive amount', ['member_account' => $req['member_account'], 'action' => $action, 'amount' => $amount]);
+                        $results[] = [
+                            'member_account' => $req['member_account'],
+                            'product_code' => $req['product_code'],
+                            'before_balance' => $before,
+                            'balance' => $before,
+                            'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                            'message' => 'Deposit amount must be positive',
+                        ];
+                        continue;
+                    }
+                    Log::info('Processing deposit', ['member_account' => $req['member_account'], 'amount' => $amount]);
                     DB::beginTransaction();
-                    $walletService->deposit($user, abs($amount), TransactionName::Deposit, [
+                    $walletService->deposit($user, $amount, TransactionName::Deposit, [
                         'seamless_transaction_id' => $tx['id'] ?? null,
                         'action' => $tx['action'] ?? null,
                         'wager_code' => $tx['wager_code'] ?? null,
@@ -203,6 +217,17 @@ class WithdrawController extends Controller
                         'balance' => $after,
                         'code' => SeamlessWalletCode::Success->value,
                         'message' => '',
+                    ];
+                    continue;
+                } else {
+                    Log::warning('Unknown or unsupported action', ['member_account' => $req['member_account'], 'action' => $action]);
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => $before,
+                        'balance' => $before,
+                        'code' => SeamlessWalletCode::InvalidAction->value,
+                        'message' => 'Invalid or unsupported action',
                     ];
                     continue;
                 }
