@@ -108,6 +108,7 @@ class LaunchGameController extends Controller
         // Validate the incoming request data from your frontend/client
         try {
             $validatedData = $request->validate([
+                'game_code' => 'required|string',
                 'product_code' => 'required|integer',
                 'game_type' => 'required|string',
             ]);
@@ -157,7 +158,7 @@ class LaunchGameController extends Controller
             'password' => $gameToken, // Using secure token instead of actual password
             'nickname' => $request->input('nickname') ?? $user->name, // Access nickname directly from request or fallback
             'currency' => $apiCurrency,
-            'game_code' => $game_code,
+            'game_code' => $validatedData['game_code'],
             'product_code' => $validatedData['product_code'],
             'game_type' => $validatedData['game_type'],
             'language_code' => self::LANGUAGE_CODE,
