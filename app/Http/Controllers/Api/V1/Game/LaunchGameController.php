@@ -140,6 +140,9 @@ class LaunchGameController extends Controller
             $requestTime . $secretKey . 'launchgame' . $agentCode
         );
 
+        // Generate a secure token for this game session
+        $gameToken = $this->generateGameToken($user);
+
         // Since 'sign' is no longer validated as a required field,
         // we'll check if it's provided and then verify it.
         // If 'sign' is not provided, this check will be skipped.
