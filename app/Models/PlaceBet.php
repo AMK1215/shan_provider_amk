@@ -12,16 +12,15 @@ class PlaceBet extends Model
     protected $table = 'place_bets';
 
     protected $fillable = [
-        'transaction_id',
-        'member_account',
-        'product_code',
-        'amount',
-        'action',
-        'status',
-        'meta',
+        'member_account', 'product_code', 'game_type', 'operator_code', 'request_time',
+        'sign', 'currency', 'transaction_id', 'action', 'amount', 'valid_bet_amount',
+        'bet_amount', 'prize_amount', 'tip_amount', 'wager_code', 'wager_status',
+        'round_id', 'payload', 'settle_at', 'game_code', 'channel_code',
     ];
 
     protected $casts = [
-        'meta' => 'array',
+        'payload' => 'array',
+        'settle_at' => 'datetime',
+        'request_time' => 'datetime',
     ];
 } 

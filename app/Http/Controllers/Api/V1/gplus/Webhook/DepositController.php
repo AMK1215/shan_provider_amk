@@ -170,6 +170,7 @@ class DepositController extends Controller
                         'settle_at'         => isset($tx['settle_at']) && $tx['settle_at'] ? now()->setTimestamp($tx['settle_at']) : null,
                         'game_code'         => $tx['game_code'] ?? null,
                         'channel_code'      => $tx['channel_code'] ?? null,
+                        'status'            => 'pending',
                     ]
                 );
                 DB::commit();
