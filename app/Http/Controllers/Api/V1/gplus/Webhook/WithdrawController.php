@@ -83,8 +83,8 @@ class WithdrawController extends Controller
                     $results[] = [
                         'member_account' => $req['member_account'],
                         'product_code' => $req['product_code'],
-                        'before_balance' => null,
-                        'balance' => null,
+                        'before_balance' => 0.0,
+                        'balance' => 0.0,
                         'code' => SeamlessWalletCode::MemberNotExist->value,
                         'message' => 'Member not found',
                     ];
@@ -109,6 +109,17 @@ class WithdrawController extends Controller
                 }
 
                 $amount = floatval($tx['amount'] ?? 0);
+                if ($amount <= 0) {
+                    $results[] = [
+                        'member_account' => $req['member_account'],
+                        'product_code' => $req['product_code'],
+                        'before_balance' => $before,
+                        'balance' => $before,
+                        'code' => SeamlessWalletCode::InsufficientBalance->value, // 1001
+                        'message' => 'The price should be positive',
+                    ];
+                    continue;
+                }
                 if ($amount > $before) {
                     $results[] = [
                         'member_account' => $req['member_account'],
