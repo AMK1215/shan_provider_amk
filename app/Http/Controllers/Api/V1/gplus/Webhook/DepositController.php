@@ -143,7 +143,7 @@ class DepositController extends Controller
                     // Only process deposit actions for the deposit endpoint
                     if (!$this->isValidActionForDeposit($action) || !$this->isValidWagerStatus($transactionRequest['wager_status'] ?? null)) {
                         Log::warning('Invalid action or wager status for deposit endpoint', ['action' => $action, 'wager_status' => $transactionRequest['wager_status'] ?? 'N/A', 'member_account' => $memberAccount]);
-                        $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::InternalServerError, 'Invalid action type or wager status for deposit');
+                        $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Invalid action type or wager status for deposit');
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Invalid action type or wager status for deposit');
                         continue;
                     }
