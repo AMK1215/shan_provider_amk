@@ -8,13 +8,14 @@ use App\Services\ApiResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use App\Enums\SeamlessWalletCode; // Integrated
+use App\Enums\SeamlessWalletCode;
 use App\Services\WalletService;
-use App\Enums\TransactionName; // Integrated
+use App\Enums\TransactionName;
 
 class WithdrawController extends Controller
 {
     protected $walletService;
+    private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2']; // Define allowed currencies
 
     public function __construct(WalletService $walletService)
     {
@@ -36,7 +37,7 @@ class WithdrawController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Withdraw API Validation Failed', ['errors' => $e->errors()]);
             return ApiResponseService::error(
-                SeamlessWalletCode::InternalServerError, // Changed from BadRequest to InternalServerError as validation issues can be server-side config
+                SeamlessWalletCode::InternalServerError,
                 'Validation failed',
                 $e->errors()
             );
@@ -50,10 +51,8 @@ class WithdrawController extends Controller
             $secretKey
         );
 
-        if (strtolower($request->sign) !== strtolower($expectedSign)) {
-            Log::warning('Withdraw Invalid Signature', ['provided' => $request->sign, 'expected' => $expectedSign]);
-            return ApiResponseService::error(SeamlessWalletCode::InvalidSignature, 'Invalid signature');
-        }
+        $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
+        $isValidCurrency = in_array($request->currency, $this->allowedCurrencies);
 
         $responseData = [];
 
@@ -61,6 +60,20 @@ class WithdrawController extends Controller
             $memberAccount = $batchRequest['member_account'] ?? null;
             $productCode = $batchRequest['product_code'] ?? null;
             $transactions = $batchRequest['transactions'] ?? [];
+
+            // Handle batch-level errors (invalid signature or currency)
+            // These checks are now inside the foreach loop for batch_requests
+            if (!$isValidSign) {
+                Log::warning('Invalid signature for batch', ['member_account' => $memberAccount, 'provided' => $request->sign, 'expected' => $expectedSign]);
+                $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InvalidSignature, 'Invalid signature');
+                continue; // Skip to the next batch request
+            }
+
+            if (!$isValidCurrency) {
+                Log::warning('Invalid currency for batch', ['member_account' => $memberAccount, 'currency' => $request->currency]);
+                $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InternalServerError, 'Invalid Currency');
+                continue; // Skip to the next batch request
+            }
 
             $user = User::where('user_name', $memberAccount)->with('wallet')->first();
 
@@ -71,7 +84,7 @@ class WithdrawController extends Controller
                     'product_code' => $productCode,
                     'before_balance' => number_format(0.00, 2, '.', ''),
                     'balance' => number_format(0.00, 2, '.', ''),
-                    'code' => SeamlessWalletCode::MemberNotExist->value, // Using enum
+                    'code' => SeamlessWalletCode::MemberNotExist->value,
                     'message' => 'Member not found',
                 ];
                 continue;
@@ -90,7 +103,7 @@ class WithdrawController extends Controller
                         'product_code' => $productCode,
                         'before_balance' => number_format($user->balanceFloat, 2, '.', ''),
                         'balance' => number_format($user->balanceFloat, 2, '.', ''),
-                        'code' => SeamlessWalletCode::InternalServerError->value, // Using enum, adjusted to indicate server-side data issue
+                        'code' => SeamlessWalletCode::InternalServerError->value,
                         'message' => 'Missing transaction data (id, action, or amount)',
                     ];
                     continue;
@@ -98,7 +111,7 @@ class WithdrawController extends Controller
 
                 $currentBalance = $user->balanceFloat;
                 $newBalance = $currentBalance;
-                $transactionCode = SeamlessWalletCode::Success->value; // Default to success
+                $transactionCode = SeamlessWalletCode::Success->value;
                 $transactionMessage = '';
 
                 $meta = [
@@ -116,33 +129,30 @@ class WithdrawController extends Controller
                     $betAmount = abs($amount);
 
                     if ($betAmount <= 0) {
-                        $transactionCode = SeamlessWalletCode::InternalServerError->value; // Adjusted to be more general for invalid amount
+                        $transactionCode = SeamlessWalletCode::InternalServerError->value;
                         $transactionMessage = 'Bet amount must be positive and greater than zero.';
                         Log::warning('Invalid bet amount received', ['transaction_id' => $transactionId, 'amount' => $amount]);
                     } elseif ($user->balanceFloat < $betAmount) {
-                        $transactionCode = SeamlessWalletCode::InsufficientBalance->value; // Using enum
+                        $transactionCode = SeamlessWalletCode::InsufficientBalance->value;
                         $transactionMessage = 'Insufficient balance';
                         Log::warning('Insufficient balance for bet', ['member_account' => $memberAccount, 'bet_amount' => $betAmount, 'current_balance' => $currentBalance]);
                     } else {
                         try {
-                            $this->walletService->withdraw($user, $betAmount, TransactionName::Stake, $meta); // Using TransactionName::Stake for a bet
+                            $this->walletService->withdraw($user, $betAmount, TransactionName::Stake, $meta);
                             $newBalance = $user->balanceFloat;
                             Log::info('Successfully processed bet transaction via WalletService', ['transaction_id' => $transactionId, 'member_account' => $memberAccount, 'bet_amount' => $betAmount, 'new_balance' => $newBalance]);
                         } catch (\Bavix\Wallet\Exceptions\InsufficientFunds $e) {
-                             $transactionCode = SeamlessWalletCode::InsufficientBalance->value; // Using enum
+                             $transactionCode = SeamlessWalletCode::InsufficientBalance->value;
                              $transactionMessage = 'Insufficient balance (Wallet package)';
                              Log::error('Wallet Insufficient Funds for bet', ['transaction_id' => $transactionId, 'error' => $e->getMessage()]);
                         } catch (\Throwable $e) {
-                            $transactionCode = SeamlessWalletCode::InternalServerError->value; // Using enum
+                            $transactionCode = SeamlessWalletCode::InternalServerError->value;
                             $transactionMessage = 'Failed to process bet transaction: ' . $e->getMessage();
                             Log::error('Error processing bet transaction via WalletService', ['transaction_id' => $transactionId, 'error' => $e->getMessage()]);
                         }
                     }
-                }
-                // No 'WITHDRAWAL' elseif block, as per your last clarification.
-                // If other actions are expected in the future on this endpoint, add them here.
-                else {
-                    $transactionCode = SeamlessWalletCode::InternalServerError->value; // Using enum, indicating an unexpected action type
+                } else {
+                    $transactionCode = SeamlessWalletCode::InternalServerError->value;
                     $transactionMessage = 'Unsupported action type for this endpoint: ' . $action;
                     Log::warning('Unsupported action type received on withdraw endpoint', ['transaction_id' => $transactionId, 'action' => $action]);
                 }
@@ -159,9 +169,24 @@ class WithdrawController extends Controller
         }
 
         return response()->json([
-            'code' => SeamlessWalletCode::Success->value, // Using enum
+            'code' => SeamlessWalletCode::Success->value,
             'message' => 'Processed batch requests',
             'data' => $responseData,
         ]);
+    }
+
+    /**
+     * Helper to build a consistent error response.
+     */
+    private function buildErrorResponse(string $memberAccount, string $productCode, float $balance, SeamlessWalletCode $code, string $message): array
+    {
+        return [
+            'member_account' => $memberAccount,
+            'product_code' => $productCode,
+            'before_balance' => number_format($balance, 2, '.', ''), // Ensure consistent formatting
+            'balance' => number_format($balance, 2, '.', ''), // Ensure consistent formatting
+            'code' => $code->value,
+            'message' => $message,
+        ];
     }
 }
