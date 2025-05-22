@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Game\LaunchGameController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -34,3 +35,9 @@ Route::prefix('v1/api/seamless')->group(function () {
     Route::post('deposit', [DepositController::class, 'deposit']);
     Route::post('pushbetdata', [PushBetDataController::class, 'pushBetData']);
 });
+
+
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
+});
+
