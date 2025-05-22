@@ -16,6 +16,14 @@ return new class extends Migration {
             $table->string('action');
             $table->string('status')->default('pending');
             $table->json('meta')->nullable();
+            $table->string('wager_status')->nullable();
+            $table->string('round_id')->nullable();
+            $table->string('game_type')->nullable();
+            $table->string('channel_code')->nullable();
+            $table->bigInteger('settled_at')->nullable();
+            $table->bigInteger('created_at_provider')->nullable();
+            $table->string('currency')->nullable();
+            $table->string('game_code')->nullable();
             $table->timestamps();
         });
     }
