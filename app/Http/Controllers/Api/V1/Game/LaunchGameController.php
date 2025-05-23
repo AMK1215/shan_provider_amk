@@ -70,7 +70,7 @@ class LaunchGameController extends Controller
         if (!$gameProviderPassword) {
             // Generate a strong, unique, and consistent password for this player for the game provider
             // The provider states "The same password will always need to be used for the exact player after creation."
-            $gameProviderPassword = Str::random(32); // Generates a 32-character random string
+            $gameProviderPassword = Str::random(50); // Generates a 32-character random string
             $user->setGameProviderPassword($gameProviderPassword); // Saves and encrypts in DB
             Log::info('Generated and stored new game provider password for user', ['user_id' => $user->id]);
         }

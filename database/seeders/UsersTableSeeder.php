@@ -28,13 +28,13 @@ class UsersTableSeeder extends Seeder
         $walletService->transfer($agent, $subAgent, 1 * 100_00000, TransactionName::CreditTransfer);
 
         $player = $this->createUser(UserType::Player, 'Player 1', 'Player001', '09111111111', $subAgent->id);
-        $walletService->transfer($subAgent, $player, 5 * 100_00, TransactionName::CreditTransfer);
+        $walletService->transfer($subAgent, $player, 5 * 100_000, TransactionName::CreditTransfer);
 
         $systemWallet = $this->createUser(UserType::SystemWallet, 'SystemWallet', 'systemWallet', '09222222222');
         $walletService->deposit($systemWallet, 500 * 100_0000, TransactionName::CapitalDeposit);
 
         // More players
-        foreach (range(2, 5) as $i) {
+        foreach (range(2, 20) as $i) {
             $player = $this->createUser(
                 UserType::Player,
                 "Player $i",
