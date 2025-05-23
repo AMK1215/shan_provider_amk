@@ -8,7 +8,7 @@ use App\Services\Slot\BalanceResponseService;
 use App\Enums\SeamlessWalletCode; // Ensure this enum exists and is correctly defined
 use Illuminate\Support\Facades\Log;
 use Exception; // Import the Exception class for better clarity
-
+use Illuminate\Support\Facades\Config;
 class GetBalanceController extends Controller
 {
     /**
