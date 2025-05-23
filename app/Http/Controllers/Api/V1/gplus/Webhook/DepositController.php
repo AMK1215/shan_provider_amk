@@ -15,6 +15,7 @@ use App\Models\TransactionLog;
 use App\Services\WalletService;
 use App\Enums\TransactionName;
 use App\Models\PlaceBet;
+use Exception; // Import the Exception class for better clarity
 
 class DepositController extends Controller
 {
@@ -85,7 +86,10 @@ class DepositController extends Controller
         $results = [];
         $walletService = app(WalletService::class);
         $admin = User::adminUser(); // Assuming User::adminUser() exists and returns an admin user for deposits
-
+        if (!$admin) {
+            throw new \Exception('Admin user not configured properly.');
+        }
+        
         foreach ($request->batch_requests as $batchRequest) {
             $memberAccount = $batchRequest['member_account'] ?? null;
             $productCode = $batchRequest['product_code'] ?? null;
@@ -125,7 +129,8 @@ class DepositController extends Controller
                     $transactionId = $transactionRequest['id'] ?? null;
                     $action = strtoupper($transactionRequest['action'] ?? '');
                     $wagerCode = $transactionRequest['wager_code'] ?? $transactionRequest['round_id'] ?? null;
-                    $amount = floatval($transactionRequest['amount'] ?? 0);
+                    //$amount = floatval($transactionRequest['amount'] ?? 0);
+                    $amount = round(floatval($transactionRequest['amount'] ?? 0), 4);
 
                     // Duplicate check by transaction_id in PlaceBet table
                     $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
@@ -170,9 +175,21 @@ class DepositController extends Controller
                     DB::beginTransaction();
                     try {
                         // Re-fetch user and lock wallet inside transaction for isolation
-                        $user->refresh(); // Get the latest state of the user and their wallet
-                        $user->wallet->lockForUpdate();
-                        $beforeTransactionBalance = $user->wallet->balanceFloat;
+                           $user->refresh(); // Get the latest state of the user and their wallet
+                        // $user->wallet->lockForUpdate();
+                        // $beforeTransactionBalance = $user->wallet->balanceFloat;
+
+                        // Properly lock the wallet row inside a fresh DB transaction
+                            $user = User::with(['wallet' => function ($query) {
+                                $query->lockForUpdate();
+                            }])->find($user->id);
+
+                            if (!$user || !$user->wallet) {
+                                throw new \Exception('User or wallet not found during transaction locking.');
+                            }
+
+                            $beforeTransactionBalance = $user->wallet->balanceFloat;
+
 
                         $convertedAmount = $this->toDecimalPlaces($amount * $this->getCurrencyValue($request->currency));
 
