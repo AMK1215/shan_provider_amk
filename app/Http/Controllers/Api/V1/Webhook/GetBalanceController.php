@@ -109,11 +109,11 @@ class GetBalanceController extends Controller
 
                 // Build an internal server error response for the current member
                 $responseData[] = BalanceResponseService::buildMemberErrorResponse(
-                    $memberAccount,
-                    $productCode,
-                    SeamlessWalletCode::InternalServerError, // Use the enum for internal server error
-                    'Internal server error'
-                );
+                        $memberAccount,
+                        $productCode,
+                        SeamlessWalletCode::InternalServerError, // Use the enum for internal server error
+                        'Internal server error'
+                    );
             }
         }
 
@@ -152,15 +152,13 @@ class GetBalanceController extends Controller
     private function generateExpectedSign(SlotWebhookRequest $request): string
     {
         // Retrieve the secret key from Laravel's configuration
-        // Signature check
         $secretKey = Config::get('seamless_key.secret_key');
-        $expectedSign = md5(
-            $request->operator_code .
-            $request->request_time .
-            'getbalance' .
-            $secretKey
-        );
-        $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
+
+        // Define $signString by concatenating the components using getter methods for consistency
+        $signString = $request->getOperatorCode()
+            . $request->getRequestTime()
+            . $request->getMethodName() // Use the dynamic method name from the request
+            . $secretKey;
 
         // Log the components used for signature generation (masking the full secret key)
         Log::debug('Generating signature for verification', [
