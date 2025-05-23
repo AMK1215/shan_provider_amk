@@ -29,6 +29,7 @@ class User extends Authenticatable implements Wallet
         'profile',
         'email',
         'password',
+        'game_provider_password',
         'profile',
         'phone',
         'balance',
@@ -89,6 +90,37 @@ class User extends Authenticatable implements Wallet
     public static function adminUser()
     {
         return self::where('type', UserType::SystemWallet)->first();
+    }
+
+     /**
+     * Get the game provider password for this user.
+     *
+     * @return string|null
+     */
+    public function getGameProviderPassword(): ?string
+    {
+        if ($this->game_provider_password) {
+            try {
+                return Crypt::decryptString($this->game_provider_password);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // Log the error or handle it as appropriate (e.g., return null to regenerate)
+                \Log::error('Failed to decrypt game_provider_password for user ' . $this->id, ['error' => $e->getMessage()]);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Set the game provider password for this user.
+     *
+     * @param string $password
+     * @return void
+     */
+    public function setGameProviderPassword(string $password): void
+    {
+        $this->game_provider_password = Crypt::encryptString($password);
+        $this->save(); // Save the user model to persist the password
     }
     
 }
