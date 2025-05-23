@@ -142,21 +142,15 @@ class LaunchGameController extends Controller
         // Generate a secure token for this game session
         $gameToken = $this->generateGameToken($user);
         $game_code = null;
+        $password = $user->password;
 
-        // Since 'sign' is no longer validated as a required field,
-        // we'll check if it's provided and then verify it.
-        // If 'sign' is not provided, this check will be skipped.
-        // If you still want to enforce 'sign' but not require it in validation,
-        // you would use $request->has('sign') and then $request->input('sign').
-        // For now, assuming you truly don't want to check it from the request.
-
-        // Prepare the payload for the external game launch API request
-        // Ensure field names match the external API's expected PascalCase or snake_case
+        
         $payload = [
             'operator_code' => $agentCode,
             'member_account' => $user->user_name,
-            'password' => $gameToken, // Using secure token instead of actual password
-            'nickname' => $request->input('nickname') ?? $user->name, // Access nickname directly from request or fallback
+           // 'password' => $gameToken, // Using secure token instead of actual password
+           'password' => $password,
+           'nickname' => $request->input('nickname') ?? $user->name, // Access nickname directly from request or fallback
             'currency' => $apiCurrency,
             'game_code' => $validatedData['game_code'],
             'product_code' => $validatedData['product_code'],
