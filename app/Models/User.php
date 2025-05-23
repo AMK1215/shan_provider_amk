@@ -13,6 +13,7 @@ use Bavix\Wallet\Traits\HasWalletFloat;
 use App\Models\Admin\Role;
 use App\Models\Admin\Permission;
 use App\Enums\UserType;
+use Illuminate\Support\Facades\Crypt;
 
 class User extends Authenticatable implements Wallet
 {
