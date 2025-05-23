@@ -215,8 +215,10 @@ class DepositController extends Controller
                             'member_account' => $memberAccount,
                             'product_code' => $productCode,
                             // Apply number_format for consistency with GetBalanceController
-                            'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
-                            'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                           // 'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                            //'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                            'before_balance' => round($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4),
+                            'balance' => round($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'code' => SeamlessWalletCode::Success->value,
                             'message' => '',
                         ];
@@ -258,7 +260,9 @@ class DepositController extends Controller
     private function buildErrorResponse(string $memberAccount, string $productCode, float $balance, SeamlessWalletCode $code, string $message, string $currency): array
     {
         // Apply number_format here as well for consistency
-        $formattedBalance = number_format($balance / $this->getCurrencyValue($currency), 4, '.', '');
+        //$formattedBalance = number_format($balance / $this->getCurrencyValue($currency), 4, '.', '');
+        $formattedBalance = round($balance / $this->getCurrencyValue($currency), 4);
+
         return [
             'member_account' => $memberAccount,
             'product_code' => $productCode,

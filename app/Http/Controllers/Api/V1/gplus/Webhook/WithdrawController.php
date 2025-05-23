@@ -334,16 +334,27 @@ class WithdrawController extends Controller
     /**
      * Formats the balance based on the currency.
      */
-    private function formatBalance(float $balance, string $currency): string
-    {
-        if (in_array($currency, $this->specialCurrencies)) {
-            // Apply 1:1000 conversion and round to 4 decimal places
-            return number_format($balance / 1000, 4, '.', '');
-        } else {
-            // Round to 2 decimal places
-            return number_format($balance, 2, '.', '');
-        }
+    private function formatBalance(float $balance, string $currency): float
+{
+    if (in_array($currency, $this->specialCurrencies)) {
+        // Apply 1:1000 conversion and round to 4 decimal places
+        return round($balance / 1000, 4);
+    } else {
+        // Round to 2 decimal places
+        return round($balance, 2);
     }
+}
+
+    // private function formatBalance(float $balance, string $currency): string
+    // {
+    //     if (in_array($currency, $this->specialCurrencies)) {
+    //         // Apply 1:1000 conversion and round to 4 decimal places
+    //         return number_format($balance / 1000, 4, '.', '');
+    //     } else {
+    //         // Round to 2 decimal places
+    //         return number_format($balance, 2, '.', '');
+    //     }
+    // }
 
     /**
      * Logs the transaction attempt in the place_bets table using updateOrCreate.
