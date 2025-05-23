@@ -363,7 +363,7 @@ class DepositController extends Controller
                 'game_code'         => $transactionRequest['game_code'] ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
-                //'error_message'     => $errorMessage, // Store the error message
+                
             ]
         );
     }
