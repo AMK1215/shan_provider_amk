@@ -142,7 +142,7 @@ class LaunchGameController extends Controller
         // Generate a secure token for this game session
         $gameToken = $this->generateGameToken($user);
         $game_code = null;
-        $password = abcd1234;
+        $password = "abcd1234";
 
         
         $payload = [
