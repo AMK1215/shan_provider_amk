@@ -66,14 +66,17 @@ class GetBalanceController extends Controller
             if ($user && $user->wallet) {
                 $balance = $user->wallet->balanceFloat;
                 if (in_array($request->currency, $specialCurrencies)) {
-                    $balance = number_format($balance / 1000, 4, '.', '');
+                    //$balance = number_format($balance / 1000, 4, '.', '');
+                    $balance = round($balance, 4);
                 } else {
-                    $balance = number_format($balance, 2, '.', '');
+                   // $balance = number_format($balance, 2, '.', '');
+                   $balance = round($balance, 2);
                 }
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                    'balance' => $balance,
+                   // 'balance' => $balance,
+                   'balance' => (float)$balance,
                     'code' => \App\Enums\SeamlessWalletCode::Success->value,
                     'message' => 'Success',
                 ];
