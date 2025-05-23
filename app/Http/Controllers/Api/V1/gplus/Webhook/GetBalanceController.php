@@ -61,22 +61,19 @@ class GetBalanceController extends Controller
                 continue;
             }
 
-            //$user = User::where('user_name', $req['member_account'])->first();
             $user = User::with('wallet')->where('user_name', $req['member_account'])->first();
             if ($user && $user->wallet) {
                 $balance = $user->wallet->balanceFloat;
                 if (in_array($request->currency, $specialCurrencies)) {
-                    //$balance = number_format($balance / 1000, 4, '.', '');
+                    $balance = $balance / 1000; // Apply 1:1000 conversion here
                     $balance = round($balance, 4);
                 } else {
-                   // $balance = number_format($balance, 2, '.', '');
                    $balance = round($balance, 2);
                 }
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                   // 'balance' => $balance,
-                   'balance' => (float)$balance,
+                    'balance' => (float)$balance,
                     'code' => \App\Enums\SeamlessWalletCode::Success->value,
                     'message' => 'Success',
                 ];
@@ -93,4 +90,4 @@ class GetBalanceController extends Controller
 
         return ApiResponseService::success($results);
     }
-} 
+}
