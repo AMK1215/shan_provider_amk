@@ -19,7 +19,6 @@ class WithdrawController extends Controller
 {
     protected $walletService;
     private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
-    private array $specialCurrencies = ['IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2']; // Define special currencies
 
     public function __construct(WalletService $walletService)
     {
@@ -69,14 +68,15 @@ class WithdrawController extends Controller
             // Handle batch-level errors (invalid signature or currency)
             if (!$isValidSign) {
                 Log::warning('Invalid signature for batch', ['member_account' => $memberAccount, 'provided' => $request->sign, 'expected' => $expectedSign]);
-                $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InvalidSignature, 'Invalid signature', $request->currency);
+                $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InvalidSignature, 'Invalid signature');
                 // We don't log to place_bets here as it's a request-level signature issue, not a transaction issue.
                 continue;
             }
 
             if (!$isValidCurrency) {
                 Log::warning('Invalid currency for batch', ['member_account' => $memberAccount, 'currency' => $request->currency]);
-                $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InternalServerError, 'Invalid Currency', $request->currency);
+                $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InternalServerError, 'Invalid Currency');
+                // We don't log to place_bets here as it's a request-level currency issue.
                 continue;
             }
 
@@ -87,8 +87,8 @@ class WithdrawController extends Controller
                 $responseData[] = [
                     'member_account' => $memberAccount,
                     'product_code' => $productCode,
-                    'before_balance' => $this->formatBalance(0.00, $request->currency),
-                    'balance' => $this->formatBalance(0.00, $request->currency),
+                    'before_balance' => number_format(0.00, 2, '.', ''),
+                    'balance' => number_format(0.00, 2, '.', ''),
                     'code' => SeamlessWalletCode::MemberNotExist->value,
                     'message' => 'Member not found',
                 ];
@@ -109,8 +109,8 @@ class WithdrawController extends Controller
                     $responseData[] = [
                         'member_account' => $memberAccount,
                         'product_code' => $productCode,
-                        'before_balance' => $this->formatBalance($user->balanceFloat, $request->currency),
-                        'balance' => $this->formatBalance($user->balanceFloat, $request->currency),
+                        'before_balance' => number_format($user->balanceFloat, 2, '.', ''),
+                        'balance' => number_format($user->balanceFloat, 2, '.', ''),
                         'code' => SeamlessWalletCode::InternalServerError->value,
                         'message' => 'Missing transaction data (id, action, or amount)',
                     ];
@@ -142,7 +142,7 @@ class WithdrawController extends Controller
                 if ($duplicateInPlaceBets || $duplicateInWalletTransactions) {
                     Log::warning('Duplicate transaction ID detected for withdraw/bet', ['tx_id' => $transactionId, 'member_account' => $memberAccount]);
                     $this->logPlaceBet($batchRequest, $request, $tx, 'duplicate', $request->request_time, 'Duplicate transaction'); // Log duplicate attempt
-                    $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::DuplicateTransaction, 'Duplicate transaction', $request->currency);
+                    $responseData[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::DuplicateTransaction, 'Duplicate transaction');
                     continue; // Skip processing this duplicate transaction
                 }
 
@@ -199,8 +199,8 @@ class WithdrawController extends Controller
                 $responseData[] = [
                     'member_account' => $memberAccount,
                     'product_code' => $productCode,
-                    'before_balance' => $this->formatBalance($currentBalance, $request->currency),
-                    'balance' => $this->formatBalance($newBalance, $request->currency),
+                    'before_balance' => number_format($currentBalance, 2, '.', ''),
+                    'balance' => number_format($newBalance, 2, '.', ''),
                     'code' => $transactionCode,
                     'message' => $transactionMessage,
                 ];
@@ -217,30 +217,16 @@ class WithdrawController extends Controller
     /**
      * Helper to build a consistent error response.
      */
-    private function buildErrorResponse(string $memberAccount, string $productCode, float $balance, SeamlessWalletCode $code, string $message, string $currency): array
+    private function buildErrorResponse(string $memberAccount, string $productCode, float $balance, SeamlessWalletCode $code, string $message): array
     {
         return [
             'member_account' => $memberAccount,
             'product_code' => $productCode,
-            'before_balance' => $this->formatBalance($balance, $currency),
-            'balance' => $this->formatBalance($balance, $currency),
+            'before_balance' => number_format($balance, 2, '.', ''),
+            'balance' => number_format($balance, 2, '.', ''),
             'code' => $code->value,
             'message' => $message,
         ];
-    }
-
-    /**
-     * Formats the balance based on the currency.
-     */
-    private function formatBalance(float $balance, string $currency): string
-    {
-        if (in_array($currency, $this->specialCurrencies)) {
-            // Apply 1:1000 conversion and round to 4 decimal places
-            return number_format($balance / 1000, 4, '.', '');
-        } else {
-            // Round to 2 decimal places
-            return number_format($balance, 2, '.', '');
-        }
     }
 
     /**
@@ -268,30 +254,30 @@ class WithdrawController extends Controller
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Key for finding existing record
             [
                 // Batch-level data (from the main $request and $batchRequest)
-                'member_account'          => $batchRequest['member_account'] ?? '',
-                'product_code'            => $batchRequest['product_code'] ?? 0,
-                'game_type'               => $batchRequest['game_type'] ?? '',
-                'operator_code'           => $fullRequest->operator_code,
-                'request_time'            => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
-                'sign'                    => $fullRequest->sign,
-                'currency'                => $fullRequest->currency,
+                'member_account'        => $batchRequest['member_account'] ?? '',
+                'product_code'          => $batchRequest['product_code'] ?? 0,
+                'game_type'             => $batchRequest['game_type'] ?? '',
+                'operator_code'         => $fullRequest->operator_code,
+                'request_time'          => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
+                'sign'                  => $fullRequest->sign,
+                'currency'              => $fullRequest->currency,
 
                 // Transaction-level data (from $transactionRequest)
-                'action'                  => $transactionRequest['action'] ?? '',
-                'amount'                  => $transactionRequest['amount'] ?? 0,
-                'valid_bet_amount'        => $transactionRequest['valid_bet_amount'] ?? null,
-                'bet_amount'              => $transactionRequest['bet_amount'] ?? null,
-                'prize_amount'            => $transactionRequest['prize_amount'] ?? null,
-                'tip_amount'              => $transactionRequest['tip_amount'] ?? null,
-                'wager_code'              => $transactionRequest['wager_code'] ?? null,
-                'wager_status'            => $transactionRequest['wager_status'] ?? null,
-                'round_id'                => $transactionRequest['round_id'] ?? null,
-                'payload'                 => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
-                'settle_at'               => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
-                'created_at_provider'     => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null, // Assuming this field exists and is needed
-                'game_code'               => $transactionRequest['game_code'] ?? null,
-                'channel_code'            => $transactionRequest['channel_code'] ?? null,
-                'status'                  => $status, // 'completed', 'failed', 'duplicate', etc.
+                'action'                => $transactionRequest['action'] ?? '',
+                'amount'                => $transactionRequest['amount'] ?? 0,
+                'valid_bet_amount'      => $transactionRequest['valid_bet_amount'] ?? null,
+                'bet_amount'            => $transactionRequest['bet_amount'] ?? null,
+                'prize_amount'          => $transactionRequest['prize_amount'] ?? null,
+                'tip_amount'            => $transactionRequest['tip_amount'] ?? null,
+                'wager_code'            => $transactionRequest['wager_code'] ?? null,
+                'wager_status'          => $transactionRequest['wager_status'] ?? null,
+                'round_id'              => $transactionRequest['round_id'] ?? null,
+                'payload'               => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
+                'settle_at'             => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
+                'created_at_provider'   => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null, // Assuming this field exists and is needed
+                'game_code'             => $transactionRequest['game_code'] ?? null,
+                'channel_code'          => $transactionRequest['channel_code'] ?? null,
+                'status'                => $status, // 'completed', 'failed', 'duplicate', etc.
                 //'error_message'         => $errorMessage, // Store the error message
             ]
         );
