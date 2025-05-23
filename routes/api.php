@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
-use App\Http\Controllers\Api\V1\Webhook\GetBalanceController;
+use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
