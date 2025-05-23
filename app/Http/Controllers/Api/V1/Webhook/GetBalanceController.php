@@ -155,10 +155,12 @@ class GetBalanceController extends Controller
         $secretKey = Config::get('seamless_key.secret_key');
 
         // Define $signString by concatenating the components using getter methods for consistency
-        $signString = $request->getOperatorCode()
-            . $request->getRequestTime()
-            . $request->getMethodName() // Use the dynamic method name from the request
-            . $secretKey;
+        $signString = md5(
+            $request->operator_code .
+            $request->request_time .
+            'getbalance' .
+            $secretKey
+        );
 
         // Log the components used for signature generation (masking the full secret key)
         Log::debug('Generating signature for verification', [
