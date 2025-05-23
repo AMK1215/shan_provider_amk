@@ -50,7 +50,7 @@ class LaunchGameController extends Controller
 
         try {
             $validatedData = $request->validate([
-                //'game_code' => 'required|string',
+                'game_code' => 'required|string',
                 'product_code' => 'required|integer',
                 'game_type' => 'required|string',
             ]);
@@ -89,7 +89,7 @@ class LaunchGameController extends Controller
             $requestTime . $secretKey . 'launchgame' . $agentCode
         );
 
-        $game_code = 'null';
+       // $game_code = 'null';
 
         $payload = [
             'operator_code' => $agentCode,
@@ -97,7 +97,7 @@ class LaunchGameController extends Controller
             'password' => $gameProviderPassword, // <-- Use the consistent password stored in your DB
             'nickname' => $request->input('nickname') ?? $user->name,
             'currency' => $apiCurrency,
-            //'game_code' => $game_code,
+            'game_code' => $validatedData['game_code'],
             'product_code' => $validatedData['product_code'],
             'game_type' => $validatedData['game_type'],
             'language_code' => self::LANGUAGE_CODE,
