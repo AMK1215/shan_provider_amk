@@ -89,13 +89,15 @@ class LaunchGameController extends Controller
             $requestTime . $secretKey . 'launchgame' . $agentCode
         );
 
+        $game_code = 'null';
+
         $payload = [
             'operator_code' => $agentCode,
             'member_account' => $user->user_name,
             'password' => $gameProviderPassword, // <-- Use the consistent password stored in your DB
             'nickname' => $request->input('nickname') ?? $user->name,
             'currency' => $apiCurrency,
-            'game_code' => 'null',
+            //'game_code' => $game_code,
             'product_code' => $validatedData['product_code'],
             'game_type' => $validatedData['game_type'],
             'language_code' => self::LANGUAGE_CODE,
