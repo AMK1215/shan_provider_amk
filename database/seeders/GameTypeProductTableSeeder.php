@@ -103,6 +103,6 @@ class GameTypeProductTableSeeder extends Seeder
             ['product_id' => 87, 'game_type_id' => 12, 'image' => 'Astar', 'rate' => 1.0000],
         ];
 
-        DB::table('game_type_products')->insert($data);
+        DB::table('game_type_product')->insert($data);
     }
 }
