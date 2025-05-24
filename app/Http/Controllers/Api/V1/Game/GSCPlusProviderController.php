@@ -43,9 +43,9 @@ class GSCPlusProviderController extends Controller
     public function providers($type)
     {
         $providers = GameType::with(['products' => function ($query) {
-            $query->where('status', 1);
+            $query->where('game_list_status', 1);
             $query->orderBy('order', 'asc');
-        }])->where('name', $type)->where('game_list_status', 1)->first();
+        }])->where('name', $type)->where('status', 1)->first();
         if ($providers) {
             return $this->success(new GameProviderResource($providers));
         } else {
