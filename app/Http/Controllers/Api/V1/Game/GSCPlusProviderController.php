@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\Auth;
 
 class GSCPlusProviderController extends Controller
 {
+    use HttpResponses;
+    
     public function gameTypes()
     {
         $types = GameType::with(['products' => function ($query) {
