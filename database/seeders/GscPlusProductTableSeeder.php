@@ -34,7 +34,7 @@ class GscPlusProductTableSeeder extends Seeder
                 'currency' => $product['currency'],
                 'status' => $product['status'],
                 'provider_id' => $product['provider_id'],
-                'product_id' => $product['product_id'],
+                'provider_product_id' => $product['product_id'],
                 'product_code' => $product['product_code'],
                 'product_name' => $product['product_name'],
                 'game_type' => $product['game_type'],

@@ -14,7 +14,7 @@ class Product extends Model
         'currency',
         'status',
         'provider_id',
-        'product_id',
+        'provider_product_id',
         'product_code',
         'product_name',
         'game_type',
