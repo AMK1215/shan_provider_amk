@@ -24,13 +24,24 @@ class Product extends Model
 // }
 
 
-    public function getImgUrlAttribute()
-    {
-        if (isset($this->pivot) && isset($this->pivot->image)) {
-            return asset('assets/img/game_logo/'.$this->pivot->image);
-        }
+    // public function getImgUrlAttribute()
+    // {
+    //     if (isset($this->pivot) && isset($this->pivot->image)) {
+    //         return asset('assets/img/game_logo/'.$this->pivot->image);
+    //     }
 
+    // }
+
+    public function getImgUrlAttribute()
+{
+    if (isset($this->pivot) && !empty($this->pivot->image)) {
+        return asset('assets/img/game_logo/' . $this->pivot->image);
     }
+
+    // Optional: Return a default image if pivot image is missing
+    return asset('assets/img/default.png'); // or null
+}
+
 
     /**
      * Toggle the status between 1 and 0.
