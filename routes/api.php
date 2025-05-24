@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
+use App\Http\Controllers\Api\V1\Home\GSCPlusProviderController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,5 +43,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
+    Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
+
+    // games
+    Route::get('/game_types', [GSCPlusProviderController::class, 'gameTypes']);
+    Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers']);
+    Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
+    Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
 
 });
