@@ -39,5 +39,7 @@ Route::prefix('v1/api/seamless')->group(function () {
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
-});
+    // user api
+    Route::get('user', [AuthController::class, 'getUser']);
 
+});
