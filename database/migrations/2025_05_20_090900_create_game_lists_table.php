@@ -17,12 +17,17 @@ return new class extends Migration
             $table->string('game_name');
             $table->string('game_type');
             $table->string('image_url');
+            $table->unsignedBigInteger('provider_product_id');
+            $table->unsignedBigInteger('game_type_id');
             $table->unsignedBigInteger('product_id');
             $table->integer('product_code');
             $table->string('support_currency');
-            $table->string('status');
+            $table->string('status')->default('1');
             $table->boolean('is_active')->default(true);
             $table->string('provider')->nullable();
+            $table->integer('order')->default(0);
+            $table->string('hot_status')->default('1');
+
             $table->timestamps();
         });
     }
@@ -34,4 +39,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('game_lists');
     }
-}; 
+};
