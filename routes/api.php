@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
-use App\Http\Controllers\Api\V1\Home\GSCPlusProviderController;
+use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 
 /*
 |--------------------------------------------------------------------------
