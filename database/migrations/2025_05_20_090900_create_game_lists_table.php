@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->string('provider')->nullable();
             $table->integer('order')->default(0);
-            $table->string('hot_status')->default('1');
+            $table->string('hot_status')->default('0');
 
             $table->timestamps();
         });
