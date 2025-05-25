@@ -146,7 +146,7 @@
         {
             "provider": "WBet",
             "currency": "IDR2",
-            "status": "ACTIVATED",
+            "status": "NOACTIVATED",
             "provider_id": 19,
             "product_id": 64,
             "product_code": 1040,
@@ -179,7 +179,7 @@
         {
             "provider": "AWC",
             "currency": "IDR",
-            "status": "ACTIVATED",
+            "status": "NOACTIVATED",
             "provider_id": 23,
             "product_id": 29,
             "product_code": 1022,
@@ -190,7 +190,7 @@
         {
             "provider": "AWC",
             "currency": "IDR",
-            "status": "ACTIVATED",
+            "status": "NOACTIVATED",
             "provider_id": 23,
             "product_id": 33,
             "product_code": 1033,
