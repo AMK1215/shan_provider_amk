@@ -57,9 +57,9 @@
                                     <th>Bet Amount</th>
                                     <th>Prize Amount</th>
                                     <th>Status</th>
-                                    <th>Settled At</th>
-                                    <th>Created At</th>
-                                    <th>Updated At</th>
+                                    <th>Settled At (Date)</th>
+                                    <th>Created At (Date)</th>
+                                    <th>Updated At (Date)</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
