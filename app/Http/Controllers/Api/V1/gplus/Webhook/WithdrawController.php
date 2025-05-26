@@ -14,6 +14,7 @@ use App\Enums\TransactionName;
 use App\Models\PlaceBet; // Import PlaceBet model
 use Illuminate\Support\Facades\DB; // Import DB facade for transactions
 use Bavix\Wallet\Models\Transaction as WalletTransaction; // Alias for Laravel Wallet's Transaction model
+use App\Models\GameList;
 
 class WithdrawController extends Controller
 {
@@ -269,14 +270,17 @@ class WithdrawController extends Controller
         $settleAtInSeconds = $settleAtTime ? floor($settleAtTime / 1000) : null;
         $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
         $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
-
+        $game_name = GameList::where('game_code', $transactionRequest['game_code'])->first()->game_name;
+        $provider_name = $game_name->provider;
+        $play_game = $game_name->game_name;
 
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Key for finding existing record
             [
                 // Batch-level data (from the main $request and $batchRequest)
                 'member_account'          => $batchRequest['member_account'] ?? '',
-                'product_code'            => $batchRequest['product_code'] ?? 0,
+               // 'product_code'            => $batchRequest['product_code'] ?? 0,
+                'product_code'            => $game_name->product_code,
                 'game_type'               => $batchRequest['game_type'] ?? '',
                 'operator_code'           => $fullRequest->operator_code,
                 'request_time'            => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
@@ -296,7 +300,8 @@ class WithdrawController extends Controller
                 'payload'                 => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
                 'settle_at'               => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider'     => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null, // Assuming this field exists and is needed
-                'game_code'               => $transactionRequest['game_code'] ?? null,
+                //'game_code'               => $transactionRequest['game_code'] ?? null,
+                'game_code'               => $game_name->game_name,
                 'channel_code'            => $transactionRequest['channel_code'] ?? null,
                 'status'                  => $status, // 'completed', 'failed', 'duplicate', etc.
                 'before_balance'          => $beforeBalance,

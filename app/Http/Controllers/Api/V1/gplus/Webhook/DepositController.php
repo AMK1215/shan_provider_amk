@@ -16,6 +16,7 @@ use App\Services\WalletService;
 use App\Enums\TransactionName;
 use App\Models\PlaceBet;
 use Exception; // Import the Exception class for better clarity
+use App\Models\GameList;
 
 class DepositController extends Controller
 {
@@ -366,13 +367,17 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
         $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
         $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
 
+        $game_name = GameList::where('game_code', $transactionRequest['game_code'])->first();
+        $product_code = $game_name->product_code;
+        $game_type = $game_name->game_type;
 
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
             [
                 // Batch-level
                 'member_account'    => $batchRequest['member_account'] ?? '',
-                'product_code'      => $batchRequest['product_code'] ?? 0,
+                //'product_code'      => $batchRequest['product_code'] ?? 0,
+                'product_code'      => $product_code,
                 'game_type'         => $batchRequest['game_type'] ?? '',
                 'operator_code'     => $fullRequest->operator_code,
                 'request_time'      => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
@@ -392,7 +397,8 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 'payload'           => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
                 'settle_at'         => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
-                'game_code'         => $transactionRequest['game_code'] ?? null,
+                //'game_code'         => $transactionRequest['game_code'] ?? null,
+                'game_code'         => $game_name->game_code,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
                 'before_balance'    => $beforeBalance,
