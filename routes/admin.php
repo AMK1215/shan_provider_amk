@@ -17,6 +17,8 @@ use App\Http\Controllers\Admin\TransferLog\TransferLogController;
 use App\Http\Controllers\Admin\WagerListController;
 use App\Http\Controllers\Admin\LocalWagerController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\AgentController;
+use App\Http\Controllers\Admin\SubAccountController;
 
 
 Route::group([
