@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\TransferLog\TransferLogController;
 use App\Http\Controllers\Admin\WagerListController;
+use App\Http\Controllers\Admin\LocalWagerController;
 
 
 Route::group([
@@ -74,5 +75,8 @@ Route::group([
     Route::get('wager-list/export-csv', [WagerListController::class, 'exportCsv'])->name('wager-list.export-csv');
     Route::get('wager-list/{id}', [WagerListController::class, 'show'])->name('wager-list.show');
     Route::get('wager-list/{wager_code}/game-history', [WagerListController::class, 'gameHistory'])->name('wager-list.game-history');
+
+    Route::get('local-wager', [LocalWagerController::class, 'index'])->name('local-wager.index');
+    Route::get('local-wager/{id}', [LocalWagerController::class, 'show'])->name('local-wager.show');
 
 });
