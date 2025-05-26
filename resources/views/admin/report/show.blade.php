@@ -4,7 +4,7 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Player Bet History - {{ $member_account }}</h1>
+                <h1 class="mb-0">Player Bet History - <span class="text-primary">{{ $member_account }}</span></h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -16,50 +16,56 @@
 </section>
 <section class="content">
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <table class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <!-- <th>Player ID</th> -->
-                                    <!-- <th>Agent ID</th> -->
-                                    <th>Provider</th>
-                                    <th>Game</th>
-                                    <!-- <th>Game Type</th> -->
-                                    <th>Bet Amount</th>
-                                    <th>Prize Amount</th>
-                                    <th>Before Balance</th>
-                                    <th>After Balance</th>
-                                    <th>Status</th>
-                                    <th>Created At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($bets as $bet)
-                                <tr>
-                                    <td>{{ $bet->id }}</td>
-                                    <!-- <td>{{ $bet->player_id }}</td> -->
-                                    <!-- <td>{{ $bet->player_agent_id }}</td> -->
-                                    <td>{{ $bet->provider_name }}</td>
-                                    <td>{{ $bet->game_name }}</td>
-                                    <!-- <td>{{ $bet->game_type }}</td> -->
-                                    <td>{{ number_format($bet->bet_amount, 2) }}</td>
-                                    <td>{{ number_format($bet->prize_amount, 2) }}</td>
-                                    <td>{{ number_format($bet->before_balance, 2) }}</td>
-                                    <td>{{ number_format($bet->balance, 2) }}</td>
-                                    <td>{{ $bet->status }}</td>
-                                    <td>{{ $bet->created_at ? $bet->created_at->format('m/d/Y, h:i:s A') : '' }}</td>
-                                </tr>
-                                @empty
-                                <tr><td colspan="10" class="text-center">No data found.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                        <!-- <div>{{ $bets->links() }}</div> -->
-                        <div class="d-flex justify-content-center mt-3">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-11 col-xl-10">
+                <div class="card shadow rounded">
+                    <div class="card-header bg-light border-bottom-0">
+                        <h5 class="mb-0">Bet Details</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <!-- <th>Player ID</th> -->
+                                        <!-- <th>Agent ID</th> -->
+                                        <th>Provider</th>
+                                        <th>Game</th>
+                                        <!-- <th>Game Type</th> -->
+                                        <th>Bet Amount</th>
+                                        <th>Prize Amount</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($bets as $bet)
+                                    <tr>
+                                        <td>{{ $bet->id }}</td>
+                                        <!-- <td>{{ $bet->player_id }}</td> -->
+                                        <!-- <td>{{ $bet->player_agent_id }}</td> -->
+                                        <td>{{ $bet->provider_name }}</td>
+                                        <td>{{ $bet->game_name }}</td>
+                                        <!-- <td>{{ $bet->game_type }}</td> -->
+                                        <td class="text-right text-success">{{ number_format($bet->bet_amount, 2) }}</td>
+                                        <td class="text-right text-info">{{ number_format($bet->prize_amount, 2) }}</td>
+                                        <td>{{ number_format($bet->before_balance, 2) }}</td>
+                                        <td>{{ number_format($bet->balance, 2) }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ $bet->status === 'SETTLED' ? 'success' : 'secondary' }}">
+                                                {{ $bet->status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $bet->created_at ? $bet->created_at->format('m/d/Y, h:i:s A') : '' }}</td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="10" class="text-center">No data found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-center my-4">
                             {{ $bets->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
