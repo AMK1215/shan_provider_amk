@@ -48,7 +48,7 @@
                                     <td>{{ number_format($row->total_win, 2) }}</td>
                                     <td>{{ number_format($row->total_lose, 2) }}</td>
                                     <td>
-                                        <a href="{{ route('report.show', ['member_account' => $row->member_account, 'start_date' => request('start_date'), 'end_date' => request('end_date'), 'status' => request('status')]) }}" 
+                                        <a href="{{ route('admin.report.show', ['member_account' => $row->member_account, 'start_date' => request('start_date'), 'end_date' => request('end_date'), 'status' => request('status')]) }}" 
                                            class="btn btn-sm btn-info">
                                             View Details
                                         </a>

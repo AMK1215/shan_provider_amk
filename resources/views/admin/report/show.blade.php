@@ -8,7 +8,7 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('report.index') }}">Back to Summary</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.report.index') }}">Back to Summary</a></li>
                 </ol>
             </div>
         </div>
@@ -20,16 +20,6 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <form method="get" class="mb-3 form-inline">
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control mx-1" placeholder="Start Date">
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control mx-1" placeholder="End Date">
-                            <select name="status" class="form-control mx-1">
-                                <option value="">All Status</option>
-                                <option value="BET" @if(request('status')=='BET') selected @endif>BET</option>
-                                <option value="SETTLED" @if(request('status')=='SETTLED') selected @endif>SETTLED</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary mx-1">Filter</button>
-                        </form>
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
@@ -64,7 +54,7 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div>{{ $bets->withQueryString()->links() }}</div>
+                        <div>{{ $bets->links() }}</div>
                     </div>
                 </div>
             </div>
