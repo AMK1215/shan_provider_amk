@@ -72,5 +72,6 @@ Route::group([
     Route::get('wager-list', [WagerListController::class, 'index'])->name('wager-list');
     Route::get('wager-list/fetch', [WagerListController::class, 'fetch'])->name('wager-list.fetch');
     Route::get('wager-list/export-csv', [WagerListController::class, 'exportCsv'])->name('wager-list.export-csv');
+    Route::get('wager-list/{id}', [WagerListController::class, 'show'])->name('wager-list.show');
 
 });

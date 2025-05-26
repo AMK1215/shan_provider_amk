@@ -107,4 +107,25 @@ class WagerListController extends Controller
             fclose($handle);
         }, 200, $headers);
     }
+
+    public function show($id)
+    {
+        $operator_code = config('seamless_key.agent_code');
+        $secret_key = config('seamless_key.secret_key');
+        $api_url = config('seamless_key.api_url');
+        $request_time = now()->timestamp;
+        $sign = md5($request_time . $secret_key . 'getwager' . $operator_code);
+
+        $params = [
+            'operator_code' => $operator_code,
+            'sign' => $sign,
+            'request_time' => $request_time,
+        ];
+
+        $response = Http::get($api_url . "/api/operators/wagers/{$id}", $params);
+        $data = $response->json();
+        $wager = $data['wager'] ?? null;
+
+        return view('admin.wager_list.wager', compact('wager'));
+    }
 } 

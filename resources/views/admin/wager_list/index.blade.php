@@ -60,6 +60,7 @@
                                     <th>Settled At (Date)</th>
                                     <th>Created At (Date)</th>
                                     <th>Updated At (Date)</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -123,6 +124,7 @@ function fetchWagers(page = 1) {
                         <td>${formatDate(wager.settled_at)}</td>
                         <td>${formatDate(wager.created_at)}</td>
                         <td>${formatDate(wager.updated_at)}</td>
+                        <td><a href='${wager.id ? `/admin/wager-list/${wager.id}` : '#'}' class='btn btn-sm btn-info' target='_blank'>View</a></td>
                     </tr>`;
                 });
             }
