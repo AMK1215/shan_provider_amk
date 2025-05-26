@@ -280,7 +280,7 @@ class WithdrawController extends Controller
                 // Batch-level data (from the main $request and $batchRequest)
                 'member_account'          => $batchRequest['member_account'] ?? '',
                // 'product_code'            => $batchRequest['product_code'] ?? 0,
-                'product_code'            => $game_name->product_code,
+                'product_code'            => $game_name->product_code ?? null,
                 'game_type'               => $batchRequest['game_type'] ?? '',
                 'operator_code'           => $fullRequest->operator_code,
                 'request_time'            => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
@@ -301,7 +301,7 @@ class WithdrawController extends Controller
                 'settle_at'               => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider'     => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null, // Assuming this field exists and is needed
                 //'game_code'               => $transactionRequest['game_code'] ?? null,
-                'game_code'               => $game_name->game_name,
+                'game_code'               => $game_name->game_name ?? null,
                 'channel_code'            => $transactionRequest['channel_code'] ?? null,
                 'status'                  => $status, // 'completed', 'failed', 'duplicate', etc.
                 'before_balance'          => $beforeBalance,

@@ -377,7 +377,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 // Batch-level
                 'member_account'    => $batchRequest['member_account'] ?? '',
                 //'product_code'      => $batchRequest['product_code'] ?? 0,
-                'product_code'      => $product_code,
+                'product_code'      => $product_code ?? null,
                 'game_type'         => $batchRequest['game_type'] ?? '',
                 'operator_code'     => $fullRequest->operator_code,
                 'request_time'      => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
@@ -398,7 +398,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 'settle_at'         => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
                 //'game_code'         => $transactionRequest['game_code'] ?? null,
-                'game_code'         => $game_name->game_code,
+                'game_code'         => $game_name->game_name ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
                 'before_balance'    => $beforeBalance,
