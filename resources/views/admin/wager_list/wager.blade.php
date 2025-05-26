@@ -48,7 +48,7 @@
                         <div class="mb-3">
                             @php $wagerCode = $wager['code'] ?? $wager['wager_code'] ?? null; @endphp
                             @if($wagerCode)
-                                <a href="{{ route('wager-list.game-history', ['wager_code' => $wagerCode]) }}" class="btn btn-primary" target="_blank">View Game History</a>
+                                <a href="{{ route('admin.wager-list.game-history', ['wager_code' => $wagerCode]) }}" class="btn btn-primary" target="_blank">View Game History</a>
                             @endif
                         </div>
                         @else
