@@ -34,39 +34,9 @@ class ReportController extends Controller
 
     public function getReportDetails(Request $request, $member_account)
     {
-        $user = Auth::user();
         $player = User::where('user_name', $member_account)->first();
         if (!$player) {
             abort(404, 'Player not found');
-        }
-
-        // Authorization logic (mirroring the show method)
-        if ($user->user_type === UserType::Owner->value) {
-            // Owner: see all
-        } elseif ($user->user_type === UserType::Master->value) {
-            $agentIds = User::where('agent_id', $user->id)->pluck('id');
-            $subAgentIds = User::whereIn('agent_id', $agentIds)->pluck('id');
-            $playerIds = User::whereIn('agent_id', $subAgentIds)->pluck('id');
-            if (!$playerIds->contains($player->id)) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } elseif ($user->user_type === UserType::Agent->value) {
-            $subAgentIds = User::where('agent_id', $user->id)->pluck('id');
-            $playerIds = User::whereIn('agent_id', $subAgentIds)->pluck('id');
-            if (!$playerIds->contains($player->id)) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } elseif ($user->user_type === UserType::SubAgent->value) {
-            $playerIds = User::where('agent_id', $user->id)->pluck('id');
-            if (!$playerIds->contains($player->id)) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } elseif ($user->user_type === UserType::Player->value) {
-            if ($user->id !== $player->id) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } else {
-            abort(403, 'Unauthorized access');
         }
 
         $details = $this->getPlayerDetails($member_account, $request);
@@ -126,48 +96,12 @@ class ReportController extends Controller
 
     public function show(Request $request, $member_account)
     {
-        $user = Auth::user();
         $query = PlaceBet::query()->where('member_account', $member_account);
 
         // Get the player user record
         $player = User::where('user_name', $member_account)->first();
         if (!$player) {
             abort(404, 'Player not found');
-        }
-
-        if ($user->user_type === UserType::Owner->value) {
-            // Owner: see all
-        } elseif ($user->user_type === UserType::Master->value) {
-            // Master: see bets for players under their agents
-            $agentIds = User::where('agent_id', $user->id)->pluck('id');
-            $subAgentIds = User::whereIn('agent_id', $agentIds)->pluck('id');
-            $playerIds = User::whereIn('agent_id', $subAgentIds)->pluck('id');
-            
-            if (!$playerIds->contains($player->id)) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } elseif ($user->user_type === UserType::Agent->value) {
-            // Agent: see bets for players under their sub-agents
-            $subAgentIds = User::where('agent_id', $user->id)->pluck('id');
-            $playerIds = User::whereIn('agent_id', $subAgentIds)->pluck('id');
-            
-            if (!$playerIds->contains($player->id)) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } elseif ($user->user_type === UserType::SubAgent->value) {
-            // SubAgent: see bets only for their direct players
-            $playerIds = User::where('agent_id', $user->id)->pluck('id');
-            
-            if (!$playerIds->contains($player->id)) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } elseif ($user->user_type === UserType::Player->value) {
-            // Player: see only their own bets
-            if ($user->id !== $player->id) {
-                abort(403, 'Unauthorized access to player data');
-            }
-        } else {
-            abort(403, 'Unauthorized access');
         }
 
         $bets = $query->orderByDesc('created_at')->paginate(50);
