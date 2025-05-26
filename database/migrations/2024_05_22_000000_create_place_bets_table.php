@@ -11,6 +11,8 @@ return new class extends Migration {
             $table->bigIncrements('id');
              // Batch-level data
              $table->string('member_account');
+             $table->unsignedBigInteger('player_id')->nullable();
+             $table->unsignedBigInteger('player_agent_id')->nullable();
              $table->unsignedBigInteger('product_code');
             $table->string('provider_name')->nullable();
              $table->string('game_type');

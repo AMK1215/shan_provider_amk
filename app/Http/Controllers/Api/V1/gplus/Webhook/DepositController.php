@@ -372,12 +372,15 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
         $provider_name = GameList::where('product_code', $batchRequest['product_code'])->value('provider');
         $game_name = GameList::where('game_code', $transactionRequest['game_code'])->value('game_name');
         
-
+        $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
+        $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
             [
                 // Batch-level
                 'member_account'    => $batchRequest['member_account'] ?? '',
+                'player_id' => $player_id,
+                'player_agent_id' => $player_agent_id,
                 'product_code'      => $batchRequest['product_code'] ?? 0,
                 'provider_name' => $provider_name ?? $batchRequest['product_code'] ?? null,
                 'game_type'         => $batchRequest['game_type'] ?? '',

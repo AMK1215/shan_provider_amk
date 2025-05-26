@@ -14,7 +14,7 @@ use App\Models\Admin\Role;
 use App\Models\Admin\Permission;
 use App\Enums\UserType;
 use Illuminate\Support\Facades\Crypt;
-
+use App\Models\PlaceBet;
 class User extends Authenticatable implements Wallet
 {
     use HasApiTokens, HasFactory, Notifiable, HasWalletFloat;
@@ -123,5 +123,12 @@ class User extends Authenticatable implements Wallet
         $this->game_provider_password = Crypt::encryptString($password);
         $this->save(); // Save the user model to persist the password
     }
+
+    // User.php
+public function placeBets()
+{
+    return $this->hasMany(PlaceBet::class, 'member_account', 'user_name');
+}
+
     
 }
