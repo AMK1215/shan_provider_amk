@@ -34,6 +34,41 @@ class ReportController extends Controller
 
     public function getReportDetails(Request $request, $member_account)
     {
+        $user = Auth::user();
+        $player = User::where('user_name', $member_account)->first();
+        if (!$player) {
+            abort(404, 'Player not found');
+        }
+
+        // Authorization logic (mirroring the show method)
+        if ($user->user_type === UserType::Owner->value) {
+            // Owner: see all
+        } elseif ($user->user_type === UserType::Master->value) {
+            $agentIds = User::where('agent_id', $user->id)->pluck('id');
+            $subAgentIds = User::whereIn('agent_id', $agentIds)->pluck('id');
+            $playerIds = User::whereIn('agent_id', $subAgentIds)->pluck('id');
+            if (!$playerIds->contains($player->id)) {
+                abort(403, 'Unauthorized access to player data');
+            }
+        } elseif ($user->user_type === UserType::Agent->value) {
+            $subAgentIds = User::where('agent_id', $user->id)->pluck('id');
+            $playerIds = User::whereIn('agent_id', $subAgentIds)->pluck('id');
+            if (!$playerIds->contains($player->id)) {
+                abort(403, 'Unauthorized access to player data');
+            }
+        } elseif ($user->user_type === UserType::SubAgent->value) {
+            $playerIds = User::where('agent_id', $user->id)->pluck('id');
+            if (!$playerIds->contains($player->id)) {
+                abort(403, 'Unauthorized access to player data');
+            }
+        } elseif ($user->user_type === UserType::Player->value) {
+            if ($user->id !== $player->id) {
+                abort(403, 'Unauthorized access to player data');
+            }
+        } else {
+            abort(403, 'Unauthorized access');
+        }
+
         $details = $this->getPlayerDetails($member_account, $request);
         $productTypes = Product::where('status', 1)->get();
 
