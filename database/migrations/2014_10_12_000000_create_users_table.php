@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('is_changed_password')->default(1);
             $table->unsignedBigInteger('agent_id')->nullable();
             $table->unsignedBigInteger('payment_type_id')->nullable();
-            $table->string('agent_logo')->nullable();
+            $table->string('agent_logo')->default('default.png');
             $table->string('account_name')->nullable();
             $table->string('account_number')->nullable();
             $table->string('line_id')->nullable();

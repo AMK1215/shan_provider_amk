@@ -50,7 +50,14 @@ class ReportController extends Controller
 
         // Player summary aggregates
         $summary = (clone $query)
-            ->selectRaw('member_account, COUNT(*) as stake_count, SUM(bet_amount) as total_stake, SUM(bet_amount) as total_bet, SUM(CASE WHEN prize_amount > 0 THEN prize_amount ELSE 0 END) as total_win, SUM(CASE WHEN prize_amount <= 0 THEN bet_amount ELSE 0 END) as total_lose')
+            ->selectRaw('
+                member_account, 
+                COUNT(*) as stake_count, 
+                COALESCE(SUM(bet_amount), SUM(amount), 0) as total_stake, 
+                COALESCE(SUM(bet_amount), SUM(amount), 0) as total_bet, 
+                COALESCE(SUM(CASE WHEN prize_amount > 0 THEN prize_amount ELSE 0 END), 0) as total_win, 
+                COALESCE(SUM(CASE WHEN prize_amount <= 0 THEN COALESCE(bet_amount, amount) ELSE 0 END), 0) as total_lose
+            ')
             ->groupBy('member_account')
             ->get();
 
