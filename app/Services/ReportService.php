@@ -9,6 +9,9 @@ class ReportService
 {
     public function getPlayerSummary(User $user)
     {
+        $playerUsernames = $this->getDescendantPlayers($user)->pluck('user_name')->toArray();
+dd($playerUsernames); // Add this temporarily to debug
+
         $query = PlaceBet::query();
 
         if ($user->type === UserType::Owner) {
@@ -35,17 +38,18 @@ class ReportService
     }
 
     private function getDescendantPlayers(User $user)
-    {
-        $descendants = collect();
+{
+    $descendants = collect();
 
-        foreach ($user->children as $child) {
-            if ($child->type === UserType::Player) {
-                $descendants->push($child);
-            } else {
-                $descendants = $descendants->merge($this->getDescendantPlayers($child));
-            }
+    foreach ($user->children as $child) {
+        if ($child->type === UserType::Player) {
+            $descendants->push($child);
+        } else {
+            $descendants = $descendants->merge($this->getDescendantPlayers($child));
         }
-
-        return $descendants;
     }
+
+    return $descendants;
+}
+
 }
