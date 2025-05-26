@@ -35,6 +35,8 @@
                                         <!-- <th>Game Type</th> -->
                                         <th>Bet Amount</th>
                                         <th>Prize Amount</th>
+                                        <th>Before Balance</th>
+                                        <th>After Balance</th>
                                         <th>Status</th>
                                         <th>Created At</th>
                                     </tr>
