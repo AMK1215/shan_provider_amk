@@ -24,13 +24,15 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Player ID</th>
-                                    <th>Agent ID</th>
+                                    <!-- <th>Player ID</th> -->
+                                    <!-- <th>Agent ID</th> -->
                                     <th>Provider</th>
                                     <th>Game</th>
-                                    <th>Game Type</th>
+                                    <!-- <th>Game Type</th> -->
                                     <th>Bet Amount</th>
                                     <th>Prize Amount</th>
+                                    <th>Before Balance</th>
+                                    <th>After Balance</th>
                                     <th>Status</th>
                                     <th>Created At</th>
                                 </tr>
@@ -39,13 +41,15 @@
                                 @forelse($bets as $bet)
                                 <tr>
                                     <td>{{ $bet->id }}</td>
-                                    <td>{{ $bet->player_id }}</td>
-                                    <td>{{ $bet->player_agent_id }}</td>
+                                    <!-- <td>{{ $bet->player_id }}</td> -->
+                                    <!-- <td>{{ $bet->player_agent_id }}</td> -->
                                     <td>{{ $bet->provider_name }}</td>
                                     <td>{{ $bet->game_name }}</td>
-                                    <td>{{ $bet->game_type }}</td>
+                                    <!-- <td>{{ $bet->game_type }}</td> -->
                                     <td>{{ number_format($bet->bet_amount, 2) }}</td>
                                     <td>{{ number_format($bet->prize_amount, 2) }}</td>
+                                    <td>{{ number_format($bet->before_balance, 2) }}</td>
+                                    <td>{{ number_format($bet->after_balance, 2) }}</td>
                                     <td>{{ $bet->status }}</td>
                                     <td>{{ $bet->created_at ? $bet->created_at->format('m/d/Y, h:i:s A') : '' }}</td>
                                 </tr>
