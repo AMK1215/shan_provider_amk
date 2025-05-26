@@ -139,3 +139,7 @@ api/operators/wagers?operator_code=E004&sign=xxxxxx&request_time=1
 
         return view('admin.report.show', compact('bets', 'member_account'));
     }
+
+    composer require irazasyed/telegram-bot-sdk
+
+    composer require westacks/telebot-laravel
