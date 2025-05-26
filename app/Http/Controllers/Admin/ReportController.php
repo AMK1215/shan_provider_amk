@@ -8,9 +8,18 @@ use App\Models\PlaceBet;
 use App\Models\User;
 use App\Enums\UserType;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ReportService;
 
 class ReportController extends Controller
 {
+    public function report(Request $request)
+{
+    $user = auth()->user();
+    $summary = app(ReportService::class)->getPlayerSummary($user);
+
+    return view('admin.report.summary', compact('summary'));
+}
+
     public function index(Request $request)
     {
         $user = Auth::user();

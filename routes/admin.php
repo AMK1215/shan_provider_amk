@@ -80,7 +80,7 @@ Route::group([
     Route::get('local-wager', [LocalWagerController::class, 'index'])->name('local-wager.index');
     Route::get('local-wager/{id}', [LocalWagerController::class, 'show'])->name('local-wager.show');
 
-    Route::get('report', [ReportController::class, 'index'])->name('report.index');
+    Route::get('report', [ReportController::class, 'report'])->name('report.index');
     Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.show');
 
 });
