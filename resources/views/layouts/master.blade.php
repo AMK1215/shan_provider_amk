@@ -323,7 +323,7 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
-                            <li class="nav-item menu-open">
+                            <!-- <li class="nav-item menu-open">
                                     <a href="{{ route('admin.wager-list') }}"
                                         class="nav-link {{ Route::current()->getName() == 'admin.wager-list' ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
@@ -331,10 +331,10 @@
                                             Wager List
                                         </p>
                                     </a>
-                                </li>
+                                </li> -->
                                 <li class="nav-item menu-open">
-                                    <a href=""
-                                        class="nav-link">
+                                    <a href="{{ route('admin.report.index') }}"
+                                        class="nav-link {{ Route::current()->getName() == 'admin.report.index' ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>
                                             Win/Lose Report

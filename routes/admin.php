@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\TransferLog\TransferLogController;
 use App\Http\Controllers\Admin\WagerListController;
 use App\Http\Controllers\Admin\LocalWagerController;
+use App\Http\Controllers\Admin\ReportController;
 
 
 Route::group([
@@ -78,5 +79,7 @@ Route::group([
 
     Route::get('local-wager', [LocalWagerController::class, 'index'])->name('local-wager.index');
     Route::get('local-wager/{id}', [LocalWagerController::class, 'show'])->name('local-wager.show');
+
+    Route::get('report', [ReportController::class, 'index'])->name('report.index');
 
 });
