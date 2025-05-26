@@ -55,6 +55,7 @@ Route::group([
     // banner etc end
 
     // master, agent, sub-agent 
+    // master start
     Route::resource('master', MasterController::class);
     Route::get('master-player-list', [MasterController::class, 'MasterPlayerList'])->name('GetMasterPlayerList');
     Route::get('master-cash-in/{id}', [MasterController::class, 'getCashIn'])->name('master.getCashIn');
@@ -66,6 +67,24 @@ Route::group([
     Route::get('master-changepassword/{id}', [MasterController::class, 'getChangePassword'])->name('master.getChangePassword');
     Route::post('master-changepassword/{id}', [MasterController::class, 'makeChangePassword'])->name('master.makeChangePassword');
     Route::get('/master-report/{id}', [MasterController::class, 'MasterReportIndex'])->name('master.report');
+    // master end
+
+    // agent start
+    Route::resource('agent', AgentController::class);
+    Route::get('agent-player-report/{id}', [AgentController::class, 'getPlayerReports'])->name('agent.getPlayerReports');
+    Route::get('agent-cash-in/{id}', [AgentController::class, 'getCashIn'])->name('agent.getCashIn');
+    Route::post('agent-cash-in/{id}', [AgentController::class, 'makeCashIn'])->name('agent.makeCashIn');
+    Route::get('agent/cash-out/{id}', [AgentController::class, 'getCashOut'])->name('agent.getCashOut');
+    Route::post('agent/cash-out/update/{id}', [AgentController::class, 'makeCashOut'])
+        ->name('agent.makeCashOut');
+    Route::put('agent/{id}/ban', [AgentController::class, 'banAgent'])->name('agent.ban');
+    Route::get('agent-changepassword/{id}', [AgentController::class, 'getChangePassword'])->name('agent.getChangePassword');
+    Route::post('agent-changepassword/{id}', [AgentController::class, 'makeChangePassword'])->name('agent.makeChangePassword');
+    // agent end
+
+    // sub-agent start 
+    Route::resource('subacc', SubAccountController::class);
+    // sub-agent end
 
     // master, agent sub-agent end
     Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
