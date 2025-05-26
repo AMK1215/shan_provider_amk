@@ -84,3 +84,7 @@ php artisan migrate:rollback --path=database/migrations/2024_03_10_135549_create
 tail -f /var/www/gsc_plus/storage/logs/laravel.log
 mv app/Http/Controllers/Api/V1/gplus/Webhook/SeamlessWalletController.php app/Http/Controllers/Api/V1/gplus/Webhook/GetBalanceController.php
 GET /api/operators/provider-games?product_code=...&operator_code=...&offset=...&size=...&game_type=...
+
+
+api/operators/wagers?operator_code=E004&sign=xxxxxx&request_time=1
+ 69155100?start=169155100000&end=169155100000

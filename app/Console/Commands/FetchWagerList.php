@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Wager;
+use Illuminate\Support\Facades\Log;
 
 class FetchWagerList extends Command
 {
@@ -20,6 +21,8 @@ class FetchWagerList extends Command
 
         $lastFetch = Cache::get('wager_last_fetch', now()->subMinutes(10)->timestamp * 1000);
         $now = now()->timestamp * 1000;
+        Log::info('lastFetch: ' . $lastFetch);
+        Log::info('now: ' . $now);
 
         $request_time = now()->timestamp;
         $sign = md5($request_time . $secret_key . 'getwagers' . $operator_code);
