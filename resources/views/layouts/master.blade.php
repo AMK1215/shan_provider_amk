@@ -183,8 +183,8 @@
                         @endcan
                         @can('agent_index')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
+                                <a href="{{ route('admin.agent.index') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.agent.index' ? 'active' : '' }}">
                                     <i class="fas fa-users"></i>
                                     <p>
                                         Agent List
