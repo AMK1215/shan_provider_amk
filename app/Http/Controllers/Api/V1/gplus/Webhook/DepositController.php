@@ -223,7 +223,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                             'message' => '',
                         ];
                         $currentBalance = $afterTransactionBalance; // Update current balance for next transaction in batch
-                        $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'completed', $request->request_time); // Log successful PlaceBet
+                        $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'completed', $request->request_time, null, $beforeTransactionBalance, $afterTransactionBalance);
 
                         DB::commit(); // Commit inner transaction
                     } catch (\Exception $e) {
@@ -241,7 +241,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                             $e->getMessage(),
                             $request->currency // Pass currency to buildErrorResponse
                         );
-                        $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, $e->getMessage());
+                        $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, $e->getMessage(), $beforeTransactionBalance ?? null, $afterTransactionBalance ?? null);
                     }
                 }
             } catch (\Throwable $e) {
@@ -356,7 +356,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
      * @param string|null $errorMessage
      * @return void
      */
-    private function logPlaceBet(array $batchRequest, Request $fullRequest, array $transactionRequest, string $status, ?int $requestTime, ?string $errorMessage = null): void
+    private function logPlaceBet(array $batchRequest, Request $fullRequest, array $transactionRequest, string $status, ?int $requestTime, ?string $errorMessage = null, ?float $beforeBalance = null, ?float $afterBalance = null): void
     {
         // Convert milliseconds to seconds if necessary
         $requestTimeInSeconds = $requestTime ? floor($requestTime / 1000) : null;
@@ -395,9 +395,8 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 'game_code'         => $transactionRequest['game_code'] ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
-               // 'before_balance'    => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
-               // 'balance'           => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
-                
+                'before_balance'    => $beforeBalance,
+                'balance'           => $afterBalance,
             ]
         );
     }

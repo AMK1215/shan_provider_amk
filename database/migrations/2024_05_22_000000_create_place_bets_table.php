@@ -35,8 +35,8 @@ return new class extends Migration {
              $table->string('channel_code')->nullable();
              $table->string('status')->default('pending'); // New: To store the status of the transaction from our side
              // Add before_balance and after_balance if you want to explicitly store them here
-            // $table->decimal('before_balance', 20, 4)->nullable();
-            // $table->decimal('balance', 20, 4)->nullable();
+            $table->decimal('before_balance', 20, 4)->nullable();
+            $table->decimal('balance', 20, 4)->nullable();
  
             $table->timestamps();
         });
