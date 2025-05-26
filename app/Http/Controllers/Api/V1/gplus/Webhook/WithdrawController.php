@@ -270,9 +270,10 @@ class WithdrawController extends Controller
         $settleAtInSeconds = $settleAtTime ? floor($settleAtTime / 1000) : null;
         $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
         $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
-        $game_name = GameList::where('game_code', $transactionRequest['game_code'])->first()->game_name;
-        $provider_name = $game_name->provider;
-        $play_game = $game_name->game_name;
+        $provider_name = GameList::where('product_code', $batchRequest['product_code'])->first();
+        $provider_game_name = $provider_name ? $provider_name->provider :$batchRequest['product_code'];
+        $game_name = GameList::where('game_code', $transactionRequest['game_code'])->first();
+        $report_game_name = $game_name ? $game_name->game_name :$transactionRequest['game_code'];
 
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Key for finding existing record
@@ -280,7 +281,7 @@ class WithdrawController extends Controller
                 // Batch-level data (from the main $request and $batchRequest)
                 'member_account'          => $batchRequest['member_account'] ?? '',
                // 'product_code'            => $batchRequest['product_code'] ?? 0,
-                'product_code'            => $game_name->product_code ?? null,
+                'product_code'            => $provider_game_name ?? null,
                 'game_type'               => $batchRequest['game_type'] ?? '',
                 'operator_code'           => $fullRequest->operator_code,
                 'request_time'            => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
@@ -301,7 +302,7 @@ class WithdrawController extends Controller
                 'settle_at'               => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider'     => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null, // Assuming this field exists and is needed
                 //'game_code'               => $transactionRequest['game_code'] ?? null,
-                'game_code'               => $game_name->game_name ?? null,
+                'game_code'               => $report_game_name ?? null,
                 'channel_code'            => $transactionRequest['channel_code'] ?? null,
                 'status'                  => $status, // 'completed', 'failed', 'duplicate', etc.
                 'before_balance'          => $beforeBalance,

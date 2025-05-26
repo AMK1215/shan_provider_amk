@@ -367,9 +367,11 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
         $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
         $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
 
+        $provider_name = GameList::where('product_code', $batchRequest['product_code'])->first();
+        $provider_game_name = $provider_name ? $provider_name->provider :$batchRequest['product_code'];
         $game_name = GameList::where('game_code', $transactionRequest['game_code'])->first();
-        $product_code = $game_name->product_code;
-        $game_type = $game_name->game_type;
+        $report_game_name = $game_name ? $game_name->game_name :$transactionRequest['game_code'];
+        
 
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
@@ -377,7 +379,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 // Batch-level
                 'member_account'    => $batchRequest['member_account'] ?? '',
                 //'product_code'      => $batchRequest['product_code'] ?? 0,
-                'product_code'      => $product_code ?? null,
+                'product_code'      => $provider_game_name ?? null,
                 'game_type'         => $batchRequest['game_type'] ?? '',
                 'operator_code'     => $fullRequest->operator_code,
                 'request_time'      => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
@@ -398,7 +400,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 'settle_at'         => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
                 //'game_code'         => $transactionRequest['game_code'] ?? null,
-                'game_code'         => $game_name->game_name ?? null,
+                'game_code'         => $report_game_name ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
                 'before_balance'    => $beforeBalance,
