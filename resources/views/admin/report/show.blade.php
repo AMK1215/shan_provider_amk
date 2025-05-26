@@ -4,7 +4,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Player Report</h1>
+                <h1>Player Bet History - {{ $member_account }}</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ route('report.index') }}">Back to Summary</a></li>
+                </ol>
             </div>
         </div>
     </div>
@@ -18,7 +23,6 @@
                         <form method="get" class="mb-3 form-inline">
                             <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control mx-1" placeholder="Start Date">
                             <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control mx-1" placeholder="End Date">
-                            <input type="text" name="member_account" value="{{ request('member_account') }}" class="form-control mx-1" placeholder="Member Account">
                             <select name="status" class="form-control mx-1">
                                 <option value="">All Status</option>
                                 <option value="BET" @if(request('status')=='BET') selected @endif>BET</option>
@@ -29,36 +33,38 @@
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th>Player</th>
-                                    <th>Stake Count</th>
-                                    <th>Total Stake</th>
-                                    <th>Total Bet</th>
-                                    <th>Total Win</th>
-                                    <th>Total Lose</th>
-                                    <th>Action</th>
+                                    <th>ID</th>
+                                    <th>Player ID</th>
+                                    <th>Agent ID</th>
+                                    <th>Provider</th>
+                                    <th>Game</th>
+                                    <th>Game Type</th>
+                                    <th>Bet Amount</th>
+                                    <th>Prize Amount</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($summary as $row)
+                                @forelse($bets as $bet)
                                 <tr>
-                                    <td>{{ $row->member_account }}</td>
-                                    <td>{{ $row->stake_count }}</td>
-                                    <td>{{ number_format($row->total_stake, 2) }}</td>
-                                    <td>{{ number_format($row->total_bet, 2) }}</td>
-                                    <td>{{ number_format($row->total_win, 2) }}</td>
-                                    <td>{{ number_format($row->total_lose, 2) }}</td>
-                                    <td>
-                                        <a href="{{ route('report.show', ['member_account' => $row->member_account, 'start_date' => request('start_date'), 'end_date' => request('end_date'), 'status' => request('status')]) }}" 
-                                           class="btn btn-sm btn-info">
-                                            View Details
-                                        </a>
-                                    </td>
+                                    <td>{{ $bet->id }}</td>
+                                    <td>{{ $bet->player_id }}</td>
+                                    <td>{{ $bet->player_agent_id }}</td>
+                                    <td>{{ $bet->provider_name }}</td>
+                                    <td>{{ $bet->game_name }}</td>
+                                    <td>{{ $bet->game_type }}</td>
+                                    <td>{{ number_format($bet->bet_amount, 2) }}</td>
+                                    <td>{{ number_format($bet->prize_amount, 2) }}</td>
+                                    <td>{{ $bet->status }}</td>
+                                    <td>{{ $bet->created_at ? $bet->created_at->format('m/d/Y, h:i:s A') : '' }}</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="7" class="text-center">No data found.</td></tr>
+                                <tr><td colspan="10" class="text-center">No data found.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
+                        <div>{{ $bets->withQueryString()->links() }}</div>
                     </div>
                 </div>
             </div>
