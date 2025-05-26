@@ -19,7 +19,7 @@ use Exception; // Import the Exception class for better clarity
 
 class DepositController extends Controller
 {
-    private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
     // All possible actions, including those that might be refunds/credits
     private array $depositActions = ['WIN', 'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND', 'CANCEL']; // Added CANCEL
     private array $allowedWagerStatuses = ['SETTLED', 'UNSETTLED', 'PENDING', 'CANCELLED', 'VOID']; // Added VOID
@@ -334,6 +334,17 @@ class DepositController extends Controller
         return in_array($wagerStatus, $this->allowedWagerStatuses);
     }
 
+    private function formatBalance(float $balance, string $currency): float
+{
+    if (in_array($currency, $this->specialCurrencies)) {
+        // Apply 1:1000 conversion and round to 4 decimal places
+        return round($balance / 1000, 4);
+    } else {
+        // Round to 2 decimal places
+        return round($balance, 2);
+    }
+}
+
     /**
      * Logs the transaction attempt in the place_bets table.
      *
@@ -384,6 +395,8 @@ class DepositController extends Controller
                 'game_code'         => $transactionRequest['game_code'] ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
+                'before_balance'    => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
+                'balance'           => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
                 
             ]
         );
