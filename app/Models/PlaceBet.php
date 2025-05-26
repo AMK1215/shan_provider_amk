@@ -16,7 +16,7 @@ class PlaceBet extends Model
         'sign', 'currency', 'transaction_id', 'action', 'amount', 'valid_bet_amount',
         'bet_amount', 'prize_amount', 'tip_amount', 'wager_code', 'wager_status',
         'round_id', 'payload', 'settle_at', 'game_code', 'channel_code', 'status',
-        'before_balance', 'balance',
+        
     ];
 
     protected $casts = [

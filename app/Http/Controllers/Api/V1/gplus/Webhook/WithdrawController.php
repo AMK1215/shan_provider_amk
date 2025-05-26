@@ -298,8 +298,8 @@ class WithdrawController extends Controller
                 'channel_code'            => $transactionRequest['channel_code'] ?? null,
                 'status'                  => $status, // 'completed', 'failed', 'duplicate', etc.
                 //'error_message'         => $errorMessage, // Store the error message
-                'before_balance'          => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
-                'balance'                 => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
+                //'before_balance'          => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
+                //'balance'                 => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
             ]
         );
     }

@@ -395,8 +395,8 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 'game_code'         => $transactionRequest['game_code'] ?? null,
                 'channel_code'      => $transactionRequest['channel_code'] ?? null,
                 'status'            => $status,
-                'before_balance'    => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
-                'balance'           => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
+               // 'before_balance'    => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
+               // 'balance'           => $this->formatBalance($user->balanceFloat, $fullRequest->currency),
                 
             ]
         );
