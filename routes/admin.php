@@ -81,6 +81,6 @@ Route::group([
     Route::get('local-wager/{id}', [LocalWagerController::class, 'show'])->name('local-wager.show');
 
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
-    Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.show');
+    Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.detail');
 
 });
