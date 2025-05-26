@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PaymentTypeController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\TransferLog\TransferLogController;
+use App\Http\Controllers\Admin\WagerListController;
 
 
 Route::group([
@@ -67,5 +68,8 @@ Route::group([
     // master, agent sub-agent end
     Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
     Route::get('transferlog/{id}', [TransferLogController::class, 'transferLog'])->name('transferLogDetail');
+
+    Route::get('wager-list/fetch', [WagerListController::class, 'fetch'])->name('wager-list.fetch');
+    Route::get('wager-list/export-csv', [WagerListController::class, 'exportCsv'])->name('wager-list.export-csv');
 
 });
