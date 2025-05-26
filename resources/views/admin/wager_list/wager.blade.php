@@ -8,7 +8,7 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('wager-list') }}">Wager List</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.wager-list') }}">Wager List</a></li>
                     <li class="breadcrumb-item active">Wager Detail</li>
                 </ol>
             </div>
