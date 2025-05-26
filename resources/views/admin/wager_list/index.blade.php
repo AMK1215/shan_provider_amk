@@ -46,21 +46,17 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Code</th>
                                     <th>Member Account</th>
                                     <th>Round ID</th>
                                     <th>Currency</th>
                                     <th>Provider ID</th>
                                     <th>Provider Line ID</th>
-                                    <th>Provider Product ID</th>
-                                    <th>Provider Product OID</th>
                                     <th>Game Type</th>
                                     <th>Game Code</th>
                                     <th>Valid Bet Amount</th>
                                     <th>Bet Amount</th>
                                     <th>Prize Amount</th>
                                     <th>Status</th>
-                                    <th>Payload</th>
                                     <th>Settled At</th>
                                     <th>Created At</th>
                                     <th>Updated At</th>
@@ -108,26 +104,22 @@ function fetchWagers(page = 1) {
         success: function(res) {
             let rows = '';
             if (res.wagers.length === 0) {
-                rows = `<tr><td colspan=\"19\" class=\"text-center\">No data found</td></tr>`;
+                rows = `<tr><td colspan=\"15\" class=\"text-center\">No data found</td></tr>`;
             } else {
                 res.wagers.forEach(function(wager) {
                     rows += `<tr>
                         <td>${wager.id}</td>
-                        <td>${wager.code}</td>
                         <td>${wager.member_account}</td>
                         <td>${wager.round_id}</td>
                         <td>${wager.currency}</td>
                         <td>${wager.provider_id}</td>
                         <td>${wager.provider_line_id}</td>
-                        <td>${wager.provider_product_id}</td>
-                        <td>${wager.provider_product_oid}</td>
                         <td>${wager.game_type}</td>
                         <td>${wager.game_code}</td>
                         <td>${wager.valid_bet_amount}</td>
                         <td>${wager.bet_amount}</td>
                         <td>${wager.prize_amount}</td>
                         <td>${wager.status}</td>
-                        <td>${wager.payload ? JSON.stringify(wager.payload) : ''}</td>
                         <td>${formatDate(wager.settled_at)}</td>
                         <td>${formatDate(wager.created_at)}</td>
                         <td>${formatDate(wager.updated_at)}</td>
