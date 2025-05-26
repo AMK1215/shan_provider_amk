@@ -54,7 +54,10 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div>{{ $bets->links() }}</div>
+                        <!-- <div>{{ $bets->links() }}</div> -->
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $bets->links('pagination::bootstrap-4') }}
+                        </div>
                     </div>
                 </div>
             </div>
