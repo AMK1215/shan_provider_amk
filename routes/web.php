@@ -57,6 +57,9 @@ Route::get('sendPoll', [App\Http\Controllers\TelegramBotController::class, 'send
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Route::post('telegram-message-webhook', [App\Http\Controllers\TelegramBotController::class, 'telegram_webhook']);
 
+// TeleBot Webhook Route
+Route::post('telegram/webhook', [WeStacks\TeleBot\Laravel\Controllers\WebhookController::class, 'handle']);
+
 // Webhook Management Routes
 Route::get('telegram/webhook/info', [App\Http\Controllers\TelegramBotController::class, 'getWebhookInfo']);
 Route::get('telegram/webhook/set', [App\Http\Controllers\TelegramBotController::class, 'setWebhook']);
