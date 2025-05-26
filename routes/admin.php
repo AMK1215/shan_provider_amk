@@ -69,6 +69,7 @@ Route::group([
     Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
     Route::get('transferlog/{id}', [TransferLogController::class, 'transferLog'])->name('transferLogDetail');
 
+    Route::get('wager-list', [WagerListController::class, 'index'])->name('wager-list');
     Route::get('wager-list/fetch', [WagerListController::class, 'fetch'])->name('wager-list.fetch');
     Route::get('wager-list/export-csv', [WagerListController::class, 'exportCsv'])->name('wager-list.export-csv');
 

@@ -9,6 +9,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WagerListController extends Controller
 {
+    
+    public function index()
+    {
+        return view('admin.wager_list.index');
+    }
+
     public function fetch(Request $request)
     {
         $operator_code = config('seamless_key.agent_code');
