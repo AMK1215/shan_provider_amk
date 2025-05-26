@@ -49,7 +49,7 @@
                                     <td>{{ number_format($bet->bet_amount, 2) }}</td>
                                     <td>{{ number_format($bet->prize_amount, 2) }}</td>
                                     <td>{{ number_format($bet->before_balance, 2) }}</td>
-                                    <td>{{ number_format($bet->after_balance, 2) }}</td>
+                                    <td>{{ number_format($bet->balance, 2) }}</td>
                                     <td>{{ $bet->status }}</td>
                                     <td>{{ $bet->created_at ? $bet->created_at->format('m/d/Y, h:i:s A') : '' }}</td>
                                 </tr>
