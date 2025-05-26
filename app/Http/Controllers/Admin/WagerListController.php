@@ -128,4 +128,25 @@ class WagerListController extends Controller
 
         return view('admin.wager_list.wager', compact('wager'));
     }
+
+    public function gameHistory($wager_code)
+    {
+        $operator_code = config('seamless_key.agent_code');
+        $secret_key = config('seamless_key.secret_key');
+        $api_url = config('seamless_key.api_url');
+        $request_time = now()->timestamp;
+        $sign = md5($request_time . $secret_key . 'productlist' . $operator_code);
+
+        $params = [
+            'operator_code' => $operator_code,
+            'sign' => $sign,
+            'request_time' => $request_time,
+        ];
+
+        $response = Http::get($api_url . "/api/operators/{$wager_code}/game-history", $params);
+        $data = $response->json();
+        $content = $data['content'] ?? '';
+
+        return view('admin.wager_list.game_history', compact('content'));
+    }
 } 

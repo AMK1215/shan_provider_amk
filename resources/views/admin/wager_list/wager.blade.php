@@ -45,6 +45,12 @@
                                 <tr><th>Updated At</th><td>{{ isset($wager['updated_at']) && $wager['updated_at'] ? date('m/d/Y, h:i:s A', $wager['updated_at']/1000) : '' }}</td></tr>
                             </tbody>
                         </table>
+                        <div class="mb-3">
+                            @php $wagerCode = $wager['code'] ?? $wager['wager_code'] ?? null; @endphp
+                            @if($wagerCode)
+                                <a href="{{ route('wager-list.game-history', ['wager_code' => $wagerCode]) }}" class="btn btn-primary" target="_blank">View Game History</a>
+                            @endif
+                        </div>
                         @else
                         <div class="alert alert-danger">Wager not found.</div>
                         @endif
