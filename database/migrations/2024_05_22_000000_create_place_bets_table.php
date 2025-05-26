@@ -12,6 +12,7 @@ return new class extends Migration {
              // Batch-level data
              $table->string('member_account');
              $table->unsignedBigInteger('product_code');
+            $table->string('provider_name')->nullable();
              $table->string('game_type');
              $table->string('operator_code');
              $table->timestamp('request_time')->nullable();
@@ -32,6 +33,7 @@ return new class extends Migration {
              $table->json('payload')->nullable();
              $table->timestamp('settle_at')->nullable();
              $table->string('game_code')->nullable();
+            $table->string('game_name')->nullable();
              $table->string('channel_code')->nullable();
              $table->string('status')->default('pending'); // New: To store the status of the transaction from our side
              // Add before_balance and after_balance if you want to explicitly store them here
