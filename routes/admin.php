@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\LocalWagerController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AgentController;
 use App\Http\Controllers\Admin\SubAccountController;
+use App\Http\Controllers\Admin\PlayerController;
 
 
 Route::group([
@@ -87,6 +88,14 @@ Route::group([
     // sub-agent start 
     Route::resource('subacc', SubAccountController::class);
     // sub-agent end
+    // report log 
+    Route::get('/master-report/{id}', [MasterController::class, 'MasterReportIndex'])->name('master.report');
+    Route::get('/agent-report/{id}', [AgentController::class, 'agentReportIndex'])->name('agent.report');
+    Route::get('/player-report/{id}', [PlayerController::class, 'playerReportIndex'])->name('player.report');
+
+    //Shan Report
+    Route::get('/shan-report', [ReportController::class, 'shanReportIndex'])->name('shan_report');
+
 
     // master, agent sub-agent end
     Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
