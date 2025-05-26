@@ -34,11 +34,11 @@
                                         <th>Game</th>
                                         <!-- <th>Game Type</th> -->
                                         <th>Bet Amount</th>
-                                        <th>Prize Amount</th>
+                                        <th>Payout</th>
                                         <th>Win/Lose</th>
                                         <th>Before Balance</th>
                                         <th>After Balance</th>
-                                        <th>Status</th>
+                                        <!-- <th>Status</th> -->
                                         <th>Created At</th>
                                     </tr>
                                 </thead>
@@ -61,7 +61,7 @@
                                                 {{ $bet->status }}
                                             </span>
                                         </td>
-                                        <td>{{ $bet->created_at ? $bet->created_at->format('m/d/Y, h:i:s A') : '' }}</td>
+                                        <td>{{ $bet->created_at ? $bet->created_at->timezone('Asia/Yangon')->format('m/d/Y, h:i:s A') : '' }}</td>
                                     </tr>
                                     @empty
                                     <tr><td colspan="10" class="text-center">No data found.</td></tr>
