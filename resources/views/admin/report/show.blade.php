@@ -56,11 +56,11 @@
                                         <td>{{ number_format($bet->prize_amount - $bet->bet_amount, 2) }}</td>
                                         <td>{{ number_format($bet->before_balance, 2) }}</td>
                                         <td>{{ number_format($bet->balance, 2) }}</td>
-                                        <td>
+                                        <!-- <td>
                                             <span class="badge badge-{{ $bet->status === 'SETTLED' ? 'success' : 'secondary' }}">
                                                 {{ $bet->status }}
                                             </span>
-                                        </td>
+                                        </td> -->
                                         <td>{{ $bet->created_at ? $bet->created_at->timezone('Asia/Yangon')->format('m/d/Y, h:i:s A') : '' }}</td>
                                     </tr>
                                     @empty
