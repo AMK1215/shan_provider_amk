@@ -323,6 +323,15 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
+                            <li class="nav-item menu-open">
+                                    <a href="{{ route('admin.wager-list') }}"
+                                        class="nav-link {{ Route::current()->getName() == 'admin.wager-list' ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>
+                                            Wager List
+                                        </p>
+                                    </a>
+                                </li>
                                 <li class="nav-item menu-open">
                                     <a href=""
                                         class="nav-link">
