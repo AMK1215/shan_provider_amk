@@ -1,5 +1,5 @@
 <?php
-
+namespace App\Services;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\PlaceBet;
