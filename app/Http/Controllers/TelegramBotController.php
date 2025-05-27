@@ -107,6 +107,35 @@ class TelegramBotController extends Controller
 // }
 
 
+// public function telegram_webhook(Request $request)
+// {
+//     $data = json_decode($request->getContent());
+
+//     if ($data && isset($data->message)) {
+//         $chat_id = $data->message->chat->id;
+//         $user_message = strtolower(trim($data->message->text ?? ''));
+
+//         $lang = $this->detectLanguage($user_message);
+//         $messages = config("telegram_welcome.$lang");
+
+//         $text = Arr::random($messages); // randomly select one message
+
+//         $this->bot->sendMessage([
+//             'chat_id' => $chat_id,
+//             'text' => $text,
+//             'parse_mode' => 'HTML',
+//             'reply_markup' => [
+//                 'inline_keyboard' => [[
+//                     ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+//                     ['text' => '📺 Watch Demo', 'url' => 'https://youtube.com/@amk-technology?si=LkiWGWlzPN_Z4ILn']
+//                 ]]
+//             ],
+//         ]);
+//     }
+
+//     return response('ok', 200);
+// }
+
 public function telegram_webhook(Request $request)
 {
     $data = json_decode($request->getContent());
@@ -115,11 +144,21 @@ public function telegram_webhook(Request $request)
         $chat_id = $data->message->chat->id;
         $user_message = strtolower(trim($data->message->text ?? ''));
 
+        // Detect language: Burmese or English
         $lang = $this->detectLanguage($user_message);
+
+        // Load messages based on detected language
         $messages = config("telegram_welcome.$lang");
 
-        $text = Arr::random($messages); // randomly select one message
+        // Fallback to English if no messages found
+        if (empty($messages)) {
+            $messages = config("telegram_welcome.en", ["🎰 Welcome to Lucky Million!"]);
+        }
 
+        // Select a random welcome message
+        $text = Arr::random($messages);
+
+        // Send the welcome message with buttons
         $this->bot->sendMessage([
             'chat_id' => $chat_id,
             'text' => $text,
@@ -127,7 +166,7 @@ public function telegram_webhook(Request $request)
             'reply_markup' => [
                 'inline_keyboard' => [[
                     ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
-                    ['text' => '📺 Watch Demo', 'url' => 'https://youtube.com/@amk-technology?si=LkiWGWlzPN_Z4ILn']
+                    ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
                 ]]
             ],
         ]);
@@ -138,6 +177,7 @@ public function telegram_webhook(Request $request)
 
 
 
+    
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // public function sendMessage(Request $request)
     // {
@@ -363,4 +403,16 @@ public function telegram_webhook(Request $request)
     {
         return view('telegram.test');
     }
+
+    private function detectLanguage($text)
+{
+    // Basic Unicode range check for Burmese characters
+    if (preg_match('/[\x{1000}-\x{109F}]/u', $text)) {
+        return 'mm';
+    }
+
+    // Fallback to English
+    return 'en';
+}
+
 }
