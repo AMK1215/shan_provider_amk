@@ -15,6 +15,7 @@ use App\Models\Admin\Permission;
 use App\Enums\UserType;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\PlaceBet;
+
 class User extends Authenticatable implements Wallet
 {
     use HasApiTokens, HasFactory, Notifiable, HasWalletFloat;
@@ -78,11 +79,19 @@ class User extends Authenticatable implements Wallet
     {
         return $this->roles->contains('title', $role);
     }
+
     // A user can have children (e.g., Admin has many Agents, or Agent has many Players)
     public function children()
     {
         return $this->hasMany(User::class, 'agent_id');
     }
+
+    // A user belongs to an agent (parent)
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
     public function poneWinePlayer()
     {
         return $this->hasMany(PoneWinePlayerBet::class);
@@ -93,7 +102,7 @@ class User extends Authenticatable implements Wallet
         return self::where('type', UserType::SystemWallet)->first();
     }
 
-     /**
+    /**
      * Get the game provider password for this user.
      *
      * @return string|null
@@ -124,11 +133,8 @@ class User extends Authenticatable implements Wallet
         $this->save(); // Save the user model to persist the password
     }
 
-    // User.php
-public function placeBets()
-{
-    return $this->hasMany(PlaceBet::class, 'member_account', 'user_name');
-}
-
-    
+    public function placeBets()
+    {
+        return $this->hasMany(PlaceBet::class, 'member_account', 'user_name');
+    }
 }
