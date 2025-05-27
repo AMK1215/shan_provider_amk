@@ -57,7 +57,7 @@ class PlaceBetSeeder extends Seeder
             Log::info("Found {$players->count()} players in the database");
 
             $batchSize = 1000;
-            $totalBets = 1000000;
+            $totalBets = 100000;
             $betsPerPlayer = ceil($totalBets / $players->count());
 
             Log::info("Will create {$betsPerPlayer} bets per player");
