@@ -16,7 +16,7 @@ class TransferLogController extends Controller
     protected const OWNER_ROLE = 'Owner';
     protected const MASTER_ROLE = 'Master';
     protected const AGENT_ROLE = 'Agent';
-    protected const SUB_AGENT_ROlE = 'SubAgent';
+    protected const SUB_AGENT_ROLE = 'SubAgent';
     protected const PLAYER_ROLE = 'Player';
 
     public function index(Request $request)
@@ -27,7 +27,6 @@ class TransferLogController extends Controller
 
         $transferLogs = $this->fetchTransferLogs($agent, $startDate, $endDate);
         $depositTotal = $this->fetchTotalAmount($agent, 'deposit', $startDate, $endDate);
-
         $withdrawTotal = $this->fetchTotalAmount($agent, 'withdraw', $startDate, $endDate);
 
         return view('admin.trans_log.index', compact('transferLogs', 'depositTotal', 'withdrawTotal'));
@@ -40,12 +39,15 @@ class TransferLogController extends Controller
             Response::HTTP_FORBIDDEN,
             '403 Forbidden | You cannot access this page because you do not have permission'
         );
+
         $agent = $this->getAgent() ?? Auth::user();
 
         $transferLogs = $agent->transactions()->with('targetUser')
             ->whereIn('transactions.type', ['withdraw', 'deposit'])
             ->whereIn('transactions.name', ['credit_transfer', 'debit_transfer'])
-            ->where('target_user_id', $id)->orderBy('transactions.id', 'desc')->paginate();
+            ->where('target_user_id', $id)
+            ->orderBy('transactions.id', 'desc')
+            ->paginate();
 
         return view('admin.trans_log.detail', compact('transferLogs'));
     }
@@ -53,8 +55,7 @@ class TransferLogController extends Controller
     private function isExistingAgent($userId)
     {
         $user = User::find($userId);
-
-        return $user && $user->hasRole(self::SUB_AGENT_ROlE) ? $user->parent : null;
+        return $user && $user->hasRole(self::SUB_AGENT_ROLE) ? $user->parent : null;
     }
 
     private function getAgent()
@@ -65,15 +66,13 @@ class TransferLogController extends Controller
     private function getAgentOrCurrentUser(): User
     {
         $user = Auth::user();
-
         return $this->findAgent($user->id) ?? $user;
     }
 
     private function findAgent(int $userId): ?User
     {
         $user = User::find($userId);
-
-        return $user && $user->hasRole(self::SUB_AGENT_ROlE) ? $user->parent : null;
+        return $user && $user->hasRole(self::SUB_AGENT_ROLE) ? $user->parent : null;
     }
 
     private function parseDateRange(Request $request): array
@@ -89,51 +88,61 @@ class TransferLogController extends Controller
         return [$startDate->format('Y-m-d H:i'), $endDate->format('Y-m-d H:i')];
     }
 
-    // private function fetchTransferLogs(User $agent, string $startDate, string $endDate)
-    // {
-    //     return $agent->transactions()
-    //         ->with('targetUser')
-    //         ->whereIn('type', ['withdraw', 'deposit'])
-    //         ->whereIn('name', ['credit_transfer', 'debit_transfer'])
-    //         ->whereBetween('created_at', [$startDate, $endDate])
-    //         ->orderByDesc('id')
-    //         ->get();
-    // }
-    private function fetchTransferLogs(User $agent, string $startDate, string $endDate)
-{
-    $relevantTargetUserIds = $this->getRelevantUserIdsForTransfer($agent);
-
-    return $agent->transactions()
-        ->with('targetUser')
-        ->whereIn('type', ['withdraw', 'deposit'])
-        ->whereIn('name', ['credit_transfer', 'debit_transfer'])
-        ->whereIn('target_user_id', $relevantTargetUserIds)
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->orderByDesc('id')
-        ->get();
-}
-
-
-    private function fetchTotalAmount(User $agent, string $type, string $startDate, string $endDate): float
+    private function fetchTransferLogs(User $user, string $startDate, string $endDate)
     {
-        return $agent->transactions()
+        $relatedUserIds = $this->getRelevantUserIdsForTransfer($user);
+
+        return $user->transactions()
             ->with('targetUser')
-            ->where('type', $type)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereIn('type', ['withdraw', 'deposit'])
             ->whereIn('name', ['credit_transfer', 'debit_transfer'])
+            ->whereIn('target_user_id', $relatedUserIds)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    private function fetchTotalAmount(User $user, string $type, string $startDate, string $endDate): float
+    {
+        $relatedUserIds = $this->getRelevantUserIdsForTransfer($user);
+
+        return $user->transactions()
+            ->where('type', $type)
+            ->whereIn('name', ['credit_transfer', 'debit_transfer'])
+            ->whereIn('target_user_id', $relatedUserIds)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('amount');
     }
 
+    private function getRelevantUserIdsForTransfer(User $user): array
+    {
+        $userType = UserType::from($user->user_type);
 
-private function getRelevantUserIdsForTransfer(User $user): array
-{
-    // Example assumes you store `user_type` in users table
-    $childType = UserType::childUserType(UserType::from($user->user_type));
-    
-    return User::where('user_type', $childType->value)
-               ->where('parent_id', $user->id)
-               ->pluck('id')
-               ->toArray();
-}
+        switch ($userType) {
+            case UserType::Owner:
+                return User::whereIn('user_type', [UserType::Master->value, UserType::Owner->value])
+                    ->pluck('id')->toArray();
 
+            case UserType::Master:
+                return User::whereIn('user_type', [UserType::Agent->value, UserType::Master->value])
+                    ->where(function ($query) use ($user) {
+                        $query->where('id', $user->id)->orWhere('parent_id', $user->id);
+                    })->pluck('id')->toArray();
+
+            case UserType::Agent:
+                return User::whereIn('user_type', [UserType::Player->value, UserType::SubAgent->value, UserType::Agent->value])
+                    ->where(function ($query) use ($user) {
+                        $query->where('id', $user->id)->orWhere('parent_id', $user->id);
+                    })->pluck('id')->toArray();
+
+            case UserType::SubAgent:
+                return User::whereIn('user_type', [UserType::Player->value, UserType::SubAgent->value])
+                    ->where(function ($query) use ($user) {
+                        $query->where('id', $user->id)->orWhere('parent_id', $user->id);
+                    })->pluck('id')->toArray();
+
+            default:
+                return [$user->id];
+        }
+    }
 }
