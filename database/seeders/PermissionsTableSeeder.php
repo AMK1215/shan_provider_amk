@@ -244,7 +244,36 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-           
+            [
+                'title' => 'subagent_access',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'subagent_index',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'subagent_create',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'subagent_edit',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'subagent_delete',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'player_access',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         Permission::insert($permissions);
