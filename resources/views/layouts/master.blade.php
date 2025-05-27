@@ -248,8 +248,8 @@
                             </li>
                         @endcan
                         <li class="nav-item">
-                            <a href=""
-                                class="nav-link">
+                            <a href="{{ route('admin.transferLog') }}"
+                                class="nav-link {{ Route::current()->getName() == 'admin.transferLog' ? 'active' : '' }}">
                                 <i class="fas fa-exchange-alt"></i>
                                 <p>
                                     Transaction Log
