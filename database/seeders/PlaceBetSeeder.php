@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserType;
 use App\Models\PlaceBet;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -27,15 +28,15 @@ class PlaceBetSeeder extends Seeder
             Log::info("Total users in database: {$totalUsers}");
 
             // Get all players with their relationships
-            $players = User::where('type', 'player')
+            $players = User::where('type', UserType::Player->value)
                 ->with(['agent' => function ($query) {
                     $query->with('agent');
                 }])
                 ->get();
 
             // Log detailed player information
-            Log::info("Player query SQL: " . User::where('type', 'player')->toSql());
-            Log::info("Player query bindings: " . json_encode(User::where('type', 'player')->getBindings()));
+            Log::info("Player query SQL: " . User::where('type', UserType::Player->value)->toSql());
+            Log::info("Player query bindings: " . json_encode(User::where('type', UserType::Player->value)->getBindings()));
             
             if ($players->isEmpty()) {
                 // Check if any users exist at all
