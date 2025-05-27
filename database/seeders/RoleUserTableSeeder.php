@@ -74,12 +74,11 @@ class RoleUserTableSeeder extends Seeder
 
     private function validateRoles(): void
     {
-        $requiredRoles = array_values($this->roleMap);
-        $existingRoles = Role::whereIn('title', $requiredRoles)->pluck('title')->toArray();
-        $missingRoles = array_diff($requiredRoles, $existingRoles);
+        $existingRoles = Role::whereIn('id', array_values($this->roleMap))->pluck('id')->toArray();
+        $missingRoles = array_diff(array_values($this->roleMap), $existingRoles);
 
         if (!empty($missingRoles)) {
-            throw new \RuntimeException("Missing required roles: " . implode(', ', $missingRoles));
+            throw new \RuntimeException("Missing required roles with IDs: " . implode(', ', $missingRoles));
         }
     }
 
@@ -103,9 +102,9 @@ class RoleUserTableSeeder extends Seeder
 
         // Verify each user has exactly one role
         $usersWithMultipleRoles = DB::table('role_user')
-            ->select('user_id', DB::raw('COUNT(*) as role_count'))
+            ->select('user_id', DB::raw('COUNT(*) as count'))
             ->groupBy('user_id')
-            ->having('role_count', '>', 1)
+            ->having(DB::raw('COUNT(*)'), '>', 1)
             ->get();
 
         if ($usersWithMultipleRoles->isNotEmpty()) {
