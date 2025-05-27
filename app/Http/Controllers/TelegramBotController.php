@@ -29,26 +29,24 @@ class TelegramBotController extends Controller
     public function telegram_webhook(Request $request)
     {
         try {
-            file_put_contents(
-                storage_path('logs/telegram_raw.json'),
-                json_encode($request->all(), JSON_PRETTY_PRINT)
-            );
-    
+            file_put_contents(storage_path('logs/telegram_raw.json'), json_encode($request->all(), JSON_PRETTY_PRINT));
             $data = json_decode($request->getContent());
-    
+
             if ($data && isset($data->message)) {
                 $chat_id = $data->message->chat->id;
                 $user_message = strtolower(trim($data->message->text ?? ''));
-    
+
+                \Log::info('Telegram webhook received', ['chat_id' => $chat_id, 'msg' => $user_message]);
+
                 $lang = $this->detectLanguage($user_message);
                 $messages = config("telegram_welcome.$lang");
-    
+
                 if (empty($messages)) {
                     $messages = config("telegram_welcome.en");
                 }
-    
-                $text = \Illuminate\Support\Arr::random($messages);
-    
+
+                $text = Arr::random($messages);
+
                 $this->bot->sendMessage([
                     'chat_id' => $chat_id,
                     'text' => $text,
@@ -61,25 +59,21 @@ class TelegramBotController extends Controller
                     ],
                 ]);
             }
-    
+
             return response('ok', 200);
         } catch (\Throwable $e) {
             \Log::error('Telegram Webhook Error: ' . $e->getMessage());
             return response('Internal Server Error', 500);
         }
     }
-    
 
-private function detectLanguage($text)
-{
-    // Basic Unicode range check for Burmese characters
-    if (preg_match('/[\x{1000}-\x{109F}]/u', $text)) {
-        return 'mm';
+    private function detectLanguage($text)
+    {
+        if (preg_match('/[\x{1000}-\x{109F}]/u', $text)) {
+            return 'mm';
+        }
+        return 'en';
     }
-
-    // Fallback to English
-    return 'en';
-}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // public function sendMessage(Request $request)
