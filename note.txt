@@ -7,6 +7,7 @@ sudo apt install php8.3-pgsql
 sudo systemctl restart php8.3-fpm # Replace 8.1 with your PHP version
 sudo systemctl restart nginx
 
+php -r "file_put_contents('/var/www/gsc_plus/storage/logs/laravel.log', '');"
 // create user and db 
 sudo -i -u postgres
 psql
@@ -146,3 +147,11 @@ api/operators/wagers?operator_code=E004&sign=xxxxxx&request_time=1
     https://luckymillion.pro/telegram/webhook/set
 
        https://luckymillion.pro/sendMessage?chat_id=YOUR_TELEGRAM_CHAT_ID
+
+       php artisan tinker
+>>> config('telegram_welcome.en')
+
+curl -X POST https://luckymillion.pro/telegram-message-webhook \
+  -H "Content-Type: application/json" \
+  -d '{"message":{"chat":{"id":123456},"text":"hello"}}'
+

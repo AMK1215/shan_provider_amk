@@ -13,7 +13,11 @@ use App\Enums\UserType;
 
 class TransferLogController extends Controller
 {
-    protected const SUB_AGENT_ROlE = 'Sub Agent';
+    protected const OWNER_ROLE = 'Owner';
+    protected const MASTER_ROLE = 'Master';
+    protected const AGENT_ROLE = 'Agent';
+    protected const SUB_AGENT_ROlE = 'SubAgent';
+    protected const PLAYER_ROLE = 'Player';
 
     public function index(Request $request)
     {
