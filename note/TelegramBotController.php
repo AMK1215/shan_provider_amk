@@ -24,47 +24,17 @@ class TelegramBotController extends Controller
         return view('welcome');
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // public function telegram_webhook(Request $request)
-    // {
-    //     //+++++++++++++++++++++++++++++++++++++++++
-    //     //Webhook
-    //     //+++++++++++++++++++++++++++++++++++++++++
-    //     $data = json_decode($request->getContent());
-    //     if ($data && isset($data->message)) {
-    //         $this->chat_id = $data->message->chat->id;
-    //         $this->message_text = $data->message->text ?? '';
-    //     }
-    // }
     public function telegram_webhook(Request $request)
-{
-    $data = json_decode($request->getContent());
-
-    if ($data && isset($data->message)) {
-        $chat_id = $data->message->chat->id;
-        $user_message = strtolower(trim($data->message->text ?? ''));
-
-        // Define simple logic for welcome-style messages
-        $greetings = ['hi', 'hello', 'hey', 'start', '/start', 'yo'];
-
-        if (in_array($user_message, $greetings)) {
-            $this->bot->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => "🎰 Welcome to our Game Site!\nGet ready for thrilling spins and big wins!",
-                'parse_mode' => 'HTML',
-            ]);
-        } else {
-            // Optional fallback message or no reply
-            $this->bot->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => "Need help? Type /menu or /help to get started.",
-                'parse_mode' => 'HTML',
-            ]);
+    {
+        //+++++++++++++++++++++++++++++++++++++++++
+        //Webhook
+        //+++++++++++++++++++++++++++++++++++++++++
+        $data = json_decode($request->getContent());
+        if ($data && isset($data->message)) {
+            $this->chat_id = $data->message->chat->id;
+            $this->message_text = $data->message->text ?? '';
         }
     }
-
-    return response('ok', 200);
-}
-
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendMessage(Request $request)
     {
