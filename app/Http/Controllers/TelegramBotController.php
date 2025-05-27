@@ -180,40 +180,55 @@ class TelegramBotController extends Controller
 // }
 
 
+
 public function telegram_webhook(Request $request)
 {
-    $data = json_decode($request->getContent());
+    // 🔍 Log raw request for debugging
+    file_put_contents(
+        storage_path('logs/telegram_raw.json'),
+        json_encode($request->all(), JSON_PRETTY_PRINT)
+    );
+    try {
+        $data = json_decode($request->getContent());
 
-    if ($data && isset($data->message)) {
-        $chat_id = $data->message->chat->id;
-        $user_message = strtolower(trim($data->message->text ?? ''));
+        if ($data && isset($data->message)) {
+            $chat_id = $data->message->chat->id;
+            $user_message = strtolower(trim($data->message->text ?? ''));
 
-        // Detect language
-        $lang = $this->detectLanguage($user_message);
-        $messages = config("telegram_welcome.$lang");
+            // Detect language
+            $lang = $this->detectLanguage($user_message);
+            $messages = config("telegram_welcome.$lang");
 
-        // Fallback to English if empty
-        if (empty($messages)) {
-            $messages = config("telegram_welcome.en", ["🎰 Welcome to Lucky Million!"]);
+            // Fallback to English if empty
+            if (empty($messages)) {
+                $messages = config("telegram_welcome.en", ["🎰 Welcome to Lucky Million!"]);
+            }
+
+            $text = Arr::random($messages);
+
+            $this->bot->sendMessage([
+                'chat_id' => $chat_id,
+                'text' => $text,
+                'parse_mode' => 'HTML',
+                'reply_markup' => [
+                    'inline_keyboard' => [[
+                        ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+                        ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
+                    ]]
+                ],
+            ]);
         }
 
-        $text = Arr::random($messages);
-
-        $this->bot->sendMessage([
-            'chat_id' => $chat_id,
-            'text' => $text,
-            'parse_mode' => 'HTML',
-            'reply_markup' => [
-                'inline_keyboard' => [[
-                    ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
-                    ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
-                ]]
-            ],
+        return response('ok', 200);
+    } catch (\Throwable $e) {
+        // Log to file
+        \Log::error('Telegram Webhook Error: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
         ]);
+        return response('error', 500);
     }
-
-    return response('ok', 200);
 }
+
 
 
 
