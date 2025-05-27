@@ -35,7 +35,37 @@ class TelegramBotController extends Controller
     //         $this->message_text = $data->message->text ?? '';
     //     }
     // }
-    public function telegram_webhook(Request $request)
+//     public function telegram_webhook(Request $request)
+// {
+//     $data = json_decode($request->getContent());
+
+//     if ($data && isset($data->message)) {
+//         $chat_id = $data->message->chat->id;
+//         $user_message = strtolower(trim($data->message->text ?? ''));
+
+//         // Define simple logic for welcome-style messages
+//         $greetings = ['hi', 'hello', 'hey', 'start', '/start', 'yo'];
+
+//         if (in_array($user_message, $greetings)) {
+//             $this->bot->sendMessage([
+//                 'chat_id' => $chat_id,
+//                 'text' => "🎰 Welcome to our Game Site!\nGet ready for thrilling spins and big wins!",
+//                 'parse_mode' => 'HTML',
+//             ]);
+//         } else {
+//             // Optional fallback message or no reply
+//             $this->bot->sendMessage([
+//                 'chat_id' => $chat_id,
+//                 'text' => "Need help? Type /menu or /help to get started.",
+//                 'parse_mode' => 'HTML',
+//             ]);
+//         }
+//     }
+
+//     return response('ok', 200);
+// }
+
+public function telegram_webhook(Request $request)
 {
     $data = json_decode($request->getContent());
 
@@ -43,27 +73,38 @@ class TelegramBotController extends Controller
         $chat_id = $data->message->chat->id;
         $user_message = strtolower(trim($data->message->text ?? ''));
 
-        // Define simple logic for welcome-style messages
-        $greetings = ['hi', 'hello', 'hey', 'start', '/start', 'yo'];
+        // Define greetings you want to match
+        $greetings = ['hi', 'hello', 'hey', 'start', '/start', 'yo', 'hi there', 'greetings'];
 
-        if (in_array($user_message, $greetings)) {
-            $this->bot->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => "🎰 Welcome to our Game Site!\nGet ready for thrilling spins and big wins!",
-                'parse_mode' => 'HTML',
-            ]);
-        } else {
-            // Optional fallback message or no reply
-            $this->bot->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => "Need help? Type /menu or /help to get started.",
-                'parse_mode' => 'HTML',
-            ]);
+        // You can match exact or partial
+        foreach ($greetings as $greet) {
+            if (str_contains($user_message, $greet)) {
+                $this->bot->sendMessage([
+                    'chat_id' => $chat_id,
+                    'text' => "🎰 <b>Welcome to Lucky Million!</b>\nGet ready to spin, win, and enjoy the thrill of the reels!",
+                    'parse_mode' => 'HTML',
+                    'reply_markup' => [
+                        'inline_keyboard' => [[
+                            ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+                            ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
+                        ]]
+                    ],
+                ]);
+                return response('ok', 200);
+            }
         }
+
+        // Fallback reply if not a greeting
+        $this->bot->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => "❓ I'm here to help. Type /help to see available commands or /menu to explore.",
+            'parse_mode' => 'HTML'
+        ]);
     }
 
     return response('ok', 200);
 }
+
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendMessage(Request $request)
