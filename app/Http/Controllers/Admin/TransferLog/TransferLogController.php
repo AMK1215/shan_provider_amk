@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\UserType;
+use App\Models\Transaction;
 
 class TransferLogController extends Controller
 {
