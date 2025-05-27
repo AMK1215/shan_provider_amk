@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\WalletService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UsersTableSeeder extends Seeder
 {
@@ -15,34 +16,71 @@ class UsersTableSeeder extends Seeder
     {
         $walletService = new WalletService();
 
-        $owner = $this->createUser(UserType::Owner, 'Owner', 'O3456454', '09123456789');
+        // Create owner with large initial capital
+        $owner = $this->createUser(
+            UserType::Owner,
+            'Owner',
+            'OWNER001',
+            '09123456789',
+            null,
+            'OWNER' . Str::random(6)
+        );
         $walletService->deposit($owner, 500_000_00000000, TransactionName::CapitalDeposit);
 
-        $master = $this->createUser(UserType::Master, 'Master', 'M3456454', '09123456780', $owner->id);
-        $walletService->transfer($owner, $master, 5 * 100_0000000, TransactionName::CreditTransfer);
-
-        $agent = $this->createUser(UserType::Agent, 'Agent 1', 'A898737', '09112345674', $master->id, 'vH6u5E9');
-        $walletService->transfer($master, $agent, 2 * 100_000000, TransactionName::CreditTransfer);
-
-        $subAgent = $this->createUser(UserType::SubAgent, 'SubAgent', 'SA123456', '09176543210', $agent->id);
-        $walletService->transfer($agent, $subAgent, 1 * 100_00000, TransactionName::CreditTransfer);
-
-        $player = $this->createUser(UserType::Player, 'Player 1', 'Player001', '09111111111', $subAgent->id);
-        $walletService->transfer($subAgent, $player, 5 * 100_000, TransactionName::CreditTransfer);
-
-        $systemWallet = $this->createUser(UserType::SystemWallet, 'SystemWallet', 'systemWallet', '09222222222');
+        // Create system wallet
+        $systemWallet = $this->createUser(
+            UserType::SystemWallet,
+            'System Wallet',
+            'SYS001',
+            '09222222222',
+            null,
+            'SYS' . Str::random(6)
+        );
         $walletService->deposit($systemWallet, 500 * 100_0000, TransactionName::CapitalDeposit);
 
-        // More players
-        foreach (range(2, 20) as $i) {
-            $player = $this->createUser(
-                UserType::Player,
-                "Player $i",
-                'Player00' . $i,
-                '0911111111' . $i,
-                $subAgent->id
+        // Create 10 agents
+        for ($i = 1; $i <= 10; $i++) {
+            $agent = $this->createUser(
+                UserType::Agent,
+                "Agent $i",
+                "AGENT" . str_pad($i, 3, '0', STR_PAD_LEFT),
+                "091123456" . str_pad($i, 2, '0', STR_PAD_LEFT),
+                $owner->id,
+                'AGENT' . Str::random(6)
             );
-            $walletService->transfer($subAgent, $player, 5 * 100_00, TransactionName::CreditTransfer);
+            // Random initial balance between 1.5M to 2.5M
+            $initialBalance = rand(15, 25) * 100_000000;
+            $walletService->transfer($owner, $agent, $initialBalance, TransactionName::CreditTransfer);
+
+            // Create 10 sub-agents for each agent
+            for ($j = 1; $j <= 10; $j++) {
+                $subAgent = $this->createUser(
+                    UserType::SubAgent,
+                    "SubAgent $i-$j",
+                    "SUB" . str_pad($i, 2, '0', STR_PAD_LEFT) . str_pad($j, 2, '0', STR_PAD_LEFT),
+                    "091765432" . str_pad($i, 1, '0', STR_PAD_LEFT) . str_pad($j, 1, '0', STR_PAD_LEFT),
+                    $agent->id,
+                    'SUB' . Str::random(6)
+                );
+                // Random initial balance between 800K to 1.2M
+                $initialBalance = rand(8, 12) * 100_00000;
+                $walletService->transfer($agent, $subAgent, $initialBalance, TransactionName::CreditTransfer);
+
+                // Create 10 players for each sub-agent
+                for ($k = 1; $k <= 10; $k++) {
+                    $player = $this->createUser(
+                        UserType::Player,
+                        "Player $i-$j-$k",
+                        "PLAYER" . str_pad($i, 2, '0', STR_PAD_LEFT) . str_pad($j, 2, '0', STR_PAD_LEFT) . str_pad($k, 2, '0', STR_PAD_LEFT),
+                        "091111111" . str_pad($i, 1, '0', STR_PAD_LEFT) . str_pad($j, 1, '0', STR_PAD_LEFT) . str_pad($k, 1, '0', STR_PAD_LEFT),
+                        $subAgent->id,
+                        'PLAYER' . Str::random(6)
+                    );
+                    // Random initial balance between 4K to 6K
+                    $initialBalance = rand(4, 6) * 100_000;
+                    $walletService->transfer($subAgent, $player, $initialBalance, TransactionName::CreditTransfer);
+                }
+            }
         }
     }
 
@@ -58,7 +96,7 @@ class UsersTableSeeder extends Seeder
             'name' => $name,
             'user_name' => $user_name,
             'phone' => $phone,
-            'password' => Hash::make('delightmyanmar'),
+            'password' => Hash::make('gscplus'),
             'agent_id' => $parent_id,
             'status' => 1,
             'is_changed_password' => 1,
