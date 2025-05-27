@@ -22,6 +22,10 @@ class PlaceBetSeeder extends Seeder
         try {
             DB::beginTransaction();
 
+            // Log total users in database
+            $totalUsers = User::count();
+            Log::info("Total users in database: {$totalUsers}");
+
             // Get all players with their relationships
             $players = User::where('type', 'player')
                 ->with(['agent' => function ($query) {
@@ -29,9 +33,24 @@ class PlaceBetSeeder extends Seeder
                 }])
                 ->get();
 
+            // Log detailed player information
+            Log::info("Player query SQL: " . User::where('type', 'player')->toSql());
+            Log::info("Player query bindings: " . json_encode(User::where('type', 'player')->getBindings()));
+            
             if ($players->isEmpty()) {
-                Log::error("No players found in the database. Please run UsersTableSeeder first.");
-                throw new \RuntimeException("No players found in the database. Please run UsersTableSeeder first.");
+                // Check if any users exist at all
+                $allUsers = User::select('type', DB::raw('count(*) as count'))
+                    ->groupBy('type')
+                    ->get();
+                
+                Log::error("No players found in the database. Current user distribution:", [
+                    'user_types' => $allUsers->toArray()
+                ]);
+                
+                throw new \RuntimeException(
+                    "No players found in the database. Please ensure UsersTableSeeder has been run successfully. " .
+                    "Current user distribution: " . json_encode($allUsers->toArray())
+                );
             }
 
             Log::info("Found {$players->count()} players in the database");
