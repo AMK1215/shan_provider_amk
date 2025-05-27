@@ -106,7 +106,6 @@ class TelegramBotController extends Controller
 //     return response('ok', 200);
 // }
 
-use Illuminate\Support\Arr;
 
 public function telegram_webhook(Request $request)
 {
