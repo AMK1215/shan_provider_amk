@@ -26,56 +26,49 @@ class TelegramBotController extends Controller
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
-
-
-
-public function telegram_webhook(Request $request)
-{
-    // 🔍 Log raw request for debugging
-    file_put_contents(
-        storage_path('logs/telegram_raw.json'),
-        json_encode($request->all(), JSON_PRETTY_PRINT)
-    );
-    try {
-        $data = json_decode($request->getContent());
-
-        if ($data && isset($data->message)) {
-            $chat_id = $data->message->chat->id;
-            $user_message = strtolower(trim($data->message->text ?? ''));
-
-            // Detect language
-            $lang = $this->detectLanguage($user_message);
-            $messages = config("telegram_welcome.$lang");
-
-            // Fallback to English if empty
-            if (empty($messages)) {
-                $messages = config("telegram_welcome.en", ["🎰 Welcome to Lucky Million!"]);
+    public function telegram_webhook(Request $request)
+    {
+        try {
+            file_put_contents(
+                storage_path('logs/telegram_raw.json'),
+                json_encode($request->all(), JSON_PRETTY_PRINT)
+            );
+    
+            $data = json_decode($request->getContent());
+    
+            if ($data && isset($data->message)) {
+                $chat_id = $data->message->chat->id;
+                $user_message = strtolower(trim($data->message->text ?? ''));
+    
+                $lang = $this->detectLanguage($user_message);
+                $messages = config("telegram_welcome.$lang");
+    
+                if (empty($messages)) {
+                    $messages = config("telegram_welcome.en");
+                }
+    
+                $text = \Illuminate\Support\Arr::random($messages);
+    
+                $this->bot->sendMessage([
+                    'chat_id' => $chat_id,
+                    'text' => $text,
+                    'parse_mode' => 'HTML',
+                    'reply_markup' => [
+                        'inline_keyboard' => [[
+                            ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+                            ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
+                        ]]
+                    ],
+                ]);
             }
-
-            $text = Arr::random($messages);
-
-            $this->bot->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => $text,
-                'parse_mode' => 'HTML',
-                'reply_markup' => [
-                    'inline_keyboard' => [[
-                        ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
-                        ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
-                    ]]
-                ],
-            ]);
+    
+            return response('ok', 200);
+        } catch (\Throwable $e) {
+            \Log::error('Telegram Webhook Error: ' . $e->getMessage());
+            return response('Internal Server Error', 500);
         }
-
-        return response('ok', 200);
-    } catch (\Throwable $e) {
-        // Log to file
-        \Log::error('Telegram Webhook Error: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString()
-        ]);
-        return response('error', 500);
     }
-}
+    
 
 private function detectLanguage($text)
 {
