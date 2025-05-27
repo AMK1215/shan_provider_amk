@@ -11,12 +11,20 @@ use Illuminate\Support\Facades\Log;
 
 class RoleUserTableSeeder extends Seeder
 {
-    private array $roleMap = [
+    private const ROLE_IDS = [
+        UserType::Owner->value => 1,
+        UserType::Agent->value => 2,
+        UserType::SubAgent->value => 3,
+        UserType::Player->value => 4,
+        UserType::SystemWallet->value => 5
+    ];
+
+    private const ROLE_NAMES = [
         UserType::Owner->value => 'Owner',
         UserType::Agent->value => 'Agent',
         UserType::SubAgent->value => 'SubAgent',
         UserType::Player->value => 'Player',
-        UserType::SystemWallet->value => 'SystemWallet',
+        UserType::SystemWallet->value => 'SystemWallet'
     ];
 
     public function run(): void
@@ -30,13 +38,10 @@ class RoleUserTableSeeder extends Seeder
             // Clean up existing role assignments
             $this->cleanupExistingAssignments();
 
-            // Get all roles
-            $roles = Role::all()->pluck('id', 'title')->toArray();
             $totalUsers = 0;
             $successCount = 0;
 
-            foreach ($this->roleMap as $userType => $roleTitle) {
-                $roleId = $roles[$roleTitle];
+            foreach (self::ROLE_IDS as $userType => $roleId) {
                 $users = User::where('type', $userType)->get();
                 $totalUsers += $users->count();
 
@@ -46,17 +51,17 @@ class RoleUserTableSeeder extends Seeder
                 }
 
                 // Bulk assign roles
-                $users->each(function ($user) use ($roleId, $roleTitle, &$successCount) {
+                $users->each(function ($user) use ($roleId, $userType, &$successCount) {
                     try {
                         $user->roles()->sync($roleId);
                         $successCount++;
-                        Log::info("Assigned role '{$roleTitle}' to user: {$user->user_name}");
+                        Log::info("Assigned role '{$roleId}' to user: {$user->user_name}");
                     } catch (\Exception $e) {
-                        Log::error("Failed to assign role '{$roleTitle}' to user {$user->user_name}: " . $e->getMessage());
+                        Log::error("Failed to assign role '{$roleId}' to user {$user->user_name}: " . $e->getMessage());
                     }
                 });
 
-                Log::info("Successfully assigned '{$roleTitle}' role to {$users->count()} users");
+                Log::info("Successfully assigned role '{$roleId}' to {$users->count()} users");
             }
 
             // Verify role assignments
@@ -74,8 +79,8 @@ class RoleUserTableSeeder extends Seeder
 
     private function validateRoles(): void
     {
-        $existingRoles = Role::whereIn('id', array_values($this->roleMap))->pluck('id')->toArray();
-        $missingRoles = array_diff(array_values($this->roleMap), $existingRoles);
+        $existingRoles = Role::whereIn('id', array_values(self::ROLE_IDS))->pluck('id')->toArray();
+        $missingRoles = array_diff(array_values(self::ROLE_IDS), $existingRoles);
 
         if (!empty($missingRoles)) {
             throw new \RuntimeException("Missing required roles with IDs: " . implode(', ', $missingRoles));
