@@ -6,6 +6,7 @@ use App\Models\PlaceBet;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PlaceBetSeeder extends Seeder
@@ -28,16 +29,28 @@ class PlaceBetSeeder extends Seeder
                 }])
                 ->get();
 
+            if ($players->isEmpty()) {
+                Log::error("No players found in the database. Please run UsersTableSeeder first.");
+                throw new \RuntimeException("No players found in the database. Please run UsersTableSeeder first.");
+            }
+
+            Log::info("Found {$players->count()} players in the database");
+
             $batchSize = 1000;
             $totalBets = 1000000;
             $betsPerPlayer = ceil($totalBets / $players->count());
 
+            Log::info("Will create {$betsPerPlayer} bets per player");
+
+            $totalCreated = 0;
             foreach ($players as $player) {
-                $this->createBetsForPlayer($player, $betsPerPlayer, $batchSize);
+                $created = $this->createBetsForPlayer($player, $betsPerPlayer, $batchSize);
+                $totalCreated += $created;
+                Log::info("Created {$created} bets for player {$player->user_name}");
             }
 
             DB::commit();
-            Log::info("Successfully created {$totalBets} bet records");
+            Log::info("Successfully created {$totalCreated} bet records");
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -46,10 +59,11 @@ class PlaceBetSeeder extends Seeder
         }
     }
 
-    private function createBetsForPlayer($player, int $betsPerPlayer, int $batchSize): void
+    private function createBetsForPlayer($player, int $betsPerPlayer, int $batchSize): int
     {
         $bets = [];
         $currentBalance = 1000000; // Starting balance
+        $created = 0;
 
         for ($i = 0; $i < $betsPerPlayer; $i++) {
             $betAmount = $this->generateBetAmount();
@@ -91,6 +105,7 @@ class PlaceBetSeeder extends Seeder
             ];
 
             $bets[] = $bet;
+            $created++;
 
             if (count($bets) >= $batchSize) {
                 PlaceBet::insert($bets);
@@ -101,6 +116,8 @@ class PlaceBetSeeder extends Seeder
         if (!empty($bets)) {
             PlaceBet::insert($bets);
         }
+
+        return $created;
     }
 
     private function generateBetAmount(): float
