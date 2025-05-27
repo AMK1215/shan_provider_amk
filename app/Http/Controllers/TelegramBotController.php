@@ -25,6 +25,23 @@ class TelegramBotController extends Controller
         return view('welcome');
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // chat box send 
+    public function send(Request $request)
+{
+    $message = $request->input('message');
+    $chat_id = 1916864529; // Use a valid Telegram user/chat ID
+    $replyText = "✅ You said: $message";
+
+    app(TeleBot::class)->sendMessage([
+        'chat_id' => $chat_id,
+        'text' => $replyText,
+    ]);
+
+    return response()->json(['reply' => $replyText]);
+}
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     public function telegram_webhook(Request $request)
     {

@@ -97,6 +97,26 @@
         </div>
     </div>
 
+    <!-- chat box -->
+        <!-- Telegram Chat Box -->
+<div id="chatPopup" style="position: fixed; bottom: 20px; right: 20px; width: 320px; display: none; z-index: 1000;">
+    <div style="background: #007bff; color: white; padding: 10px; border-radius: 10px 10px 0 0; cursor: pointer;" onclick="toggleChat()">💬 Need Help?</div>
+    <div style="background: white; border: 1px solid #ccc; border-top: none; padding: 10px; max-height: 400px; overflow-y: auto;" id="chatBox">
+        <div><small>Bot: Hello! Welcome to PoneWine. Type your message below.</small></div>
+    </div>
+    <form id="chatForm" onsubmit="sendChat(event)" style="display: flex; border-top: 1px solid #ccc;">
+        <input type="text" id="chatInput" placeholder="Type..." required style="flex: 1; padding: 5px; border: none;">
+        <button type="submit" style="padding: 5px 10px; border: none; background: #007bff; color: white;">Send</button>
+    </form>
+</div>
+
+<!-- Chat Toggle Button -->
+<button onclick="toggleChat()" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; background: #007bff; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 18px;">
+    💬
+</button>
+
+    <!-- chat box end -->
+
 
     <script>
         function PwdView() {
@@ -114,6 +134,39 @@
             }
         }
     </script>
+
+    <!-- chat box -->
+    <script>
+    function toggleChat() {
+        const chat = document.getElementById('chatPopup');
+        chat.style.display = chat.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function sendChat(event) {
+        event.preventDefault();
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML += `<div><strong>You:</strong> ${text}</div>`;
+        input.value = '';
+
+        const res = await fetch('{{ route('web.telegram.send') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        chatBox.innerHTML += `<div><strong>Bot:</strong> ${data.reply}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
+
+    <!-- chat box -->
 
 </body>
 

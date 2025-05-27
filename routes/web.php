@@ -67,3 +67,5 @@ Route::get('telegram/webhook/delete', [App\Http\Controllers\TelegramBotControlle
 
 // Test Panel Route
 Route::get('telegram/test', [App\Http\Controllers\TelegramBotController::class, 'testPanel']);
+
+Route::post('/web-chat/send', [TelegramChatController::class, 'send'])->name('web.telegram.send');
