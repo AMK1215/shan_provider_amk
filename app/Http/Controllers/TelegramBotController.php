@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use WeStacks\TeleBot\TeleBot;
+use Illuminate\Support\Arr;
 
 class TelegramBotController extends Controller
 {
@@ -65,6 +66,48 @@ class TelegramBotController extends Controller
 //     return response('ok', 200);
 // }
 
+// public function telegram_webhook(Request $request)
+// {
+//     $data = json_decode($request->getContent());
+
+//     if ($data && isset($data->message)) {
+//         $chat_id = $data->message->chat->id;
+//         $user_message = strtolower(trim($data->message->text ?? ''));
+
+//         // Define greetings you want to match
+//         $greetings = ['hi', 'hello', 'hey', 'start', '/start', 'yo', 'hi there', 'greetings'];
+
+//         // You can match exact or partial
+//         foreach ($greetings as $greet) {
+//             if (str_contains($user_message, $greet)) {
+//                 $this->bot->sendMessage([
+//                     'chat_id' => $chat_id,
+//                     'text' => "🎰 <b>Welcome to Lucky Million!</b>\nGet ready to spin, win, and enjoy the thrill of the reels!",
+//                     'parse_mode' => 'HTML',
+//                     'reply_markup' => [
+//                         'inline_keyboard' => [[
+//                             ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+//                             ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
+//                         ]]
+//                     ],
+//                 ]);
+//                 return response('ok', 200);
+//             }
+//         }
+
+//         // Fallback reply if not a greeting
+//         $this->bot->sendMessage([
+//             'chat_id' => $chat_id,
+//             'text' => "❓ I'm here to help. Type /help to see available commands or /menu to explore.",
+//             'parse_mode' => 'HTML'
+//         ]);
+//     }
+
+//     return response('ok', 200);
+// }
+
+use Illuminate\Support\Arr;
+
 public function telegram_webhook(Request $request)
 {
     $data = json_decode($request->getContent());
@@ -73,32 +116,21 @@ public function telegram_webhook(Request $request)
         $chat_id = $data->message->chat->id;
         $user_message = strtolower(trim($data->message->text ?? ''));
 
-        // Define greetings you want to match
-        $greetings = ['hi', 'hello', 'hey', 'start', '/start', 'yo', 'hi there', 'greetings'];
+        $lang = $this->detectLanguage($user_message);
+        $messages = config("telegram_welcome.$lang");
 
-        // You can match exact or partial
-        foreach ($greetings as $greet) {
-            if (str_contains($user_message, $greet)) {
-                $this->bot->sendMessage([
-                    'chat_id' => $chat_id,
-                    'text' => "🎰 <b>Welcome to Lucky Million!</b>\nGet ready to spin, win, and enjoy the thrill of the reels!",
-                    'parse_mode' => 'HTML',
-                    'reply_markup' => [
-                        'inline_keyboard' => [[
-                            ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
-                            ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
-                        ]]
-                    ],
-                ]);
-                return response('ok', 200);
-            }
-        }
+        $text = Arr::random($messages); // randomly select one message
 
-        // Fallback reply if not a greeting
         $this->bot->sendMessage([
             'chat_id' => $chat_id,
-            'text' => "❓ I'm here to help. Type /help to see available commands or /menu to explore.",
-            'parse_mode' => 'HTML'
+            'text' => $text,
+            'parse_mode' => 'HTML',
+            'reply_markup' => [
+                'inline_keyboard' => [[
+                    ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+                    ['text' => '📺 Watch Demo', 'url' => 'https://youtube.com/@amk-technology?si=LkiWGWlzPN_Z4ILn']
+                ]]
+            ],
         ]);
     }
 
@@ -106,26 +138,51 @@ public function telegram_webhook(Request $request)
 }
 
 
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // public function sendMessage(Request $request)
+    // {
+    //     $chat_id = $request->input('chat_id', $this->fixed_chat_id);
+    //     try {
+    //         $message = $this->bot->sendMessage([
+    //             'chat_id'      => $chat_id,
+    //             'text'         => 'Welcome To Code-180 Youtube Channel',
+    //             'reply_markup' => [
+    //                 'inline_keyboard' => [[[ 
+    //                     'text' => '@code-180',
+    //                     'url'  => 'https://www.youtube.com/@code-180/videos',
+    //                 ]]],
+    //             ],
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         $message = 'Message: ' . $e->getMessage();
+    //     }
+    //     return Response::json($message);
+    // }
     public function sendMessage(Request $request)
-    {
-        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
-        try {
-            $message = $this->bot->sendMessage([
-                'chat_id'      => $chat_id,
-                'text'         => 'Welcome To Code-180 Youtube Channel',
-                'reply_markup' => [
-                    'inline_keyboard' => [[[ 
-                        'text' => '@code-180',
-                        'url'  => 'https://www.youtube.com/@code-180/videos',
-                    ]]],
-                ],
-            ]);
-        } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
-        }
-        return Response::json($message);
+{
+    $chat_id = $request->input('chat_id', $this->fixed_chat_id);
+    $text = $request->input('text', '🎰 Welcome to Lucky Million! Ready to spin and win big?');
+
+    try {
+        $message = $this->bot->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => $text,
+            'reply_markup' => [
+                'inline_keyboard' => [[
+                    ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+                    ['text' => '📺 Watch Demo', 'url' => 'https://youtube.com/@amk-technology?si=LkiWGWlzPN_Z4ILn']
+                ]]
+            ],
+            'parse_mode' => 'HTML',
+        ]);
+    } catch (\Exception $e) {
+        $message = 'Message: ' . $e->getMessage();
     }
+
+    return Response::json($message);
+}
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendPhoto(Request $request)
     {
