@@ -87,34 +87,34 @@ class TransferLogController extends Controller
 
     private function getRelevantUserIdsForTransfer(User $user): array
     {
-        $userType = UserType::from($user->user_type);
+        $userType = UserType::from($user->type);
 
         switch ($userType) {
             case UserType::Owner:
-                return User::where('user_type', UserType::Master->value)
-                    ->orWhere('user_type', UserType::Owner->value)
+                return User::where('type', UserType::Master->value)
+                    ->orWhere('type', UserType::Owner->value)
                     ->pluck('id')->toArray();
 
             case UserType::Master:
                 return User::where(function ($query) use ($user) {
-                        $query->where('user_type', UserType::Owner->value)
-                              ->orWhere('user_type', UserType::Agent->value)
+                        $query->where('type', UserType::Owner->value)
+                              ->orWhere('type', UserType::Agent->value)
                               ->orWhere('id', $user->id);
                     })
                     ->pluck('id')->toArray();
 
             case UserType::Agent:
                 return User::where(function ($query) use ($user) {
-                        $query->where('user_type', UserType::Master->value)
-                              ->orWhere('user_type', UserType::Player->value)
-                              ->orWhere('user_type', UserType::SubAgent->value)
+                        $query->where('type', UserType::Master->value)
+                              ->orWhere('type', UserType::Player->value)
+                              ->orWhere('type', UserType::SubAgent->value)
                               ->orWhere('id', $user->id);
                     })
                     ->pluck('id')->toArray();
 
             case UserType::SubAgent:
                 return User::where(function ($query) use ($user) {
-                        $query->where('user_type', UserType::Agent->value)
+                        $query->where('type', UserType::Agent->value)
                               ->orWhere('user_type', UserType::Player->value)
                               ->orWhere('id', $user->id);
                     })
