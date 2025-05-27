@@ -146,6 +146,10 @@ public function telegram_webhook(Request $request)
 
         // Detect language: Burmese or English
         $lang = $this->detectLanguage($user_message);
+        // $this->notifyNewAccount($user->telegram_chat_id, $user->preferred_lang ?? 'en');
+        // $this->sendEventNotification($user->telegram_chat_id, 'account_created', $user->preferred_lang ?? 'en');
+        // $this->sendEventNotification($user->chat_id, 'account_deactivated', 'mm');
+        // $this->sendEventNotification($user->chat_id, 'balance_updated', 'en');
 
         // Load messages based on detected language
         $messages = config("telegram_welcome.$lang");
@@ -413,6 +417,43 @@ public function telegram_webhook(Request $request)
 
     // Fallback to English
     return 'en';
+}
+
+
+public function notifyNewAccount($chat_id, $lang = 'en')
+{
+    $messages = config("telegram_welcome.account_created.$lang");
+
+    if (empty($messages)) {
+        $messages = config("telegram_welcome.account_created.en");
+    }
+
+    $text = Arr::random($messages);
+
+    $this->bot->sendMessage([
+        'chat_id' => $chat_id,
+        'text' => $text,
+        'parse_mode' => 'HTML',
+    ]);
+}
+
+public function sendEventNotification($chat_id, $event, $lang = 'en')
+{
+    $messages = config("telegram_welcome.events.$event.$lang");
+
+    if (empty($messages)) {
+        $messages = config("telegram_welcome.events.$event.en", []);
+    }
+
+    if (!empty($messages)) {
+        $text = Arr::random($messages);
+
+        $this->bot->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => $text,
+            'parse_mode' => 'HTML',
+        ]);
+    }
 }
 
 }

@@ -212,5 +212,66 @@ return [
         "🎩 Reel Master ဟုတ်လား?",
         "📢 Spin တုန်းမှာ ဘာတွေလုပ်မလဲ!",
         "🏁 Let’s Go!",
-    ]
+    ],
+    'account_created' => [
+        'en' => [
+            "✅ Your account has been created successfully!",
+            "🎉 Welcome aboard! You're now part of the Lucky Million family.",
+            "🙌 Account setup complete. Let's spin and win!",
+            "🆕 Your Lucky Million account is now active!",
+            "📲 Registration successful — enjoy all features!",
+        ],
+        'mm' => [
+            "✅ သင့်အကောင့်ကိုအောင်မြင်စွာဖန်တီးပြီးပါပြီ။",
+            "🎉 ကြိုဆိုပါတယ်။ Lucky Million မိသားစုထဲသို့ ဝင်ရောက်ပါပြီ။",
+            "🙌 အကောင့်ဖွင့်ခြင်းအောင်မြင်ပါပြီ။ Spin လုပ်ဖို့အချိန်ပါ!",
+            "🆕 သင့် Lucky Million အကောင့် အသုံးပြုနိုင်ပြီ!",
+            "📲 စာရင်းသွင်းမှုအောင်မြင်ပါပြီ။ အဆင်ပြေစွာ ကစားနိုင်ပါတယ်။",
+        ],
+    ],
+    
+
+    'events' => [
+    'account_deactivated' => [
+        'en' => [
+            "⚠️ Your account has been deactivated. Contact support if this is a mistake.",
+            "🔒 Account access has been restricted. Please reach out to the admin.",
+        ],
+        'mm' => [
+            "⚠️ သင့်အကောင့်ကိုပိတ်လိုက်ပါပြီ။ မမှန်ဘူးလို့ထင်ရင် admin ကိုဆက်သွယ်ပါ။",
+            "🔒 သင့်အကောင့်အသုံးပြုခွင့်ကို ခေတ္တပိတ်ထားပါတယ်။ Admin ကိုဆက်သွယ်ပါ။",
+        ],
+    ],
+    'password_changed' => [
+        'en' => [
+            "🔐 Your password has been changed successfully.",
+            "✅ Password updated. Keep your login details safe.",
+        ],
+        'mm' => [
+            "🔐 သင့်စကားဝှက်ကိုအောင်မြင်စွာပြောင်းလဲပြီးပါပြီ။",
+            "✅ စကားဝှက်အသစ်ကို အသုံးပြုနိုင်ပြီ။ လုံခြုံစွာထားပါ။",
+        ],
+    ],
+    'balance_updated' => [
+        'en' => [
+            "💰 Your balance has been updated.",
+            "📈 Balance changed. Check your wallet for details.",
+        ],
+        'mm' => [
+            "💰 သင့်အကောင့်လက်ကျန်ကို အပ်ဒိတ်လုပ်ပြီးပါပြီ။",
+            "📈 ငွေလက်ကျန်ပြောင်းလဲသွားပါပြီ။ အသေးစိတ်ကြည့်ပါ။",
+        ],
+    ],
+    'referral_joined' => [
+        'en' => [
+            "🎉 Someone joined using your referral link!",
+            "🙌 A new player has registered via your referral.",
+        ],
+        'mm' => [
+            "🎉 သင့် referral link ဖြင့်အသစ်ဝင်လာသူရှိပါပြီ။",
+            "🙌 သင့်အကြောင်းပြန်ဖြင့် အသစ်စာရင်းသွင်းသူတစ်ဦးရှိပါပြီ။",
+        ],
+    ],
+],
+
 ];
