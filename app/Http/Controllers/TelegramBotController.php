@@ -12,6 +12,7 @@ class TelegramBotController extends Controller
     private $bot;
     private $message_text;
     private $chat_id;
+    private $fixed_chat_id = 1916864529; // <-- Set your fixed chat ID here
     //+++++++++++++++++++++++++++++++++++++++
     public function __construct()
     {
@@ -37,22 +38,19 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendMessage(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendMessage([
-                'chat_id'      => $this->chat_id,
+                'chat_id'      => $chat_id,
                 'text'         => 'Welcome To Code-180 Youtube Channel',
                 'reply_markup' => [
-                    'inline_keyboard' => [[[
+                    'inline_keyboard' => [[[ 
                         'text' => '@code-180',
                         'url'  => 'https://www.youtube.com/@code-180/videos',
                     ]]],
                 ],
             ]);
-            // $message = $this->bot->sendMessage([
-            //     'chat_id' => $this->chat_id,
-            //     'text'    => 'Welcome To Code-180 Youtube Channel',
-            // ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -60,21 +58,16 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendPhoto(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // 1. https://anyurl/640
-            // 2. fopen('local/file/path', 'r')
-            // 3. fopen('https://picsum.photos/640', 'r'),
-            // 4. new InputFile(fopen('https://picsum.photos/640', 'r'), 'test-image.jpg')
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             $message = $this->bot->sendPhoto([
-                'chat_id' => $this->chat_id,
+                'chat_id' => $chat_id,
                 'photo'   => [
                     'file'     => fopen(asset('public/upload/img.jpg'), 'r'),
                     'filename' => 'demoImg.jpg',
                 ],
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -82,19 +75,14 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendAudio(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // 1. https://picsum.photos/640
-            // 2. fopen('local/file/path', 'r')
-            // 3. fopen('https://picsum.photos/640', 'r'),
-            // 4. new InputFile(fopen('https://picsum.photos/640', 'r'), 'test-image.jpg')
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             $message = $this->bot->sendAudio([
-                'chat_id' => $this->chat_id,
+                'chat_id' => $chat_id,
                 'audio'   => fopen(asset('public/upload/demo.mp3'), 'r'),
                 'caption' => "Demo Audio File",
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -102,18 +90,13 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendVideo(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // 1. https://picsum.photos/640
-            // 2. fopen('local/file/path', 'r')
-            // 3. fopen('https://picsum.photos/640', 'r'),
-            // 4. new InputFile(fopen('https://picsum.photos/640', 'r'), 'test-image.jpg')
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             $message = $this->bot->sendVideo([
-                'chat_id' => $this->chat_id,
+                'chat_id' => $chat_id,
                 'video'   => fopen(asset('public/upload/Password.mp4'), 'r'),
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -121,18 +104,13 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendVoice(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // 1. https://picsum.photos/640
-            // 2. fopen('local/file/path', 'r')
-            // 3. fopen('https://picsum.photos/640', 'r'),
-            // 4. new InputFile(fopen('https://picsum.photos/640', 'r'), 'test-image.jpg')
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             $message = $this->bot->sendVoice([
-                'chat_id' => $this->chat_id,
+                'chat_id' => $chat_id,
                 'voice'   => fopen(asset('public/upload/demo.mp3'), 'r'),
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -140,18 +118,13 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendDocument(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // 1. https://picsum.photos/640
-            // 2. fopen('local/file/path', 'r')
-            // 3. fopen('https://picsum.photos/640', 'r'),
-            // 4. new InputFile(fopen('https://picsum.photos/640', 'r'), 'test-image.jpg')
-            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             $message = $this->bot->sendDocument([
-                'chat_id'  => $this->chat_id,
+                'chat_id'  => $chat_id,
                 'document' => fopen(asset('public/upload/Test_Doc.pdf'), 'r'),
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -159,13 +132,14 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendLocation(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendLocation([
-                'chat_id'   => $this->chat_id,
+                'chat_id'   => $chat_id,
                 'latitude'  => 19.6840852,
                 'longitude' => 60.972437,
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -173,15 +147,16 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendVenue(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendVenue([
-                'chat_id'   => $this->chat_id,
+                'chat_id'   => $chat_id,
                 'latitude'  => 19.6840852,
                 'longitude' => 60.972437,
                 'title'     => 'The New Word Of Code',
                 'address'   => 'Address For The Place',
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -189,14 +164,15 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendContact(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendContact([
-                'chat_id'      => $this->chat_id,
+                'chat_id'      => $chat_id,
                 'photo'        => 'https://picsum.photos/640',
                 'phone_number' => '1234567890',
                 'first_name'   => 'Code-180',
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);
@@ -204,13 +180,14 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendPoll(Request $request)
     {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendPoll([
-                'chat_id'  => $this->chat_id,
+                'chat_id'  => $chat_id,
                 'question' => 'What is best coding language for 2023',
                 'options'  => ['python', 'javascript', 'typescript', 'php', 'java'],
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $message = 'Message: ' . $e->getMessage();
         }
         return Response::json($message);

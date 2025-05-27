@@ -143,3 +143,6 @@ api/operators/wagers?operator_code=E004&sign=xxxxxx&request_time=1
     composer require irazasyed/telegram-bot-sdk
 
     composer require westacks/telebot-laravel
+    https://luckymillion.pro/telegram/webhook/set
+
+       https://luckymillion.pro/sendMessage?chat_id=YOUR_TELEGRAM_CHAT_ID
