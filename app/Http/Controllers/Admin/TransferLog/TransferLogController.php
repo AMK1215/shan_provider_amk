@@ -55,10 +55,10 @@ class TransferLogController extends Controller
             ->whereIn('name', ['credit_transfer', 'debit_transfer'])
             ->where(function ($query) use ($user, $relatedUserIds) {
                 $query->where(function ($q) use ($user, $relatedUserIds) {
-                    $q->where('user_id', $user->id)
+                    $q->where('payable_id', $user->id)
                       ->whereIn('target_user_id', $relatedUserIds);
                 })->orWhere(function ($q) use ($user, $relatedUserIds) {
-                    $q->whereIn('user_id', $relatedUserIds)
+                    $q->whereIn('payable_id', $relatedUserIds)
                       ->where('target_user_id', $user->id);
                 });
             })
@@ -75,10 +75,10 @@ class TransferLogController extends Controller
             ->whereIn('name', ['credit_transfer', 'debit_transfer'])
             ->where(function ($query) use ($user, $relatedUserIds) {
                 $query->where(function ($q) use ($user, $relatedUserIds) {
-                    $q->where('user_id', $user->id)
+                    $q->where('payable_id', $user->id)
                       ->whereIn('target_user_id', $relatedUserIds);
                 })->orWhere(function ($q) use ($user, $relatedUserIds) {
-                    $q->whereIn('user_id', $relatedUserIds)
+                    $q->whereIn('payable_id', $relatedUserIds)
                       ->where('target_user_id', $user->id);
                 });
             })
