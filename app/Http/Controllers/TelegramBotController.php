@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Response;
 use WeStacks\TeleBot\TeleBot;
 use Illuminate\Support\Arr;
 
+
 class TelegramBotController extends Controller
 {
     //+++++++++++++++++++++++++++++++++++++++
@@ -27,19 +28,26 @@ class TelegramBotController extends Controller
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // chat box send 
+
     public function send(Request $request)
-{
-    $message = $request->input('message');
-    $chat_id = 1916864529; // Use a valid Telegram user/chat ID
-    $replyText = "✅ You said: $message";
-
-    app(TeleBot::class)->sendMessage([
-        'chat_id' => $chat_id,
-        'text' => $replyText,
-    ]);
-
-    return response()->json(['reply' => $replyText]);
-}
+    {
+        $message = $request->input('message');
+        $chat_id = 1916864529;
+    
+        $replyText = "✅ You said: $message";
+    
+        $bot = new TeleBot([
+            'token' => config('telegram.bot_token'),
+        ]);
+    
+        $bot->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => $replyText,
+        ]);
+    
+        return response()->json(['reply' => $replyText]);
+    }
+    
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
