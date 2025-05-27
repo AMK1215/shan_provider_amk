@@ -92,11 +92,18 @@ class TransferLogController extends Controller
     {
         $relatedUserIds = $this->getRelevantUserIdsForTransfer($user);
 
-        return $user->transactions()
-            ->with('targetUser')
+        return \App\Models\Transaction::with('targetUser')
             ->whereIn('type', ['withdraw', 'deposit'])
             ->whereIn('name', ['credit_transfer', 'debit_transfer'])
-            ->whereIn('target_user_id', $relatedUserIds)
+            ->where(function ($query) use ($user, $relatedUserIds) {
+                $query->where(function ($q) use ($user, $relatedUserIds) {
+                    $q->where('user_id', $user->id)
+                      ->whereIn('target_user_id', $relatedUserIds);
+                })->orWhere(function ($q) use ($user, $relatedUserIds) {
+                    $q->whereIn('user_id', $relatedUserIds)
+                      ->where('target_user_id', $user->id);
+                });
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->orderByDesc('id')
             ->get();
@@ -106,10 +113,17 @@ class TransferLogController extends Controller
     {
         $relatedUserIds = $this->getRelevantUserIdsForTransfer($user);
 
-        return $user->transactions()
-            ->where('type', $type)
+        return \App\Models\Transaction::where('type', $type)
             ->whereIn('name', ['credit_transfer', 'debit_transfer'])
-            ->whereIn('target_user_id', $relatedUserIds)
+            ->where(function ($query) use ($user, $relatedUserIds) {
+                $query->where(function ($q) use ($user, $relatedUserIds) {
+                    $q->where('user_id', $user->id)
+                      ->whereIn('target_user_id', $relatedUserIds);
+                })->orWhere(function ($q) use ($user, $relatedUserIds) {
+                    $q->whereIn('user_id', $relatedUserIds)
+                      ->where('target_user_id', $user->id);
+                });
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('amount');
     }
