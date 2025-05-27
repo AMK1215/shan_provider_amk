@@ -38,7 +38,6 @@
                                             id="end_date" name="end_date" value="{{ request()->end_date }}">
                                     </div>
                                 </div>
-
                                 <div class="col-log-3">
                                     <button type="submit" class="btn btn-primary" style="margin-top: 32px;">Search</button>
                                     <a href="{{ route('admin.transferLog') }}" class="btn btn-warning" style="margin-top: 32px;">Refresh</a>
@@ -63,21 +62,16 @@
                                 @foreach ($transferLogs as $log)
                                 <tr>
                                     <td>{{$loop->iteration}}</td>
-                                    <td>
-                                        {{ $log->created_at }}
-                                    </td>
+                                    <td>{{ $log->created_at }}</td>
                                     <td>{{$log->targetUser->user_name}}</td>
                                     <td>{{ $log->targetUser->name }}</td>
                                     <td>{{$log->old_balance}}</td>
-
                                     <td>
-                                        <div
-                                            class="d-flex align-items-center text-{{ $log->type == 'withdraw' ? 'success' : 'danger' }} text-gradient text-sm font-weight-bold ms-auto">
+                                        <div class="d-flex align-items-center text-{{ $log->type == 'withdraw' ? 'success' : 'danger' }} text-gradient text-sm font-weight-bold ms-auto">
                                             {{ $log->type == 'withdraw' ? '+' : '-' }} {{ number_format(abs($log->amountFloat)) }}
                                         </div>
                                     </td>
                                     <td>{{ $log->new_balance}}</td>
-
                                     <td>
                                         @if ($log->type == 'deposit')
                                         <p class="text-danger font-weight-bold">Withdraw</p>
@@ -113,9 +107,7 @@
                             </tfoot>
                         </table>
                     </div>
-                    <!-- /.card-body -->
                 </div>
-                <!-- /.card -->
             </div>
         </div>
     </div>
