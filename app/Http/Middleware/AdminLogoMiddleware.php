@@ -22,23 +22,29 @@ class AdminLogoMiddleware
                 $current = $user;
                 // Traverse up the user tree until Owner or no parent
                 while ($current) {
+                    // For Owner, use their own logo
+                    if ($current->type === UserType::Owner->value) {
+                        $logoFilename = $current->agent_logo;
+                        $siteName = $current->site_name;
+                        break;
+                    }
+                    
+                    // For other roles, check their own logo first
                     if ($current->agent_logo && !$logoFilename) {
                         $logoFilename = $current->agent_logo;
                     }
                     if ($current->site_name && !$siteName) {
                         $siteName = $current->site_name;
                     }
-                    // Stop if Owner
-                    if (isset($current->user_type) && $current->user_type == UserType::Owner->value) {
-                        break;
-                    }
+
                     // Go up the tree
-                    if (isset($current->agent_id) && $current->agent_id) {
+                    if ($current->agent_id) {
                         $current = User::find($current->agent_id);
                     } else {
                         break;
                     }
                 }
+
                 // Fallback to user's own if still not found
                 if (!$logoFilename) {
                     $logoFilename = $user->agent_logo;
@@ -46,18 +52,20 @@ class AdminLogoMiddleware
                 if (!$siteName) {
                     $siteName = $user->site_name;
                 }
+
                 $adminLogo = $logoFilename
                     ? asset('assets/img/logo/'.$logoFilename)
-                    : asset('assets/img/logo/default-logo.png');
+                    : asset('assets/img/logo/slot_maker.png');
+
                 View::share([
                     'adminLogo' => $adminLogo,
-                    'siteName' => $siteName ?? "GSCPLUSSlotGameSite",
+                    'siteName' => $siteName ?? "GSCPLUS",
                 ]);
             } catch (\Exception $e) {
                 Log::error('Error in AdminLogoMiddleware: ' . $e->getMessage());
                 // Fallback to default values
                 View::share([
-                    'adminLogo' => asset('assets/img/logo/default-logo.png'),
+                    'adminLogo' => asset('assets/img/logo/slot_maker.png'),
                     'siteName' => "GSCPLUSSlotGameSite",
                 ]);
             }

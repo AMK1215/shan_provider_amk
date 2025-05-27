@@ -38,7 +38,7 @@ class HomeController extends Controller
      public function index()
      {
          $user = Auth::user();
-         $roleTitle = $user->roles->pluck('title')->first(); // 'Owner', 'Master', 'Agent', etc.
+         $roleTitle = $user->roles->pluck('title')->first(); // 'Owner', 'Agent', 'SubAgent', 'Player'
      
          $totalWinlose = 0;
          $todayWinlose = 0;
@@ -51,7 +51,7 @@ class HomeController extends Controller
              ->join('role_user', 'role_user.user_id', '=', 'users.id')
              ->join('roles', 'roles.id', '=', 'role_user.role_id')
              ->join('wallets', 'wallets.holder_id', '=', 'users.id')
-             ->when(in_array($roleTitle, ['Owner', 'Master', 'Agent', 'SubAgent']), function ($query) use ($user) {
+             ->when(in_array($roleTitle, ['Owner', 'Agent', 'SubAgent']), function ($query) use ($user) {
                  return $query->where('users.agent_id', $user->id);
              })
              ->select(DB::raw('COALESCE(SUM(wallets.balance), 0) as balance'))
@@ -66,7 +66,7 @@ class HomeController extends Controller
          }
      
          // Player balances (only for roles above them)
-         if (in_array($roleTitle, ['Owner', 'Master', 'Agent', 'Senior', 'SubAgent'])) {
+         if (in_array($roleTitle, ['Owner', 'Agent', 'SubAgent'])) {
              $childType = UserType::childUserType(UserType::from($user->type));
              $playerBalance = DB::table('users')
                  ->join('wallets', 'wallets.holder_id', '=', 'users.id')
@@ -83,9 +83,9 @@ class HomeController extends Controller
              'role' => $roleTitle,
              'totalBalance' => $totalBalance->balance ?? 0,
              'playerBalance' => $playerBalance / 100,
-             'totalSenior' => $userCounts['totalSenior'] ?? 0,
-             'totalMaster' => $userCounts['totalMaster'] ?? 0,
+             'totalOwner' => $userCounts['totalOwner'] ?? 0,
              'totalAgent' => $userCounts['totalAgent'] ?? 0,
+             'totalSubAgent' => $userCounts['totalSubAgent'] ?? 0,
              'totalPlayer' => $userCounts['totalPlayer'] ?? 0,
              'totalWinlose' => $totalWinlose,
              'todayWinlose' => $todayWinlose,
@@ -108,33 +108,33 @@ private function fetchTotalTransactions($id, string $type): float
 
 private function userCountGet($user): array
 {
-    $totalSenior = $totalMaster = $totalAgent = $totalPlayer = 0;
+    $totalOwner = $totalAgent = $totalSubAgent = $totalPlayer = 0;
 
     switch (true) {
         case $user->hasRole('Owner'):
-            $seniors = User::where('agent_id', $user->id)->where('type', UserType::Master->value)->pluck('id');
-            $masters = User::whereIn('agent_id', $seniors)->where('type', UserType::Agent->value)->pluck('id');
-            $agents = User::whereIn('agent_id', $masters)->where('type', UserType::SubAgent->value)->pluck('id');
-            $totalPlayer = User::whereIn('agent_id', $agents)->where('type', UserType::Player->value)->count();
+            $owners = User::where('type', UserType::Owner->value)->pluck('id');
+            $agents = User::whereIn('agent_id', $owners)->where('type', UserType::Agent->value)->pluck('id');
+            $subAgents = User::whereIn('agent_id', $agents)->where('type', UserType::SubAgent->value)->pluck('id');
+            $totalPlayer = User::whereIn('agent_id', $subAgents)->where('type', UserType::Player->value)->count();
 
-            $totalSenior = $seniors->count();
-            $totalMaster = $masters->count();
+            $totalOwner = $owners->count();
             $totalAgent = $agents->count();
-            break;
-
-        case $user->hasRole('Master'):
-            $agents = User::where('agent_id', $user->id)->where('type', UserType::SubAgent->value)->pluck('id');
-            $totalPlayer = User::whereIn('agent_id', $agents)->where('type', UserType::Player->value)->count();
-
-            $totalAgent = $agents->count();
+            $totalSubAgent = $subAgents->count();
             break;
 
         case $user->hasRole('Agent'):
+            $subAgents = User::where('agent_id', $user->id)->where('type', UserType::SubAgent->value)->pluck('id');
+            $totalPlayer = User::whereIn('agent_id', $subAgents)->where('type', UserType::Player->value)->count();
+
+            $totalSubAgent = $subAgents->count();
+            break;
+
+        case $user->hasRole('SubAgent'):
             $totalPlayer = User::where('agent_id', $user->id)->where('type', UserType::Player->value)->count();
             break;
     }
 
-    return compact('totalSenior', 'totalMaster', 'totalAgent', 'totalPlayer');
+    return compact('totalOwner', 'totalAgent', 'totalSubAgent', 'totalPlayer');
 }
 
 private function getWinLose($id, $todayOnly = false): float

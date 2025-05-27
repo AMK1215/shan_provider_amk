@@ -31,7 +31,7 @@
             </div>
 
             <!-- Downline Total Balance -->
-            @if(in_array($role, ['Owner', 'Master', 'Agent']))
+            @if(in_array($role, ['Owner', 'Agent', 'SubAgent']))
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
@@ -61,29 +61,15 @@
             @endif
 
             <!-- User Counts -->
-            @if($totalSenior)
+            @if($totalOwner)
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-maroon">
                     <div class="inner">
-                        <h3>{{ $totalSenior }}</h3>
-                        <p>Seniors</p>
+                        <h3>{{ $totalOwner }}</h3>
+                        <p>Owners</p>
                     </div>
                     <div class="icon">
                         <i class="fas fa-user-tie"></i>
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            @if($totalMaster)
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-purple">
-                    <div class="inner">
-                        <h3>{{ $totalMaster }}</h3>
-                        <p>Masters</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-chess-king"></i>
                     </div>
                 </div>
             </div>
@@ -98,6 +84,20 @@
                     </div>
                     <div class="icon">
                         <i class="fas fa-user-secret"></i>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($totalSubAgent)
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-purple">
+                    <div class="inner">
+                        <h3>{{ $totalSubAgent }}</h3>
+                        <p>Sub Agents</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chess-king"></i>
                     </div>
                 </div>
             </div>

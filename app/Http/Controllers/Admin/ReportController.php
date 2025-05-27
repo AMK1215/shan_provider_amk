@@ -48,7 +48,6 @@ class ReportController extends Controller
     private function getAgent()
     {
         $user = Auth::user();
-        // If you have a more complex agent lookup, implement here. For now, just return the user.
         return $user;
     }
 
@@ -66,13 +65,27 @@ class ReportController extends Controller
             )
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
-        // Apply agent/user hierarchy filtering here as needed
-        if ($agent->user_type === UserType::Master->value) {
-            $agentIds = User::where('agent_id', $agent->id)->pluck('id');
-            $query->whereIn('player_agent_id', $agentIds);
-        } elseif ($agent->user_type === UserType::Agent->value || $agent->user_type === UserType::SubAgent->value) {
-            $query->where('player_agent_id', $agent->id);
-        } elseif ($agent->user_type === UserType::Player->value) {
+        // Apply agent/user hierarchy filtering based on role
+        if ($agent->type === UserType::Owner->value) {
+            // Owner can see all bets
+            $query->whereNotNull('player_agent_id');
+        } elseif ($agent->type === UserType::Agent->value) {
+            // Agent can see their own bets and their SubAgents' and Players' bets
+            $subAgentIds = User::where('agent_id', $agent->id)
+                ->where('type', UserType::SubAgent->value)
+                ->pluck('id');
+            $playerIds = User::where('agent_id', $agent->id)
+                ->where('type', UserType::Player->value)
+                ->pluck('id');
+            $query->whereIn('player_agent_id', $subAgentIds->merge($playerIds));
+        } elseif ($agent->type === UserType::SubAgent->value) {
+            // SubAgent can only see their Players' bets
+            $playerIds = User::where('agent_id', $agent->id)
+                ->where('type', UserType::Player->value)
+                ->pluck('id');
+            $query->whereIn('player_agent_id', $playerIds);
+        } elseif ($agent->type === UserType::Player->value) {
+            // Player can only see their own bets
             $query->where('player_id', $agent->id);
         }
 

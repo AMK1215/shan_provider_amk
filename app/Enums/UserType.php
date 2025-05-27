@@ -24,12 +24,20 @@ enum UserType: int
     public static function childUserType(UserType $type): UserType
     {
         return match ($type) {
-
             self::Owner => self::Agent,
             self::Agent => self::SubAgent,
-            self::Agent => self::Player,
             self::SubAgent => self::Player,
             self::Player, self::SystemWallet => self::Player,
+        };
+    }
+
+    public static function canHaveChild(UserType $parent, UserType $child): bool
+    {
+        return match ($parent) {
+            self::Owner => $child === self::Agent,
+            self::Agent => $child === self::SubAgent || $child === self::Player,
+            self::SubAgent => $child === self::Player,
+            self::Player, self::SystemWallet => false,
         };
     }
 }
