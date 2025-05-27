@@ -136,6 +136,50 @@ class TelegramBotController extends Controller
 //     return response('ok', 200);
 // }
 
+// public function telegram_webhook(Request $request)
+// {
+//     $data = json_decode($request->getContent());
+
+//     if ($data && isset($data->message)) {
+//         $chat_id = $data->message->chat->id;
+//         $user_message = strtolower(trim($data->message->text ?? ''));
+
+//         // Detect language: Burmese or English
+//         $lang = $this->detectLanguage($user_message);
+//         // $this->notifyNewAccount($user->telegram_chat_id, $user->preferred_lang ?? 'en');
+//         // $this->sendEventNotification($user->telegram_chat_id, 'account_created', $user->preferred_lang ?? 'en');
+//         // $this->sendEventNotification($user->chat_id, 'account_deactivated', 'mm');
+//         // $this->sendEventNotification($user->chat_id, 'balance_updated', 'en');
+
+//         // Load messages based on detected language
+//         $messages = config("telegram_welcome.$lang");
+
+//         // Fallback to English if no messages found
+//         if (empty($messages)) {
+//             $messages = config("telegram_welcome.en", ["🎰 Welcome to Lucky Million!"]);
+//         }
+
+//         // Select a random welcome message
+//         $text = Arr::random($messages);
+
+//         // Send the welcome message with buttons
+//         $this->bot->sendMessage([
+//             'chat_id' => $chat_id,
+//             'text' => $text,
+//             'parse_mode' => 'HTML',
+//             'reply_markup' => [
+//                 'inline_keyboard' => [[
+//                     ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+//                     ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
+//                 ]]
+//             ],
+//         ]);
+//     }
+
+//     return response('ok', 200);
+// }
+
+
 public function telegram_webhook(Request $request)
 {
     $data = json_decode($request->getContent());
@@ -144,25 +188,17 @@ public function telegram_webhook(Request $request)
         $chat_id = $data->message->chat->id;
         $user_message = strtolower(trim($data->message->text ?? ''));
 
-        // Detect language: Burmese or English
+        // Detect language
         $lang = $this->detectLanguage($user_message);
-        // $this->notifyNewAccount($user->telegram_chat_id, $user->preferred_lang ?? 'en');
-        // $this->sendEventNotification($user->telegram_chat_id, 'account_created', $user->preferred_lang ?? 'en');
-        // $this->sendEventNotification($user->chat_id, 'account_deactivated', 'mm');
-        // $this->sendEventNotification($user->chat_id, 'balance_updated', 'en');
-
-        // Load messages based on detected language
         $messages = config("telegram_welcome.$lang");
 
-        // Fallback to English if no messages found
+        // Fallback to English if empty
         if (empty($messages)) {
             $messages = config("telegram_welcome.en", ["🎰 Welcome to Lucky Million!"]);
         }
 
-        // Select a random welcome message
         $text = Arr::random($messages);
 
-        // Send the welcome message with buttons
         $this->bot->sendMessage([
             'chat_id' => $chat_id,
             'text' => $text,
@@ -178,6 +214,7 @@ public function telegram_webhook(Request $request)
 
     return response('ok', 200);
 }
+
 
 
 
