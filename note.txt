@@ -155,3 +155,10 @@ curl -X POST https://luckymillion.pro/telegram-message-webhook \
   -H "Content-Type: application/json" \
   -d '{"message":{"chat":{"id":123456},"text":"hello"}}'
 
+
+PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 1310720 bytes) in C:\xampp\htdocs\gsc_slot\gsc_plus\vendor\laravel\framework\src\Illuminate\Database\Connection.php on line 581
+
+   Symfony\Component\ErrorHandler\Error\FatalError
+
+  Allowed memory size of 536870912 bytes exhausted (tried to allocate 1310720 bytes)
+

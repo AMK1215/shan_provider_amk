@@ -7,7 +7,7 @@ use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AgentRequest;
 use App\Http\Requests\TransferLogRequest;
-use App\Models\Admin\TransferLog;
+//use App\Models\Admin\TransferLog;
 use App\Models\PaymentType;
 use App\Models\User;
 use App\Services\WalletService;
@@ -22,15 +22,16 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-
+use Illuminate\Support\Facades\Log;
+use App\Models\TransferLog;
 class AgentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    private const AGENT_ROLE = 3;
+    private const AGENT_ROLE = 2;
 
-    private const PLAYER_ROLE = 5;
+    private const PLAYER_ROLE = 4;
 
     public function index(): View
     {
@@ -101,36 +102,66 @@ class AgentController extends Controller
             abort(403);
         }
 
-        $master = Auth::user();
+        $owner = Auth::user();
         $inputs = $request->validated();
 
-        if (isset($inputs['amount']) && $inputs['amount'] > $master->balanceFloat) {
+        // Check if owner has sufficient balance for transfer
+        if (isset($inputs['amount']) && $inputs['amount'] > $owner->balanceFloat) {
             return redirect()->back()->with('error', 'Balance Insufficient');
         }
-        $transfer_amount = $inputs['amount'];
+
+        $transfer_amount = $inputs['amount'] ?? 0;
+
+        // Create the agent
         $userPrepare = array_merge(
             $inputs,
             [
                 'password' => Hash::make($inputs['password']),
                 'agent_id' => Auth::id(),
-                'type' => UserType::Agent,
+                'type' => UserType::Agent->value,
             ]
         );
 
         $agent = User::create($userPrepare);
         $agent->roles()->sync(self::AGENT_ROLE);
 
-        if (isset($inputs['amount'])) {
-            app(WalletService::class)->transfer(
-                $master,
-                $agent,
-                $inputs['amount'],
-                TransactionName::CreditTransfer,
-                [
-                    'old_balance' => $agent->balanceFloat,
-                    'new_balance' => $agent->balanceFloat + $request->amount,
-                ]
-            );
+        // Handle transfer if amount is provided
+        if ($transfer_amount > 0) {
+            try {
+                DB::beginTransaction();
+
+                // Perform the transfer
+                app(WalletService::class)->transfer(
+                    $owner,
+                    $agent,
+                    $transfer_amount,
+                    TransactionName::CreditTransfer,
+                    [
+                        'old_balance' => $agent->balanceFloat,
+                        'new_balance' => $agent->balanceFloat + $transfer_amount,
+                    ]
+                );
+
+                // Log the transfer
+                TransferLog::create([
+                    'from_user_id' => $owner->id,
+                    'to_user_id' => $agent->id,
+                    'amount' => $transfer_amount,
+                    'type' => 'credit_transfer',
+                    'description' => 'Initial credit transfer from owner to new agent',
+                    'meta' => [
+                        'transaction_type' => TransactionName::CreditTransfer->value,
+                        'old_balance' => $agent->balanceFloat,
+                        'new_balance' => $agent->balanceFloat + $transfer_amount,
+                    ]
+                ]);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error during agent creation and transfer: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Error occurred during transfer. Please try again.');
+            }
         }
 
         return redirect()->route('admin.agent.index')
