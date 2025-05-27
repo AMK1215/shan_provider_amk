@@ -120,28 +120,41 @@ class TransferLogController extends Controller
 
         switch ($userType) {
             case UserType::Owner:
-                return User::whereIn('user_type', [UserType::Master->value, UserType::Owner->value])
+                // Owner ↔ Master
+                return User::where('user_type', UserType::Master->value)
+                    ->orWhere('user_type', UserType::Owner->value)
                     ->pluck('id')->toArray();
 
             case UserType::Master:
-                return User::whereIn('user_type', [UserType::Agent->value, UserType::Master->value])
-                    ->where(function ($query) use ($user) {
-                        $query->where('id', $user->id)->orWhere('parent_id', $user->id);
-                    })->pluck('id')->toArray();
+                // Master ↔ Owner and Master ↔ Agent
+                return User::where(function ($query) use ($user) {
+                        $query->where('user_type', UserType::Owner->value)
+                              ->orWhere('user_type', UserType::Agent->value)
+                              ->orWhere('id', $user->id);
+                    })
+                    ->pluck('id')->toArray();
 
             case UserType::Agent:
-                return User::whereIn('user_type', [UserType::Player->value, UserType::SubAgent->value, UserType::Agent->value])
-                    ->where(function ($query) use ($user) {
-                        $query->where('id', $user->id)->orWhere('parent_id', $user->id);
-                    })->pluck('id')->toArray();
+                // Agent ↔ Master, Agent ↔ Player, Agent ↔ SubAgent
+                return User::where(function ($query) use ($user) {
+                        $query->where('user_type', UserType::Master->value)
+                              ->orWhere('user_type', UserType::Player->value)
+                              ->orWhere('user_type', UserType::SubAgent->value)
+                              ->orWhere('id', $user->id);
+                    })
+                    ->pluck('id')->toArray();
 
             case UserType::SubAgent:
-                return User::whereIn('user_type', [UserType::Player->value, UserType::SubAgent->value])
-                    ->where(function ($query) use ($user) {
-                        $query->where('id', $user->id)->orWhere('parent_id', $user->id);
-                    })->pluck('id')->toArray();
+                // SubAgent ↔ Agent, SubAgent ↔ Player
+                return User::where(function ($query) use ($user) {
+                        $query->where('user_type', UserType::Agent->value)
+                              ->orWhere('user_type', UserType::Player->value)
+                              ->orWhere('id', $user->id);
+                    })
+                    ->pluck('id')->toArray();
 
             default:
+                // Player or any other role: only their own logs
                 return [$user->id];
         }
     }
