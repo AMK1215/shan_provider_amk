@@ -48,7 +48,7 @@ class SlotWebhookRequest extends FormRequest
         // Convert operator_code to uppercase if it exists
         if ($this->has('operator_code')) {
             $this->merge([
-                'operator_code' => Str::upper($this->operator_code)
+                'operator_code' => Str::upper($this->operator_code),
             ]);
         }
     }
@@ -103,9 +103,6 @@ class SlotWebhookRequest extends FormRequest
 
     /**
      * Get the member/user associated with a member account
-     *
-     * @param string $memberAccount
-     * @return User|null
      */
     public function getMember(string $memberAccount): ?User
     {
@@ -131,7 +128,7 @@ class SlotWebhookRequest extends FormRequest
         $members = [];
         foreach ($this->getBatchRequests() as $request) {
             $memberAccount = $request['member_account'];
-            if (!isset($this->members[$memberAccount])) {
+            if (! isset($this->members[$memberAccount])) {
                 $this->members[$memberAccount] = User::where('user_name', $memberAccount)->first();
             }
             $members[$memberAccount] = $this->members[$memberAccount];

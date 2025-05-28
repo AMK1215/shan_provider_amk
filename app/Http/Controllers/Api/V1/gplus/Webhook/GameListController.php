@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api\V1\gplus\Webhook;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Services\GameListService;
+use Illuminate\Http\Request;
+
 class GameListController extends Controller
 {
     public function index(Request $request)
@@ -24,6 +25,7 @@ class GameListController extends Controller
         $size = $request->input('size');
 
         $result = GameListService::getGameList($product_code, $operator_code, $game_type, $offset, $size);
+
         return response()->json($result);
     }
 }

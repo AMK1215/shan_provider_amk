@@ -23,9 +23,8 @@ class GameList extends Model
         'is_active',
         'provider',
         'order',
-        'hot_status'
+        'hot_status',
     ];
-
 
     public function product()
     {
@@ -46,5 +45,4 @@ class GameList extends Model
     {
         return $this->where('status', 1)->where('hot_status', 1);
     }
-
 }

@@ -2,22 +2,26 @@
 
 namespace App\Http\Controllers\Admin\TransferLog;
 
+use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use App\Enums\UserType;
-use App\Models\Transaction;
 
 class TransferLogController extends Controller
 {
     protected const OWNER_ROLE = 'Owner';
+
     protected const MASTER_ROLE = 'Master';
+
     protected const AGENT_ROLE = 'Agent';
+
     protected const SUB_AGENT_ROLE = 'SubAgent';
+
     protected const PLAYER_ROLE = 'Player';
 
     public function index(Request $request)
@@ -56,10 +60,10 @@ class TransferLogController extends Controller
             ->where(function ($query) use ($user, $relatedUserIds) {
                 $query->where(function ($q) use ($user, $relatedUserIds) {
                     $q->where('payable_id', $user->id)
-                      ->whereIn('target_user_id', $relatedUserIds);
+                        ->whereIn('target_user_id', $relatedUserIds);
                 })->orWhere(function ($q) use ($user, $relatedUserIds) {
                     $q->whereIn('payable_id', $relatedUserIds)
-                      ->where('target_user_id', $user->id);
+                        ->where('target_user_id', $user->id);
                 });
             })
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -76,10 +80,10 @@ class TransferLogController extends Controller
             ->where(function ($query) use ($user, $relatedUserIds) {
                 $query->where(function ($q) use ($user, $relatedUserIds) {
                     $q->where('payable_id', $user->id)
-                      ->whereIn('target_user_id', $relatedUserIds);
+                        ->whereIn('target_user_id', $relatedUserIds);
                 })->orWhere(function ($q) use ($user, $relatedUserIds) {
                     $q->whereIn('payable_id', $relatedUserIds)
-                      ->where('target_user_id', $user->id);
+                        ->where('target_user_id', $user->id);
                 });
             })
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -98,27 +102,27 @@ class TransferLogController extends Controller
 
             case UserType::Master:
                 return User::where(function ($query) use ($user) {
-                        $query->where('type', UserType::Owner->value)
-                              ->orWhere('type', UserType::Agent->value)
-                              ->orWhere('id', $user->id);
-                    })
+                    $query->where('type', UserType::Owner->value)
+                        ->orWhere('type', UserType::Agent->value)
+                        ->orWhere('id', $user->id);
+                })
                     ->pluck('id')->toArray();
 
             case UserType::Agent:
                 return User::where(function ($query) use ($user) {
-                        $query->where('type', UserType::Master->value)
-                              ->orWhere('type', UserType::Player->value)
-                              ->orWhere('type', UserType::SubAgent->value)
-                              ->orWhere('id', $user->id);
-                    })
+                    $query->where('type', UserType::Master->value)
+                        ->orWhere('type', UserType::Player->value)
+                        ->orWhere('type', UserType::SubAgent->value)
+                        ->orWhere('id', $user->id);
+                })
                     ->pluck('id')->toArray();
 
             case UserType::SubAgent:
                 return User::where(function ($query) use ($user) {
-                        $query->where('type', UserType::Agent->value)
-                              ->orWhere('user_type', UserType::Player->value)
-                              ->orWhere('id', $user->id);
-                    })
+                    $query->where('type', UserType::Agent->value)
+                        ->orWhere('user_type', UserType::Player->value)
+                        ->orWhere('id', $user->id);
+                })
                     ->pluck('id')->toArray();
 
             default:
@@ -149,6 +153,7 @@ class TransferLogController extends Controller
     private function isExistingAgent($userId)
     {
         $user = User::find($userId);
+
         return $user && $user->hasRole(self::SUB_AGENT_ROLE) ? $user->parent : null;
     }
 
@@ -160,12 +165,14 @@ class TransferLogController extends Controller
     private function getAgentOrCurrentUser(): User
     {
         $user = Auth::user();
+
         return $this->findAgent($user->id) ?? $user;
     }
 
     private function findAgent(int $userId): ?User
     {
         $user = User::find($userId);
+
         return $user && $user->hasRole(self::SUB_AGENT_ROLE) ? $user->parent : null;
     }
 

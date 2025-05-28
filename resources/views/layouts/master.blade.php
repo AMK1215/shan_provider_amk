@@ -164,8 +164,8 @@
                         @endcan
                         @can('player_index')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link ">
+                                <a href="{{ route('admin.player.index') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.player.index' ? 'active' : '' }}">
                                     <i class="far fa-user"></i>
                                     <p>
                                         Player List
@@ -218,8 +218,8 @@
                             </li>
                         @endcan
                         <li class="nav-item">
-                            <a href="{{ route('admin.transferLog') }}"
-                                class="nav-link {{ Route::current()->getName() == 'admin.transferLog' ? 'active' : '' }}">
+                            <a href="{{ route('admin.transfer-logs.index') }}"
+                                class="nav-link {{ Route::current()->getName() == 'admin.transfer-logs.index' ? 'active' : '' }}">
                                 <i class="fas fa-exchange-alt"></i>
                                 <p>
                                     Transaction Log
@@ -228,15 +228,37 @@
                         </li>
                         @can('agent_access')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
+                                <a href="{{ route('admin.subacc.index') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.subacc.index' ? 'active' : '' }}">
                                     <i class="fas fa-user-plus"></i>
                                     <p>
-                                        Sub Account
+                                        Sub Agent Account
                                     </p>
                                 </a>
                             </li>
                         @endcan
+                        @can('subagent_permission')
+                            <li class="nav-item">
+                                <a href="{{ route('admin.subacc.profile', auth()->user()->id) }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.subacc.profile' ? 'active' : '' }}">
+                                    <i class="fas fa-user-plus"></i>
+                                    <p>
+                                        Sub Agent Profile
+                                    </p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="{{ route('admin.subacc.agent_players', auth()->user()->id) }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.subacc.agent_players' ? 'active' : '' }}">
+                                    <i class="fas fa-user-plus"></i>
+                                    <p>
+                                        PlayerList
+                                    </p>
+                                </a>
+                            </li>
+                        @endcan
+                        
                         @can('senior_owner_access')
                             <li class="nav-item">
                                 <a href=""

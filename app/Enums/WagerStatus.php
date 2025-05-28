@@ -10,4 +10,3 @@ enum WagerStatus: string
     case Resettled = 'RESETTLED'; // Bets have been resettled
     case Void = 'VOID'; // Bets are void
 }
-

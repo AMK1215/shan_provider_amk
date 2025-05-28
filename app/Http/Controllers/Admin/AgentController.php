@@ -7,8 +7,9 @@ use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AgentRequest;
 use App\Http\Requests\TransferLogRequest;
-//use App\Models\Admin\TransferLog;
+// use App\Models\Admin\TransferLog;
 use App\Models\PaymentType;
+use App\Models\TransferLog;
 use App\Models\User;
 use App\Services\WalletService;
 use Carbon\Carbon;
@@ -20,10 +21,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Log;
-use App\Models\TransferLog;
+
 class AgentController extends Controller
 {
     /**
@@ -38,8 +39,6 @@ class AgentController extends Controller
         if (! Gate::allows('agent_index')) {
             abort(403);
         }
-
-       
 
         $agents = User::with(['roles', 'children.children.poneWinePlayer'])->whereHas('roles', fn ($q) => $q->where('role_id', self::AGENT_ROLE))
             ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
@@ -68,7 +67,7 @@ class AgentController extends Controller
                 'phone' => $agent->phone,
                 'balanceFloat' => $agent->balanceFloat,
                 'status' => $agent->status,
-                'win_lose' => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0) ) + $poneWineTotalAmt,
+                'win_lose' => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)) + $poneWineTotalAmt,
             ];
         });
 
@@ -153,13 +152,14 @@ class AgentController extends Controller
                         'transaction_type' => TransactionName::CreditTransfer->value,
                         'old_balance' => $agent->balanceFloat,
                         'new_balance' => $agent->balanceFloat + $transfer_amount,
-                    ]
+                    ],
                 ]);
 
                 DB::commit();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Error during agent creation and transfer: ' . $e->getMessage());
+                Log::error('Error during agent creation and transfer: '.$e->getMessage());
+
                 return redirect()->back()->with('error', 'Error occurred during transfer. Please try again.');
             }
         }
@@ -252,9 +252,22 @@ class AgentController extends Controller
                 ]
             );
 
+            // Create transfer log
+            TransferLog::create([
+                'from_user_id' => $admin->id,
+                'to_user_id' => $agent->id,
+                'amount' => $request->amount,
+                'type' => 'credit_transfer',
+                'description' => $request->note ?? 'Cash in from owner to agent',
+                'meta' => [
+                    'transaction_type' => TransactionName::CreditTransfer->value,
+                    'old_balance' => $agent->balanceFloat,
+                    'new_balance' => $agent->balanceFloat + $request->amount,
+                ],
+            ]);
+
             return redirect()->route('admin.agent.index')->with('success', 'Money fill request submitted successfully!');
         } catch (Exception $e) {
-
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
@@ -271,7 +284,6 @@ class AgentController extends Controller
             $cashOut = $request->amount;
 
             if ($cashOut > $agent->balanceFloat) {
-
                 return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
             }
 
@@ -288,16 +300,26 @@ class AgentController extends Controller
                 ]
             );
 
+            // Create transfer log
+            TransferLog::create([
+                'from_user_id' => $agent->id,
+                'to_user_id' => $admin->id,
+                'amount' => $request->amount,
+                'type' => 'debit_transfer',
+                'description' => $request->note ?? 'Cash out from agent to owner',
+                'meta' => [
+                    'transaction_type' => TransactionName::DebitTransfer->value,
+                    'old_balance' => $agent->balanceFloat,
+                    'new_balance' => $agent->balanceFloat - $request->amount,
+                ],
+            ]);
+
             return redirect()->back()->with('success', 'Money fill request submitted successfully!');
         } catch (Exception $e) {
-
             session()->flash('error', $e->getMessage());
 
             return redirect()->back()->with('error', $e->getMessage());
         }
-
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'Money fill request submitted successfully!');
     }
 
     public function getTransferDetail($id)

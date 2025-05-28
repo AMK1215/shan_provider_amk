@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class TelegramChat extends Model
 {
     use HasFactory;
+
     protected $fillable = ['user_id', 'message', 'sender'];
 }

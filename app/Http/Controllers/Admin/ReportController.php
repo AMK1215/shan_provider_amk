@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\PlaceBet;
-use App\Models\User;
-use App\Models\Product;
 use App\Enums\UserType;
+use App\Http\Controllers\Controller;
+use App\Models\PlaceBet;
+use App\Models\Product;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -35,7 +35,7 @@ class ReportController extends Controller
     public function getReportDetails(Request $request, $member_account)
     {
         $player = User::where('user_name', $member_account)->first();
-        if (!$player) {
+        if (! $player) {
             abort(404, 'Player not found');
         }
 
@@ -48,6 +48,7 @@ class ReportController extends Controller
     private function getAgent()
     {
         $user = Auth::user();
+
         return $user;
     }
 
@@ -63,7 +64,7 @@ class ReportController extends Controller
                 DB::raw('SUM(COALESCE(bet_amount, amount, 0)) as total_bet'),
                 DB::raw('SUM(CASE WHEN prize_amount > 0 THEN prize_amount ELSE 0 END) as total_win')
             )
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            ->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
         // Apply agent/user hierarchy filtering based on role
         if ($agent->type === UserType::Owner->value) {
@@ -102,7 +103,7 @@ class ReportController extends Controller
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         return PlaceBet::where('member_account', $member_account)
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
             ->orderByDesc('created_at')
             ->get();
     }
@@ -113,7 +114,7 @@ class ReportController extends Controller
 
         // Get the player user record
         $player = User::where('user_name', $member_account)->first();
-        if (!$player) {
+        if (! $player) {
             abort(404, 'Player not found');
         }
 
@@ -121,4 +122,4 @@ class ReportController extends Controller
 
         return view('admin.report.show', compact('bets', 'member_account'));
     }
-} 
+}

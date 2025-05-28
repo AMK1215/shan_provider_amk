@@ -3,22 +3,36 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserType;
+use App\Models\Admin\Bank;
+use App\Models\Admin\Banner;
+use App\Models\Admin\BannerAds;
+use App\Models\Admin\BannerText;
+use App\Models\Admin\Permission;
+use App\Models\Admin\Promotion;
+use App\Models\Admin\Role;
+use App\Models\Admin\TopTenWithdraw;
+use App\Models\PlaceBet;
+use Bavix\Wallet\Interfaces\Wallet;
+use Bavix\Wallet\Traits\HasWallet;
+use Bavix\Wallet\Traits\HasWalletFloat;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Bavix\Wallet\Traits\HasWallet;
-use Bavix\Wallet\Interfaces\Wallet;
-use Bavix\Wallet\Traits\HasWalletFloat;
-use App\Models\Admin\Role;
-use App\Models\Admin\Permission;
-use App\Enums\UserType;
 use Illuminate\Support\Facades\Crypt;
-use App\Models\PlaceBet;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements Wallet
 {
-    use HasApiTokens, HasFactory, Notifiable, HasWalletFloat;
+    use HasApiTokens, HasFactory, HasWalletFloat, Notifiable;
+
+    private const PLAYER_ROLE = 4;
+
+    private const AGENT_ROLE = 2;
+
+    private const SUB_AGENT_ROLE = 3;
+
+    private const ADMIN_ROLE = 1;
 
     /**
      * The attributes that are mass assignable.
@@ -92,6 +106,77 @@ class User extends Authenticatable implements Wallet
         return $this->belongsTo(User::class, 'agent_id');
     }
 
+    // Fetch players managed by an agent
+    public function players()
+    {
+        return $this->hasMany(User::class, 'agent_id');
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    // A user can have a parent (e.g., Agent belongs to an Admin)
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    // Get all players under an agent
+    public function Agentplayers()
+    {
+        return $this->children()->whereHas('roles', function ($query) {
+            $query->where('role_id', self::PLAYER_ROLE);
+        });
+    }
+
+    public function banners()
+    {
+        return $this->hasMany(Banner::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function bannertexts()
+    {
+        return $this->hasMany(BannerText::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function bannerads()
+    {
+        return $this->hasMany(BannerAds::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function toptenwithdraws()
+    {
+        return $this->hasMany(TopTenWithdraw::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    /**
+     * Recursive relationship to get all ancestors up to senior.
+     */
+    public function ancestors()
+    {
+        return $this->parent()->with('ancestors');
+    }
+
+    /**
+     * Recursive relationship to get all descendants down to players.
+     */
+    public function descendants()
+    {
+        return $this->children()->with('descendants');
+    }
+
+    public function agents()
+    {
+        return $this->hasMany(User::class, 'agent_id');
+    }
+
     public function poneWinePlayer()
     {
         return $this->hasMany(PoneWinePlayerBet::class);
@@ -104,8 +189,6 @@ class User extends Authenticatable implements Wallet
 
     /**
      * Get the game provider password for this user.
-     *
-     * @return string|null
      */
     public function getGameProviderPassword(): ?string
     {
@@ -114,18 +197,17 @@ class User extends Authenticatable implements Wallet
                 return Crypt::decryptString($this->game_provider_password);
             } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
                 // Log the error or handle it as appropriate (e.g., return null to regenerate)
-                \Log::error('Failed to decrypt game_provider_password for user ' . $this->id, ['error' => $e->getMessage()]);
+                \Log::error('Failed to decrypt game_provider_password for user '.$this->id, ['error' => $e->getMessage()]);
+
                 return null;
             }
         }
+
         return null;
     }
 
     /**
      * Set the game provider password for this user.
-     *
-     * @param string $password
-     * @return void
      */
     public function setGameProviderPassword(string $password): void
     {
@@ -136,5 +218,30 @@ class User extends Authenticatable implements Wallet
     public function placeBets()
     {
         return $this->hasMany(PlaceBet::class, 'member_account', 'user_name');
+    }
+
+    //     public function hasPermission($permissionTitle)
+    // {
+    //     foreach ($this->roles as $role) {
+    //         if ($role->permissions->contains('title', $permissionTitle)) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+    public function hasPermission($permissionTitle)
+    {
+        // 1. Check direct user permissions
+        if ($this->permissions->contains('title', $permissionTitle)) {
+            return true;
+        }
+        // 2. Check via roles
+        foreach ($this->roles as $role) {
+            if ($role->permissions->contains('title', $permissionTitle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

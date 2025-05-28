@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers\Api\V1\Game;
 
+use App\Enums\SeamlessWalletCode;
 use App\Http\Controllers\Controller;
+use App\Models\GameList;
 use App\Models\User;
 use App\Services\ApiResponseService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
-use App\Enums\SeamlessWalletCode;
-use App\Models\GameList;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http; // Make sure to use Http facade for making requests
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str; // Make sure to use Http facade for making requests
 
 class LaunchGameController extends Controller
 {
     private const LANGUAGE_CODE = 0; // Keeping as 0 as per your provided code
+
     private const PLATFORM_WEB = 'WEB';
+
     private const PLATFORM_DESKTOP = 'DESKTOP';
+
     private const PLATFORM_MOBILE = 'MOBILE';
 
     // Removed generateGameToken and verifyGameToken as they are no longer needed
@@ -32,7 +35,7 @@ class LaunchGameController extends Controller
      * generates a signature, constructs a payload, and makes an HTTP call
      * to an external game provider's launch API.
      *
-     * @param Request $request The incoming HTTP request containing game launch details.
+     * @param  Request  $request  The incoming HTTP request containing game launch details.
      * @return \Illuminate\Http\JsonResponse
      */
     public function launchGame(Request $request)
@@ -40,8 +43,9 @@ class LaunchGameController extends Controller
         Log::info('Launch Game API Request', ['request' => $request->all()]);
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             Log::warning('Unauthenticated user attempting game launch.');
+
             return ApiResponseService::error(
                 SeamlessWalletCode::MemberNotExist,
                 'Authentication required. Please log in.'
@@ -56,6 +60,7 @@ class LaunchGameController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Launch Game API Validation Failed', ['errors' => $e->errors()]);
+
             return ApiResponseService::error(
                 SeamlessWalletCode::InternalServerError,
                 'Validation failed',
@@ -67,7 +72,7 @@ class LaunchGameController extends Controller
         $gameProviderPassword = $user->getGameProviderPassword();
 
         // If the user doesn't have a game provider password yet, generate and store one
-        if (!$gameProviderPassword) {
+        if (! $gameProviderPassword) {
             // Generate a strong, unique, and consistent password for this player for the game provider
             // The provider states "The same password will always need to be used for the exact player after creation."
             $gameProviderPassword = Str::random(50); // Generates a 32-character random string
@@ -78,7 +83,7 @@ class LaunchGameController extends Controller
 
         $agentCode = config('seamless_key.agent_code');
         $secretKey = config('seamless_key.secret_key');
-        $apiUrl = config('seamless_key.api_url') . '/api/operators/launch-game';
+        $apiUrl = config('seamless_key.api_url').'/api/operators/launch-game';
         $apiCurrency = config('seamless_key.api_currency');
         $operatorLobbyUrl = 'https://amk-movies-five.vercel.app';
 
@@ -86,10 +91,10 @@ class LaunchGameController extends Controller
         $requestTime = $nowGmt8->timestamp;
 
         $generatedSignature = md5(
-            $requestTime . $secretKey . 'launchgame' . $agentCode
+            $requestTime.$secretKey.'launchgame'.$agentCode
         );
 
-       // $game_code = 'null';
+        // $game_code = 'null';
 
         $payload = [
             'operator_code' => $agentCode,
@@ -121,9 +126,9 @@ class LaunchGameController extends Controller
                 Log::info('Provider Launch Game API Response', ['response' => $responseData]);
 
                 return response()->json([
-                    'code'    => $responseData['code'] ?? SeamlessWalletCode::InternalServerError->value,
+                    'code' => $responseData['code'] ?? SeamlessWalletCode::InternalServerError->value,
                     'message' => $responseData['message'] ?? 'Game launched successfully',
-                    'url'     => $responseData['url'] ?? '',
+                    'url' => $responseData['url'] ?? '',
                     'content' => $responseData['content'] ?? '',
                 ]);
             }
@@ -131,8 +136,9 @@ class LaunchGameController extends Controller
             Log::error('Provider Launch Game API Request Failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
-                'request_payload' => $payload
+                'request_payload' => $payload,
             ]);
+
             return response()->json(
                 ['code' => $response->status(), 'message' => 'Provider API request failed', 'url' => '', 'content' => $response->body()],
                 $response->status()
@@ -141,8 +147,9 @@ class LaunchGameController extends Controller
             Log::error('Unexpected error during provider API call', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'request_payload' => $payload
+                'request_payload' => $payload,
             ]);
+
             return response()->json(
                 ['code' => 500, 'message' => 'Unexpected error', 'url' => '', 'content' => $e->getMessage()],
                 500

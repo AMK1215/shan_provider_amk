@@ -10,6 +10,7 @@ class Wager extends Model
     use HasFactory;
 
     protected $table = 'wagers';
+
     protected $fillable = [
         'id',
         'code',
@@ -31,7 +32,7 @@ class Wager extends Model
         'created_at_api',
         'updated_at_api',
     ];
-    
+
     // Custom attribute casting
     protected $casts = [
         'created_at' => 'datetime',

@@ -12,7 +12,7 @@ class GameListService
         $api_url = rtrim(config('seamless_key.api_url'), '/');
         $date = new \DateTime('now', new \DateTimeZone('Asia/Shanghai'));
         $request_time = $date->getTimestamp();
-        $sign_str = $request_time . $secret_key . 'gamelist' . $operator_code;
+        $sign_str = $request_time.$secret_key.'gamelist'.$operator_code;
         $sign = md5($sign_str);
 
         // Debug logging for signature generation
@@ -39,6 +39,7 @@ class GameListService
         }
 
         $response = Http::get("{$api_url}/api/operators/provider-games", $params);
+
         return $response->json();
     }
-} 
+}

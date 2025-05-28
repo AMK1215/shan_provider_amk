@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class PoneWineBetInfosTableSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class PoneWineBetInfosTableSeeder extends Seeder
 
         foreach ($playerBetIds as $playerBetId) {
             DB::table('pone_wine_bet_infos')->insert([
-                'bet_no' => 'BET-' . Str::random(6),
+                'bet_no' => 'BET-'.Str::random(6),
                 'bet_amount' => rand(100, 1000),
                 'pone_wine_player_bet_id' => $playerBetId,
                 'created_at' => now(),

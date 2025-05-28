@@ -16,7 +16,7 @@ class RoleUserTableSeeder extends Seeder
         UserType::Agent->value => 2,
         UserType::SubAgent->value => 3,
         UserType::Player->value => 4,
-        UserType::SystemWallet->value => 5
+        UserType::SystemWallet->value => 5,
     ];
 
     private const ROLE_NAMES = [
@@ -24,7 +24,7 @@ class RoleUserTableSeeder extends Seeder
         UserType::Agent->value => 'Agent',
         UserType::SubAgent->value => 'SubAgent',
         UserType::Player->value => 'Player',
-        UserType::SystemWallet->value => 'SystemWallet'
+        UserType::SystemWallet->value => 'SystemWallet',
     ];
 
     public function run(): void
@@ -47,17 +47,18 @@ class RoleUserTableSeeder extends Seeder
 
                 if ($users->isEmpty()) {
                     Log::warning("No users found for type: {$userType}");
+
                     continue;
                 }
 
                 // Bulk assign roles
-                $users->each(function ($user) use ($roleId, $userType, &$successCount) {
+                $users->each(function ($user) use ($roleId, &$successCount) {
                     try {
                         $user->roles()->sync($roleId);
                         $successCount++;
                         Log::info("Assigned role '{$roleId}' to user: {$user->user_name}");
                     } catch (\Exception $e) {
-                        Log::error("Failed to assign role '{$roleId}' to user {$user->user_name}: " . $e->getMessage());
+                        Log::error("Failed to assign role '{$roleId}' to user {$user->user_name}: ".$e->getMessage());
                     }
                 });
 
@@ -72,7 +73,7 @@ class RoleUserTableSeeder extends Seeder
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error in RoleUserTableSeeder: " . $e->getMessage());
+            Log::error('Error in RoleUserTableSeeder: '.$e->getMessage());
             throw $e;
         }
     }
@@ -82,8 +83,8 @@ class RoleUserTableSeeder extends Seeder
         $existingRoles = Role::whereIn('id', array_values(self::ROLE_IDS))->pluck('id')->toArray();
         $missingRoles = array_diff(array_values(self::ROLE_IDS), $existingRoles);
 
-        if (!empty($missingRoles)) {
-            throw new \RuntimeException("Missing required roles with IDs: " . implode(', ', $missingRoles));
+        if (! empty($missingRoles)) {
+            throw new \RuntimeException('Missing required roles with IDs: '.implode(', ', $missingRoles));
         }
     }
 
@@ -91,9 +92,9 @@ class RoleUserTableSeeder extends Seeder
     {
         try {
             DB::table('role_user')->truncate();
-            Log::info("Cleaned up existing role assignments");
+            Log::info('Cleaned up existing role assignments');
         } catch (\Exception $e) {
-            Log::error("Failed to cleanup existing role assignments: " . $e->getMessage());
+            Log::error('Failed to cleanup existing role assignments: '.$e->getMessage());
             throw $e;
         }
     }
@@ -102,7 +103,7 @@ class RoleUserTableSeeder extends Seeder
     {
         if ($successCount !== $totalUsers) {
             Log::warning("Role assignment verification failed. Expected: {$totalUsers}, Actual: {$successCount}");
-            throw new \RuntimeException("Role assignment verification failed. Some users may not have received their roles.");
+            throw new \RuntimeException('Role assignment verification failed. Some users may not have received their roles.');
         }
 
         // Verify each user has exactly one role
@@ -113,8 +114,8 @@ class RoleUserTableSeeder extends Seeder
             ->get();
 
         if ($usersWithMultipleRoles->isNotEmpty()) {
-            Log::error("Found users with multiple roles: " . $usersWithMultipleRoles->pluck('user_id')->implode(', '));
-            throw new \RuntimeException("Some users have multiple roles assigned. This should not happen.");
+            Log::error('Found users with multiple roles: '.$usersWithMultipleRoles->pluck('user_id')->implode(', '));
+            throw new \RuntimeException('Some users have multiple roles assigned. This should not happen.');
         }
     }
 }

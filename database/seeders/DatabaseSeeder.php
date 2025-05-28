@@ -29,8 +29,8 @@ class DatabaseSeeder extends Seeder
             ContactSeeder::class,
             PromotionSeeder::class,
             AdsVedioSeeder::class,
-            PoneWineBetsTableSeeder::class, 
-            PoneWinePlayerBetsTableSeeder::class, 
+            PoneWineBetsTableSeeder::class,
+            PoneWinePlayerBetsTableSeeder::class,
             PoneWineBetInfosTableSeeder::class,
             GameTypeTableSeeder::class,
             GscPlusProductTableSeeder::class,
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             SEOGameListSeeder::class,
             YEEBETGameListSeeder::class,
             PlayTechGameSeeder::class,
-            PlayTechLiveCasinoGameSeeder::class, 
+            PlayTechLiveCasinoGameSeeder::class,
             JokerSlotGameSeeder::class,
             JokerOtherGameSeeder::class,
             JokerFishingGameSeeder::class,
@@ -48,12 +48,12 @@ class DatabaseSeeder extends Seeder
             SpadeGamingFishingGameSeeder::class,
             Live22SlotGameSeeder::class,
             WMCasinoGameSeeder::class,
-            HabaneroSlotGameSeeder::class, 
+            HabaneroSlotGameSeeder::class,
             AWCSlotGameSeeder::class,
             AWCFishingGameSeeder::class,
             SabaSportBookGameSeeder::class,
             PGSoftSlotGameSeeder::class,
-            PragmaticPlayLiveCasinoPremiumGameSeeder::class, 
+            PragmaticPlayLiveCasinoPremiumGameSeeder::class,
             PragmaticPlayVirtualSportGameSeeder::class,
             PragmaticPlayLiveCasinoGameSeeder::class,
             DreamGamingSeeder::class,
@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
             HACKSAWSlotGameSeeder::class,
             HACKSAWOtherGameSeeder::class,
             ImoonOtherGameSeeder::class,
-            EpicwinGameSeeder::class, 
+            EpicwinGameSeeder::class,
             FACHAISLOTGameSeeder::class,
             FACHAIFishingGameSeeder::class,
             Rich88SlotGameSeeder::class,
@@ -81,11 +81,7 @@ class DatabaseSeeder extends Seeder
             AILiveCasinoGameSeeder::class,
             AIPokerGameSeeder::class,
             SmartSoftGameSeeder::class,
-            WorldEntertainmentSlotGameSeeder::class
-
-
-
-
+            WorldEntertainmentSlotGameSeeder::class,
 
         ]);
     }

@@ -15,7 +15,7 @@ class Transaction extends ModelsTransaction
     /**
      * @var array<string, string>
      */
-    //protected $fillable = ['agent_id'];
+    // protected $fillable = ['agent_id'];
     protected $fillable = [
         'payable_type',
         'payable_id',
@@ -25,13 +25,13 @@ class Transaction extends ModelsTransaction
         'confirmed',
         'meta',
         'uuid',
-        'event_id', 
+        'event_id',
         'seamless_transaction_id',
-        'old_balance', 
+        'old_balance',
         'new_balance',
-        'name', 
+        'name',
         'target_user_id',
-        'is_report_generated'
+        'is_report_generated',
     ];
 
     protected $casts = [
@@ -45,8 +45,6 @@ class Transaction extends ModelsTransaction
     {
         return $this->belongsTo(User::class);
     }
-
-    
 
     public function targetUser()
     {

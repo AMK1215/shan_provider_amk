@@ -21,6 +21,7 @@ class GscPlusProductTableSeeder extends Seeder
         // Check if the JSON data is valid
         if (json_last_error() !== JSON_ERROR_NONE) {
             $this->command->error('Invalid JSON data');
+
             return;
         }
 

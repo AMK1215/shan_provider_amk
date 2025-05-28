@@ -1,16 +1,18 @@
 <?php
+
 namespace App\Services;
-use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\PlaceBet;
+
 use App\Enums\UserType;
+use App\Models\PlaceBet;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
     public function getPlayerSummary(User $user)
     {
         $playerUsernames = $this->getDescendantPlayers($user)->pluck('user_name')->toArray();
-dd($playerUsernames); // Add this temporarily to debug
+        dd($playerUsernames); // Add this temporarily to debug
 
         $query = PlaceBet::query();
 
@@ -32,24 +34,23 @@ dd($playerUsernames); // Add this temporarily to debug
             DB::raw('SUM(prize_amount) as total_win'),
             DB::raw('SUM(CASE WHEN bet_amount > prize_amount THEN bet_amount - prize_amount ELSE 0 END) as total_lost')
         )
-        ->groupBy('member_account')
-        ->orderBy('member_account')
-        ->get();
+            ->groupBy('member_account')
+            ->orderBy('member_account')
+            ->get();
     }
 
     private function getDescendantPlayers(User $user)
-{
-    $descendants = collect();
+    {
+        $descendants = collect();
 
-    foreach ($user->children as $child) {
-        if ($child->type === UserType::Player) {
-            $descendants->push($child);
-        } else {
-            $descendants = $descendants->merge($this->getDescendantPlayers($child));
+        foreach ($user->children as $child) {
+            if ($child->type === UserType::Player) {
+                $descendants->push($child);
+            } else {
+                $descendants = $descendants->merge($this->getDescendantPlayers($child));
+            }
         }
+
+        return $descendants;
     }
-
-    return $descendants;
-}
-
 }

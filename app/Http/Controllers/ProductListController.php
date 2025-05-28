@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Services\ProductListService;
+use Illuminate\Http\Request;
 
 class ProductListController extends Controller
 {
@@ -11,7 +11,8 @@ class ProductListController extends Controller
     {
         $offset = $request->query('offset', 0);
         $size = $request->query('size');
-        $result = ProductListService::getProductList((int)$offset, $size !== null ? (int)$size : null);
+        $result = ProductListService::getProductList((int) $offset, $size !== null ? (int) $size : null);
+
         return response()->json($result);
     }
-} 
+}

@@ -22,7 +22,7 @@ class PromotionController extends Controller
     public function index()
     {
         $promotions = Promotion::where('admin_id', auth()->id())->get(); // Fetch banners for the logged-in admin
-        //return $banners;
+        // return $banners;
 
         return view('admin.promotions.index', compact('promotions'));
     }

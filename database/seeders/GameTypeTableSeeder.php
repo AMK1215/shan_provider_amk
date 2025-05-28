@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\GameType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\GameType;
+
 class GameTypeTableSeeder extends Seeder
 {
     /**
@@ -33,5 +34,4 @@ class GameTypeTableSeeder extends Seeder
             GameType::create($gameTypeData);
         }
     }
-
 }

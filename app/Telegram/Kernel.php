@@ -2,13 +2,13 @@
 
 namespace App\Telegram;
 
-use WeStacks\TeleBot\Kernel as BaseKernel;
-use App\Telegram\Handlers\StartCommandHandler;
-use App\Telegram\Handlers\HelpCommandHandler;
 use App\Telegram\Handlers\AboutCommandHandler;
 use App\Telegram\Handlers\ContactCommandHandler;
-use App\Telegram\Handlers\MenuCommandHandler;
+use App\Telegram\Handlers\HelpCommandHandler;
 use App\Telegram\Handlers\MenuCallbackHandler;
+use App\Telegram\Handlers\MenuCommandHandler;
+use App\Telegram\Handlers\StartCommandHandler;
+use WeStacks\TeleBot\Kernel as BaseKernel;
 
 class Kernel extends BaseKernel
 {
@@ -35,4 +35,4 @@ class Kernel extends BaseKernel
             'callback_query' => MenuCallbackHandler::class,
         ];
     }
-} 
+}

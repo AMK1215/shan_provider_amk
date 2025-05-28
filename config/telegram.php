@@ -43,4 +43,4 @@ return [
         'route' => 'telegram-message-webhook',
         'middleware' => ['api'],
     ],
-]; 
+];

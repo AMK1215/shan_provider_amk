@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\gplus\Webhook;
 
+use App\Enums\SeamlessWalletCode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ApiResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use App\Enums\SeamlessWalletCode;
 
 class GetBalanceController extends Controller
 {
@@ -25,9 +25,9 @@ class GetBalanceController extends Controller
         // Signature check
         $secretKey = Config::get('seamless_key.secret_key');
         $expectedSign = md5(
-            $request->operator_code .
-            $request->request_time .
-            'getbalance' .
+            $request->operator_code.
+            $request->request_time.
+            'getbalance'.
             $secretKey
         );
         $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
@@ -39,7 +39,7 @@ class GetBalanceController extends Controller
         $results = [];
         $specialCurrencies = ['IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         foreach ($request->batch_requests as $req) {
-            if (!$isValidSign) {
+            if (! $isValidSign) {
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
@@ -47,10 +47,11 @@ class GetBalanceController extends Controller
                     'code' => \App\Enums\SeamlessWalletCode::InvalidSignature->value,
                     'message' => 'Incorrect Signature',
                 ];
+
                 continue;
             }
 
-            if (!$isValidCurrency) {
+            if (! $isValidCurrency) {
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
@@ -58,6 +59,7 @@ class GetBalanceController extends Controller
                     'code' => \App\Enums\SeamlessWalletCode::InternalServerError->value,
                     'message' => 'Invalid Currency',
                 ];
+
                 continue;
             }
 
@@ -68,12 +70,12 @@ class GetBalanceController extends Controller
                     $balance = $balance / 1000; // Apply 1:1000 conversion here
                     $balance = round($balance, 4);
                 } else {
-                   $balance = round($balance, 2);
+                    $balance = round($balance, 2);
                 }
                 $results[] = [
                     'member_account' => $req['member_account'],
                     'product_code' => $req['product_code'],
-                    'balance' => (float)$balance,
+                    'balance' => (float) $balance,
                     'code' => \App\Enums\SeamlessWalletCode::Success->value,
                     'message' => 'Success',
                 ];

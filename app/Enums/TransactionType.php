@@ -10,10 +10,10 @@ enum TransactionType: string
     public static function fromAction(string $action, float $amount): self
     {
         $depositActions = [
-            'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND'
+            'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND',
         ];
         $withdrawActions = [
-            'BET', 'TIP', 'BET_PRESERVE'
+            'BET', 'TIP', 'BET_PRESERVE',
         ];
         $adjustableActions = ['ADJUSTMENT', 'ROLLBACK', 'CANCEL'];
 
@@ -26,6 +26,7 @@ enum TransactionType: string
         if (in_array($action, $adjustableActions, true)) {
             return $amount > 0 ? self::Deposit : self::Withdraw;
         }
+
         // Default fallback
         return $amount >= 0 ? self::Deposit : self::Withdraw;
     }

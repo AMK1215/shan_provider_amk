@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class GameType extends Model
 {
     use HasFactory;
+
     protected $fillable = ['code', 'name', 'name_mm', 'img', 'status', 'order'];
 
     protected $appends = ['image', 'img_url'];
@@ -17,7 +18,7 @@ class GameType extends Model
         return $this->belongsToMany(Product::class, 'game_type_product')->withPivot('image');
     }
 
-    public function getImageAttribute() //getImageAttribute
+    public function getImageAttribute() // getImageAttribute
     {
         return $this->products->pluck('pivot.image');
     }

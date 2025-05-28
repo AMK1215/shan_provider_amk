@@ -3,28 +3,48 @@
 namespace App\Http\Controllers\Admin;
 
 use Amp\Parallel\Worker\Execution;
+use App\Enums\TransactionName;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Permission;
 use App\Models\Admin\Role;
+use App\Models\TransferLog;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class SubAccountController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    protected const SUB_AGENT_ROlE = 8;
+    protected const SUB_AGENT_ROLE = 3;
+
+    // protected const SUB_AGENT_PROFILE = 'subagent_permission';
+    protected const SUB_AGENT_PERMISSIONS = [
+        'subagent_permission',
+        'subagent_permission_edit',
+        'subagent_player_access',
+        'subagent_player_index',
+        'subagent_player_create',
+        'subagent_player_edit',
+        'subagent_player_delete',
+        'subagent_deposit',
+        'subagent_withdraw',
+        'subagent_transfer',
+        'subagent_report',
+    ];
 
     public function index()
     {
         $users = User::with('roles')
             ->whereHas('roles', function ($query) {
-                $query->where('role_id', self::SUB_AGENT_ROlE);
+                $query->where('role_id', self::SUB_AGENT_ROLE);
             })
             ->where('agent_id', auth()->id())
             ->orderBy('id', 'desc')
@@ -46,6 +66,51 @@ class SubAccountController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         $agent = User::create([
+    //             'user_name' => $request->user_name,
+    //             'name' => $request->name,
+    //             'phone' => $request->phone,
+    //             'password' => Hash::make($request->password),
+    //             'type' => UserType::SubAgent,
+    //             'agent_id' => Auth::id(),
+    //         ]);
+    //         $agent->roles()->sync(self::SUB_AGENT_ROlE);
+    //         $agent->permissions()->sync(self::SUB_AGENT_PROFILE);
+    //     } catch (Exception $e) {
+    //     }
+
+    //     return redirect()->route('admin.subacc.index');
+    // }
+
+    //     public function store(Request $request)
+    // {
+    //     try {
+    //         $agent = User::create([
+    //             'user_name' => $request->user_name,
+    //             'name' => $request->name,
+    //             'phone' => $request->phone,
+    //             'password' => Hash::make($request->password),
+    //             'type' => UserType::SubAgent,
+    //             'agent_id' => Auth::id(),
+    //         ]);
+    //         $agent->roles()->sync(self::SUB_AGENT_ROLE);
+
+    //         // Assign the subagent_permission by ID
+    //         $permissionId = \App\Models\Admin\Permission::where('title', self::SUB_AGENT_PROFILE)->value('id');
+    //         if ($permissionId) {
+    //             $agent->permissions()->sync([$permissionId]);
+    //         }
+    //     } catch (Exception $e) {
+    //         Log::error('Error creating sub-agent: ' . $e->getMessage());
+    //         return redirect()->back()->with('error', 'Failed to create sub-agent. Please try again.');
+    //     }
+
+    //     return redirect()->route('admin.subacc.index');
+    // }
+
     public function store(Request $request)
     {
         try {
@@ -54,14 +119,21 @@ class SubAccountController extends Controller
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
-                'type' => UserType::subAgent,
+                'type' => UserType::SubAgent,
                 'agent_id' => Auth::id(),
             ]);
-            $agent->roles()->sync(self::SUB_AGENT_ROlE);
+            $agent->roles()->sync(self::SUB_AGENT_ROLE);
+
+            // Assign multiple permissions by title
+            $permissionIds = \App\Models\Admin\Permission::whereIn('title', self::SUB_AGENT_PERMISSIONS)->pluck('id')->toArray();
+            $agent->permissions()->sync($permissionIds);
         } catch (Exception $e) {
+            Log::error('Error creating sub-agent: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to create sub-agent. Please try again.');
         }
 
-        return redirect()->route('admin.subacc.index');
+        return redirect()->route('admin.subacc.index')->with('success', 'Sub-agent created successfully');
     }
 
     /**
@@ -144,6 +216,172 @@ class SubAccountController extends Controller
     {
         $randomNumber = mt_rand(10000000, 99999999);
 
-        return 'A'.$randomNumber;
+        return 'SubAg'.$randomNumber;
+    }
+
+    // public function permission($id)
+    // {
+    //     $subAgent = User::findOrFail($id);
+
+    //     // Ensure the current user is the parent agent
+    //     if ($subAgent->agent_id !== Auth::id()) {
+    //         abort(403, 'You do not have permission to manage this sub-agent.');
+    //     }
+
+    //     $permissions = Permission::all();
+    //     $subAgentPermissions = $subAgent->permissions->pluck('id')->toArray();
+
+    //     return view('admin.sub_acc.sub_acc_permission', compact('subAgent', 'permissions', 'subAgentPermissions'));
+    // }
+
+    public function permission($id)
+    {
+        $subAgent = User::findOrFail($id);
+
+        // Ensure the current user is the parent agent
+        if ($subAgent->agent_id !== Auth::id()) {
+            abort(403, 'You do not have permission to manage this sub-agent.');
+        }
+
+        // Only permissions in the 'subagent' group
+        $permissions = \App\Models\Admin\Permission::where('group', 'subagent')->get()->groupBy('group');
+        $subAgentPermissions = $subAgent->permissions->pluck('id')->toArray();
+
+        return view('admin.sub_acc.sub_acc_permission', compact('subAgent', 'permissions', 'subAgentPermissions'));
+    }
+
+    public function updatePermission(Request $request, $id)
+    {
+        $subAgent = User::findOrFail($id);
+
+        // Ensure the current user is the parent agent
+        if ($subAgent->agent_id !== Auth::id()) {
+            abort(403, 'You do not have permission to manage this sub-agent.');
+        }
+
+        $permissions = $request->input('permissions', []);
+        $subAgent->permissions()->sync($permissions);
+
+        return redirect()->back()->with('success', 'Permissions updated successfully.');
+    }
+
+    // sub agent profile
+    public function subAgentProfile($id)
+    {
+        $subAgent = User::findOrFail($id);
+
+        return view('admin.sub_acc.sub_acc_profile', compact('subAgent'));
+    }
+
+    //     public function agentPlayers()
+    // {
+    //     $subAgent = auth()->user();
+
+    //     // Ensure the user is a subagent
+    //     if (!$subAgent->hasRole('SubAgent')) {
+    //         abort(403, 'Only subagents can access this page.');
+    //     }
+
+    //     // Get the parent agent
+    //     $agent = $subAgent->agent;
+
+    //     // Get all players under the parent agent
+    //     $players = \App\Models\User::whereHas('roles', function ($q) {
+    //             $q->where('title', 'Player');
+    //         })
+    //         ->where('agent_id', $agent->id)
+    //         ->get();
+    //         Log::info('Agent ID: ' . $agent->id);
+    //         Log::info('Players found: ' . $players->count());
+
+    //     return view('admin.sub_acc.agent_players', compact('players', 'agent'));
+    // }
+    // public function agentPlayers(Request $request)
+    // {
+    //     $subAgent = auth()->user();
+
+    //     if (!$subAgent->hasRole('SubAgent')) {
+    //         abort(403, 'Only subagents can access this page.');
+    //     }
+
+    //     $agent = $subAgent->agent;
+
+    //     $query = \App\Models\User::whereHas('roles', function ($q) {
+    //             $q->where('title', 'Player');
+    //         })
+    //         ->where('agent_id', $agent->id);
+
+    //     // Search by name or username
+    //     if ($request->filled('search')) {
+    //         $search = $request->input('search');
+    //         $query->where(function($q) use ($search) {
+    //             $q->where('name', 'ILIKE', "%$search%")
+    //               ->orWhere('user_name', 'ILIKE', "%$search%")
+    //               ->orWhere('phone', 'ILIKE', "%$search%");
+    //         });
+    //     }
+
+    //     // Filter by status
+    //     if ($request->filled('status')) {
+    //         $query->where('status', $request->input('status'));
+    //     }
+
+    //     $players = $query->orderBy('id', 'desc')->paginate(10)->appends($request->all());
+
+    //     return view('admin.sub_acc.agent_players', compact('players', 'agent'));
+    // }
+
+    public function agentPlayers(Request $request)
+    {
+        $subAgent = auth()->user();
+
+        if (! $subAgent->hasRole('SubAgent')) {
+            abort(403, 'Only subagents can access this page.');
+        }
+
+        $agent = $subAgent->agent;
+
+        $query = \App\Models\User::whereHas('roles', function ($q) {
+            $q->where('title', 'Player');
+        })
+            ->where('agent_id', $agent->id);
+
+        // Search by name or username
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ILIKE', "%$search%")
+                    ->orWhere('user_name', 'ILIKE', "%$search%")
+                    ->orWhere('phone', 'ILIKE', "%$search%");
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $players = $query->orderBy('id', 'desc')->paginate(10)->appends($request->all());
+
+        // For each player, get their totals
+        foreach ($players as $player) {
+            $totals = \App\Models\PlaceBet::where('member_account', $player->user_name)
+                ->selectRaw('
+                COUNT(id) as total_stake,
+                SUM(bet_amount) as total_bet,
+                SUM(prize_amount) as total_payout,
+                MIN(before_balance) as min_before_balance,
+                MAX(balance) as max_balance
+            ')
+                ->first();
+
+            $player->total_stake = $totals->total_stake ?? 0;
+            $player->total_bet = $totals->total_bet ?? 0;
+            $player->total_payout = $totals->total_payout ?? 0;
+            $player->min_before_balance = $totals->min_before_balance ?? 0;
+            $player->max_balance = $totals->max_balance ?? 0;
+        }
+
+        return view('admin.sub_acc.agent_players', compact('players', 'agent'));
     }
 }

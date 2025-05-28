@@ -17,11 +17,11 @@ use App\Models\Admin\Bank;
 use App\Models\Admin\Banner;
 use App\Models\Admin\BannerAds;
 use App\Models\Admin\BannerText;
-use App\Models\GameList;
-use App\Models\GameType;
 use App\Models\Admin\Promotion;
 use App\Models\Admin\TopTenWithdraw;
 use App\Models\Contact;
+use App\Models\GameList;
+use App\Models\GameType;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Auth;
 class GSCPlusProviderController extends Controller
 {
     use HttpResponses;
-    
+
     public function gameTypes()
     {
         $types = GameType::with(['products' => function ($query) {
@@ -69,10 +69,9 @@ class GSCPlusProviderController extends Controller
     public function hotGameLists()
     {
         $hot_games = GameList::hotGame()->get();
+
         return $this->success(GameListResource::collection($hot_games));
     }
-
-
 
     public function banks()
     {

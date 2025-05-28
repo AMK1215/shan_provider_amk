@@ -13,9 +13,13 @@ use Illuminate\Support\Str;
 class PlaceBetSeeder extends Seeder
 {
     private const GAME_TYPES = ['slot', 'table', 'card', 'arcade', 'lottery'];
+
     private const PROVIDERS = ['pragmatic', 'evolution', 'netent', 'playtech', 'microgaming'];
+
     private const ACTIONS = ['bet', 'win', 'refund'];
+
     private const STATUSES = ['pending', 'completed', 'cancelled'];
+
     private const CURRENCIES = ['MMK', 'THB', 'USD'];
 
     public function run(): void
@@ -35,22 +39,22 @@ class PlaceBetSeeder extends Seeder
                 ->get();
 
             // Log detailed player information
-            Log::info("Player query SQL: " . User::where('type', UserType::Player->value)->toSql());
-            Log::info("Player query bindings: " . json_encode(User::where('type', UserType::Player->value)->getBindings()));
-            
+            Log::info('Player query SQL: '.User::where('type', UserType::Player->value)->toSql());
+            Log::info('Player query bindings: '.json_encode(User::where('type', UserType::Player->value)->getBindings()));
+
             if ($players->isEmpty()) {
                 // Check if any users exist at all
                 $allUsers = User::select('type', DB::raw('count(*) as count'))
                     ->groupBy('type')
                     ->get();
-                
-                Log::error("No players found in the database. Current user distribution:", [
-                    'user_types' => $allUsers->toArray()
+
+                Log::error('No players found in the database. Current user distribution:', [
+                    'user_types' => $allUsers->toArray(),
                 ]);
-                
+
                 throw new \RuntimeException(
-                    "No players found in the database. Please ensure UsersTableSeeder has been run successfully. " .
-                    "Current user distribution: " . json_encode($allUsers->toArray())
+                    'No players found in the database. Please ensure UsersTableSeeder has been run successfully. '.
+                    'Current user distribution: '.json_encode($allUsers->toArray())
                 );
             }
 
@@ -74,7 +78,7 @@ class PlaceBetSeeder extends Seeder
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error in PlaceBetSeeder: " . $e->getMessage());
+            Log::error('Error in PlaceBetSeeder: '.$e->getMessage());
             throw $e;
         }
     }
@@ -98,7 +102,7 @@ class PlaceBetSeeder extends Seeder
                 'product_code' => rand(1000, 9999),
                 'provider_name' => $this->getRandomProvider(),
                 'game_type' => $this->getRandomGameType(),
-                'operator_code' => 'OP' . rand(1000, 9999),
+                'operator_code' => 'OP'.rand(1000, 9999),
                 'request_time' => now()->subMinutes(rand(1, 1000000)),
                 'sign' => Str::random(32),
                 'currency' => $this->getRandomCurrency(),
@@ -109,14 +113,14 @@ class PlaceBetSeeder extends Seeder
                 'bet_amount' => $betAmount,
                 'prize_amount' => $prizeAmount,
                 'tip_amount' => 0,
-                'wager_code' => 'WAGER' . rand(1000, 9999),
+                'wager_code' => 'WAGER'.rand(1000, 9999),
                 'wager_status' => 'completed',
                 'round_id' => Str::uuid(),
                 'payload' => json_encode(['game_details' => 'Sample game details']),
                 'settle_at' => now(),
-                'game_code' => 'GAME' . rand(1000, 9999),
-                'game_name' => 'Game ' . rand(1, 100),
-                'channel_code' => 'CH' . rand(1000, 9999),
+                'game_code' => 'GAME'.rand(1000, 9999),
+                'game_name' => 'Game '.rand(1, 100),
+                'channel_code' => 'CH'.rand(1000, 9999),
                 'status' => $this->getRandomStatus(),
                 'before_balance' => $beforeBalance,
                 'balance' => $currentBalance,
@@ -133,7 +137,7 @@ class PlaceBetSeeder extends Seeder
             }
         }
 
-        if (!empty($bets)) {
+        if (! empty($bets)) {
             PlaceBet::insert($bets);
         }
 
@@ -152,6 +156,7 @@ class PlaceBetSeeder extends Seeder
         if (rand(1, 100) <= 70) {
             return round($betAmount * (rand(0, 500) / 100), 2);
         }
+
         return 0;
     }
 
@@ -179,4 +184,4 @@ class PlaceBetSeeder extends Seeder
     {
         return self::CURRENCIES[array_rand(self::CURRENCIES)];
     }
-} 
+}

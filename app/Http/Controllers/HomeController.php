@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
-
 class HomeController extends Controller
 {
     public function __construct()
@@ -33,130 +32,126 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    
+    public function index()
+    {
+        $user = Auth::user();
+        $roleTitle = $user->roles->pluck('title')->first(); // 'Owner', 'Agent', 'SubAgent', 'Player'
 
-     public function index()
-     {
-         $user = Auth::user();
-         $roleTitle = $user->roles->pluck('title')->first(); // 'Owner', 'Agent', 'SubAgent', 'Player'
-     
-         $totalWinlose = 0;
-         $todayWinlose = 0;
-         $todayDeposit = 0;
-         $todayWithdraw = 0;
-         $playerBalance = 0;
-     
-         // Fetch balance from all children users (based on agent_id)
-         $totalBalance = DB::table('users')
-             ->join('role_user', 'role_user.user_id', '=', 'users.id')
-             ->join('roles', 'roles.id', '=', 'role_user.role_id')
-             ->join('wallets', 'wallets.holder_id', '=', 'users.id')
-             ->when(in_array($roleTitle, ['Owner', 'Agent', 'SubAgent']), function ($query) use ($user) {
-                 return $query->where('users.agent_id', $user->id);
-             })
-             ->select(DB::raw('COALESCE(SUM(wallets.balance), 0) as balance'))
-             ->first();
-     
-         // Agent-specific metrics
-         if (in_array($roleTitle, ['Agent', 'SubAgent'])) {
-             $todayWinlose = $this->getWinLose($user->id, true);
-             $totalWinlose = $this->getWinLose($user->id);
-             $todayDeposit = $this->fetchTotalTransactions($user->id, 'deposit');
-             $todayWithdraw = $this->fetchTotalTransactions($user->id, 'withdraw');
-         }
-     
-         // Player balances (only for roles above them)
-         if (in_array($roleTitle, ['Owner', 'Agent', 'SubAgent'])) {
-             $childType = UserType::childUserType(UserType::from($user->type));
-             $playerBalance = DB::table('users')
-                 ->join('wallets', 'wallets.holder_id', '=', 'users.id')
-                 ->where('users.agent_id', $user->id)
-                 ->where('users.type', $childType->value)
-                 ->select(DB::raw('COALESCE(SUM(wallets.balance), 0) as balance'))
-                 ->value('balance');
-         }
-     
-         $userCounts = $this->userCountGet($user);
-     
-         return view('admin.dashboard', [
-             'user' => $user,
-             'role' => $roleTitle,
-             'totalBalance' => $totalBalance->balance ?? 0,
-             'playerBalance' => $playerBalance / 100,
-             'totalOwner' => $userCounts['totalOwner'] ?? 0,
-             'totalAgent' => $userCounts['totalAgent'] ?? 0,
-             'totalSubAgent' => $userCounts['totalSubAgent'] ?? 0,
-             'totalPlayer' => $userCounts['totalPlayer'] ?? 0,
-             'totalWinlose' => $totalWinlose,
-             'todayWinlose' => $todayWinlose,
-             'todayDeposit' => $todayDeposit,
-             'todayWithdraw' => $todayWithdraw,
-         ]);
-     }
-     
+        $totalWinlose = 0;
+        $todayWinlose = 0;
+        $todayDeposit = 0;
+        $todayWithdraw = 0;
+        $playerBalance = 0;
 
-private function fetchTotalTransactions($id, string $type): float
-{
-    $sum = Transaction::where('target_user_id', $id)
-        ->where('type', $type)
-        ->where('confirmed', 1)
-        ->whereDate('created_at', today())
-        ->sum('amount');
+        // Fetch balance from all children users (based on agent_id)
+        $totalBalance = DB::table('users')
+            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->join('wallets', 'wallets.holder_id', '=', 'users.id')
+            ->when(in_array($roleTitle, ['Owner', 'Agent', 'SubAgent']), function ($query) use ($user) {
+                return $query->where('users.agent_id', $user->id);
+            })
+            ->select(DB::raw('COALESCE(SUM(wallets.balance), 0) as balance'))
+            ->first();
 
-    return $sum / 100;
-}
+        // Agent-specific metrics
+        if (in_array($roleTitle, ['Agent', 'SubAgent'])) {
+            $todayWinlose = $this->getWinLose($user->id, true);
+            $totalWinlose = $this->getWinLose($user->id);
+            $todayDeposit = $this->fetchTotalTransactions($user->id, 'deposit');
+            $todayWithdraw = $this->fetchTotalTransactions($user->id, 'withdraw');
+        }
 
-private function userCountGet($user): array
-{
-    $totalOwner = $totalAgent = $totalSubAgent = $totalPlayer = 0;
+        // Player balances (only for roles above them)
+        if (in_array($roleTitle, ['Owner', 'Agent', 'SubAgent'])) {
+            $childType = UserType::childUserType(UserType::from($user->type));
+            $playerBalance = DB::table('users')
+                ->join('wallets', 'wallets.holder_id', '=', 'users.id')
+                ->where('users.agent_id', $user->id)
+                ->where('users.type', $childType->value)
+                ->select(DB::raw('COALESCE(SUM(wallets.balance), 0) as balance'))
+                ->value('balance');
+        }
 
-    switch (true) {
-        case $user->hasRole('Owner'):
-            $owners = User::where('type', UserType::Owner->value)->pluck('id');
-            $agents = User::whereIn('agent_id', $owners)->where('type', UserType::Agent->value)->pluck('id');
-            $subAgents = User::whereIn('agent_id', $agents)->where('type', UserType::SubAgent->value)->pluck('id');
-            $totalPlayer = User::whereIn('agent_id', $subAgents)->where('type', UserType::Player->value)->count();
+        $userCounts = $this->userCountGet($user);
 
-            $totalOwner = $owners->count();
-            $totalAgent = $agents->count();
-            $totalSubAgent = $subAgents->count();
-            break;
-
-        case $user->hasRole('Agent'):
-            $subAgents = User::where('agent_id', $user->id)->where('type', UserType::SubAgent->value)->pluck('id');
-            $totalPlayer = User::whereIn('agent_id', $subAgents)->where('type', UserType::Player->value)->count();
-
-            $totalSubAgent = $subAgents->count();
-            break;
-
-        case $user->hasRole('SubAgent'):
-            $totalPlayer = User::where('agent_id', $user->id)->where('type', UserType::Player->value)->count();
-            break;
+        return view('admin.dashboard', [
+            'user' => $user,
+            'role' => $roleTitle,
+            'totalBalance' => $totalBalance->balance ?? 0,
+            'playerBalance' => $playerBalance / 100,
+            'totalOwner' => $userCounts['totalOwner'] ?? 0,
+            'totalAgent' => $userCounts['totalAgent'] ?? 0,
+            'totalSubAgent' => $userCounts['totalSubAgent'] ?? 0,
+            'totalPlayer' => $userCounts['totalPlayer'] ?? 0,
+            'totalWinlose' => $totalWinlose,
+            'todayWinlose' => $todayWinlose,
+            'todayDeposit' => $todayDeposit,
+            'todayWithdraw' => $todayWithdraw,
+        ]);
     }
 
-    return compact('totalOwner', 'totalAgent', 'totalSubAgent', 'totalPlayer');
-}
+    private function fetchTotalTransactions($id, string $type): float
+    {
+        $sum = Transaction::where('target_user_id', $id)
+            ->where('type', $type)
+            ->where('confirmed', 1)
+            ->whereDate('created_at', today())
+            ->sum('amount');
 
-private function getWinLose($id, $todayOnly = false): float
-{
-    $query = DB::table('reports')
-        ->select(
-            DB::raw('COALESCE(SUM(reports.bet_amount), 0) as total_bet_amount'),
-            DB::raw('COALESCE(SUM(reports.payout_amount), 0) as total_payout_amount')
-        )
-        ->where('reports.agent_id', $id);
-
-    if ($todayOnly) {
-        $start = now()->startOfDay();
-        $end = now()->endOfDay();
-        $query->whereBetween('created_at', [$start, $end]);
+        return $sum / 100;
     }
 
-    $report = $query->first();
+    private function userCountGet($user): array
+    {
+        $totalOwner = $totalAgent = $totalSubAgent = $totalPlayer = 0;
 
-    return $report->total_bet_amount - $report->total_payout_amount;
-}
+        switch (true) {
+            case $user->hasRole('Owner'):
+                $owners = User::where('type', UserType::Owner->value)->pluck('id');
+                $agents = User::whereIn('agent_id', $owners)->where('type', UserType::Agent->value)->pluck('id');
+                $subAgents = User::whereIn('agent_id', $agents)->where('type', UserType::SubAgent->value)->pluck('id');
+                $totalPlayer = User::whereIn('agent_id', $subAgents)->where('type', UserType::Player->value)->count();
 
+                $totalOwner = $owners->count();
+                $totalAgent = $agents->count();
+                $totalSubAgent = $subAgents->count();
+                break;
+
+            case $user->hasRole('Agent'):
+                $subAgents = User::where('agent_id', $user->id)->where('type', UserType::SubAgent->value)->pluck('id');
+                $totalPlayer = User::whereIn('agent_id', $subAgents)->where('type', UserType::Player->value)->count();
+
+                $totalSubAgent = $subAgents->count();
+                break;
+
+            case $user->hasRole('SubAgent'):
+                $totalPlayer = User::where('agent_id', $user->id)->where('type', UserType::Player->value)->count();
+                break;
+        }
+
+        return compact('totalOwner', 'totalAgent', 'totalSubAgent', 'totalPlayer');
+    }
+
+    private function getWinLose($id, $todayOnly = false): float
+    {
+        $query = DB::table('reports')
+            ->select(
+                DB::raw('COALESCE(SUM(reports.bet_amount), 0) as total_bet_amount'),
+                DB::raw('COALESCE(SUM(reports.payout_amount), 0) as total_payout_amount')
+            )
+            ->where('reports.agent_id', $id);
+
+        if ($todayOnly) {
+            $start = now()->startOfDay();
+            $end = now()->endOfDay();
+            $query->whereBetween('created_at', [$start, $end]);
+        }
+
+        $report = $query->first();
+
+        return $report->total_bet_amount - $report->total_payout_amount;
+    }
 
     public function balanceUp(Request $request)
     {
@@ -253,8 +248,6 @@ private function getWinLose($id, $todayOnly = false): float
         return view('admin.player_list', compact('users'));
     }
 
-    
-
     // updated by KS
-    
+
 }

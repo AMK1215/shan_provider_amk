@@ -87,6 +87,11 @@
                                                             data-bs-toggle="tooltip" data-bs-original-title="Edit Agent">
                                                             <i class="fas fa-edit text-info" style="font-size: 20px;"></i>
                                                         </a>
+                                                        <!-- allow permission -->
+                                                         <a class="me-1" href="{{ route('admin.subacc.permission', $user->id) }}"
+                                                            data-bs-toggle="tooltip" data-bs-original-title="AllowPermission">
+                                                            <i class="fas fa-user-shield text-info" style="font-size: 20px;"></i>
+                                                        </a>
 
                                                     </td>
                                                     

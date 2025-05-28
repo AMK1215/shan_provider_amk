@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers\Api\V1\gplus\Webhook;
 
+use App\Enums\SeamlessWalletCode;
+use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\GameList;
+use App\Models\PlaceBet;
+use App\Models\Transaction as WalletTransaction;
+use App\Models\TransactionLog;
+use App\Models\User; // Assuming WalletTransaction for main wallet transactions
 use App\Services\ApiResponseService;
+use App\Services\WalletService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB; // Import the Exception class for better clarity
 use Illuminate\Support\Facades\Log;
-use App\Enums\SeamlessWalletCode;
-use App\Models\Transaction as WalletTransaction; // Assuming WalletTransaction for main wallet transactions
-use Illuminate\Support\Facades\DB;
-use App\Models\TransactionLog;
-use App\Services\WalletService;
-use App\Enums\TransactionName;
-use App\Models\PlaceBet;
-use Exception; // Import the Exception class for better clarity
-use App\Models\GameList;
 
 class DepositController extends Controller
 {
-private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+    private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+
     // All possible actions, including those that might be refunds/credits
     private array $depositActions = ['WIN', 'SETTLED', 'JACKPOT', 'BONUS', 'PROMO', 'LEADERBOARD', 'FREEBET', 'PRESERVE_REFUND', 'CANCEL']; // Added CANCEL
+
     private array $allowedWagerStatuses = ['SETTLED', 'UNSETTLED', 'PENDING', 'CANCELLED', 'VOID']; // Added VOID
 
     public function deposit(Request $request)
@@ -39,6 +41,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Deposit API Validation Failed', ['errors' => $e->errors()]);
+
             return ApiResponseService::error(
                 SeamlessWalletCode::InternalServerError,
                 'Validation failed',
@@ -53,7 +56,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
             'type' => 'deposit',
             'batch_request' => $request->all(),
             'response_data' => $results,
-            'status' => collect($results)->every(fn($r) => $r['code'] === SeamlessWalletCode::Success->value) ? 'success' : 'partial_success_or_failure',
+            'status' => collect($results)->every(fn ($r) => $r['code'] === SeamlessWalletCode::Success->value) ? 'success' : 'partial_success_or_failure',
         ]);
 
         Log::info('Deposit API Response', ['response' => $results]);
@@ -64,10 +67,6 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
     /**
      * Centralized logic for processing seamless wallet transactions (withdraw/deposit).
      * Maps the Java processTransactions method.
-     *
-     * @param Request $request
-     * @param bool $isDeposit
-     * @return array
      */
     private function processTransactions(Request $request, bool $isDeposit): array
     {
@@ -76,9 +75,9 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
 
         // Correctly calculate expected sign, ensuring 'deposit'/'withdraw' string is used
         $expectedSign = md5(
-            $request->operator_code .
-            $request->request_time .
-            ($isDeposit ? 'deposit' : 'withdraw') . // This string matters for signature
+            $request->operator_code.
+            $request->request_time.
+            ($isDeposit ? 'deposit' : 'withdraw'). // This string matters for signature
             $secretKey
         );
         $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
@@ -87,39 +86,43 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
         $results = [];
         $walletService = app(WalletService::class);
         $admin = User::adminUser(); // Assuming User::adminUser() exists and returns an admin user for deposits
-        if (!$admin) {
+        if (! $admin) {
             throw new \Exception('Admin user not configured properly.');
         }
-        
+
         foreach ($request->batch_requests as $batchRequest) {
             $memberAccount = $batchRequest['member_account'] ?? null;
             $productCode = $batchRequest['product_code'] ?? null;
             $gameType = $batchRequest['game_type'] ?? '';
 
             // Handle batch-level errors (if signature/currency are invalid for the whole request)
-            if (!$isValidSign) {
+            if (! $isValidSign) {
                 Log::warning('Invalid signature for batch', ['member_account' => $memberAccount, 'provided' => $request->sign, 'expected' => $expectedSign]);
                 $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InvalidSignature, 'Invalid signature', $request->currency);
+
                 continue;
             }
 
-            if (!$isValidCurrency) {
+            if (! $isValidCurrency) {
                 Log::warning('Invalid currency for batch', ['member_account' => $memberAccount, 'currency' => $request->currency]);
                 $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InternalServerError, 'Invalid Currency', $request->currency);
+
                 continue;
             }
 
             try {
                 $user = User::where('user_name', $memberAccount)->first();
-                if (!$user) {
+                if (! $user) {
                     Log::warning('Member not found', ['member_account' => $memberAccount]);
                     $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::MemberNotExist, 'Member not found', $request->currency);
+
                     continue;
                 }
 
-                if (!$user->wallet) {
+                if (! $user->wallet) {
                     Log::warning('Wallet missing for member', ['member_account' => $memberAccount]);
                     $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::MemberNotExist, 'Member wallet missing', $request->currency);
+
                     continue;
                 }
 
@@ -130,7 +133,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                     $transactionId = $transactionRequest['id'] ?? null;
                     $action = strtoupper($transactionRequest['action'] ?? '');
                     $wagerCode = $transactionRequest['wager_code'] ?? $transactionRequest['round_id'] ?? null;
-                    //$amount = floatval($transactionRequest['amount'] ?? 0);
+                    // $amount = floatval($transactionRequest['amount'] ?? 0);
                     $amount = round(floatval($transactionRequest['amount'] ?? 0), 4);
 
                     // Duplicate check by transaction_id in PlaceBet table
@@ -142,14 +145,16 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                         Log::warning('Duplicate transaction ID detected in place_bets or wallet_transactions', ['tx_id' => $transactionId, 'member_account' => $memberAccount]);
                         $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::DuplicateTransaction, 'Duplicate transaction', $request->currency);
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'duplicate', $request->request_time); // Log duplicate attempt
+
                         continue; // Skip processing this duplicate transaction
                     }
 
                     // Check for invalid action type or wager status
-                    if (!$this->isValidActionForDeposit($action) || !$this->isValidWagerStatus($transactionRequest['wager_status'] ?? null)) {
+                    if (! $this->isValidActionForDeposit($action) || ! $this->isValidWagerStatus($transactionRequest['wager_status'] ?? null)) {
                         Log::warning('Invalid action or wager status for deposit endpoint', ['action' => $action, 'wager_status' => $transactionRequest['wager_status'] ?? 'N/A', 'member_account' => $memberAccount]);
                         $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Invalid action type or wager status for deposit', $request->currency);
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Invalid action type or wager status for deposit');
+
                         continue;
                     }
 
@@ -158,39 +163,38 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                         // For a CANCEL action, the 'wager_code' in the request refers to the original bet that is being cancelled.
                         // We need to check if this original bet exists in our 'place_bets' table.
                         $originalBet = PlaceBet::where('wager_code', $wagerCode)
-                                                ->where('member_account', $memberAccount)
-                                                ->first();
+                            ->where('member_account', $memberAccount)
+                            ->first();
 
-                        if (!$originalBet) {
+                        if (! $originalBet) {
                             Log::warning('Original bet not found for CANCEL action', ['wager_code' => $wagerCode, 'member_account' => $memberAccount, 'transaction_id' => $transactionId]);
                             $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Original bet not found for cancellation', $request->currency);
                             $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Original bet not found for cancellation');
+
                             continue; // Skip processing this CANCEL if original bet doesn't exist
                         }
                         // Optionally, you might want to check the status of the original bet here (e.g., if it's already settled or cancelled)
                         // If ($originalBet->status === 'CANCELLED') { ... return duplicate or already cancelled error ... }
                     }
 
-
                     // Start a database transaction for each individual transaction request
                     DB::beginTransaction();
                     try {
                         // Re-fetch user and lock wallet inside transaction for isolation
-                           $user->refresh(); // Get the latest state of the user and their wallet
+                        $user->refresh(); // Get the latest state of the user and their wallet
                         // $user->wallet->lockForUpdate();
                         // $beforeTransactionBalance = $user->wallet->balanceFloat;
 
                         // Properly lock the wallet row inside a fresh DB transaction
-                            $user = User::with(['wallet' => function ($query) {
-                                $query->lockForUpdate();
-                            }])->find($user->id);
+                        $user = User::with(['wallet' => function ($query) {
+                            $query->lockForUpdate();
+                        }])->find($user->id);
 
-                            if (!$user || !$user->wallet) {
-                                throw new \Exception('User or wallet not found during transaction locking.');
-                            }
+                        if (! $user || ! $user->wallet) {
+                            throw new \Exception('User or wallet not found during transaction locking.');
+                        }
 
-                            $beforeTransactionBalance = $user->wallet->balanceFloat;
-
+                        $beforeTransactionBalance = $user->wallet->balanceFloat;
 
                         $convertedAmount = $this->toDecimalPlaces($amount * $this->getCurrencyValue($request->currency));
 
@@ -216,8 +220,8 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                             'member_account' => $memberAccount,
                             'product_code' => $productCode,
                             // Apply number_format for consistency with GetBalanceController
-                           // 'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
-                            //'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                            // 'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                            // 'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
                             'before_balance' => round($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'balance' => round($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'code' => SeamlessWalletCode::Success->value,
@@ -251,6 +255,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
                 $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InternalServerError, 'An unexpected error occurred during batch processing.', $request->currency);
             }
         }
+
         return $results;
     }
 
@@ -261,7 +266,7 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
     private function buildErrorResponse(string $memberAccount, string $productCode, float $balance, SeamlessWalletCode $code, string $message, string $currency): array
     {
         // Apply number_format here as well for consistency
-        //$formattedBalance = number_format($balance / $this->getCurrencyValue($currency), 4, '.', '');
+        // $formattedBalance = number_format($balance / $this->getCurrencyValue($currency), 4, '.', '');
         $formattedBalance = round($balance / $this->getCurrencyValue($currency), 4);
 
         return [
@@ -278,10 +283,6 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
      * Converts a float to a specified number of decimal places.
      * This emulates Java's `toDecimalPlaces`.
      * You might need a more robust solution for financial calculations.
-     *
-     * @param float $value
-     * @param int $precision
-     * @return float
      */
     private function toDecimalPlaces(float $value, int $precision = 4): float
     {
@@ -291,9 +292,6 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
     /**
      * Gets the currency conversion value.
      * This is a placeholder; you'd implement actual currency rates here.
-     *
-     * @param string $currency
-     * @return int
      */
     private function getCurrencyValue(string $currency): int
     {
@@ -311,9 +309,6 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
 
     /**
      * Check if the action is valid specifically for the deposit endpoint.
-     *
-     * @param string $action
-     * @return bool
      */
     private function isValidActionForDeposit(string $action): bool
     {
@@ -322,9 +317,6 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
 
     /**
      * Check if the wager status is valid.
-     *
-     * @param string|null $wagerStatus
-     * @return bool
      */
     private function isValidWagerStatus(?string $wagerStatus): bool
     {
@@ -332,30 +324,25 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
         if (is_null($wagerStatus)) {
             return true; // Or false, depending on your API spec
         }
+
         return in_array($wagerStatus, $this->allowedWagerStatuses);
     }
 
     private function formatBalance(float $balance, string $currency): float
-{
-    if (in_array($currency, $this->specialCurrencies)) {
-        // Apply 1:1000 conversion and round to 4 decimal places
-        return round($balance / 1000, 4);
-    } else {
-        // Round to 2 decimal places
-        return round($balance, 2);
+    {
+        if (in_array($currency, $this->specialCurrencies)) {
+            // Apply 1:1000 conversion and round to 4 decimal places
+            return round($balance / 1000, 4);
+        } else {
+            // Round to 2 decimal places
+            return round($balance, 2);
+        }
     }
-}
 
     /**
      * Logs the transaction attempt in the place_bets table.
      *
-     * @param array $batchRequest
-     * @param Request $fullRequest
-     * @param array $transactionRequest
-     * @param string $status
-     * @param int|null $requestTime The original request_time from the full request
-     * @param string|null $errorMessage
-     * @return void
+     * @param  int|null  $requestTime  The original request_time from the full request
      */
     private function logPlaceBet(array $batchRequest, Request $fullRequest, array $transactionRequest, string $status, ?int $requestTime, ?string $errorMessage = null, ?float $beforeBalance = null, ?float $afterBalance = null): void
     {
@@ -367,47 +354,45 @@ private array $allowedCurrencies = ['IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2
         $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
         $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
 
-       
-
         $provider_name = GameList::where('product_code', $batchRequest['product_code'])->value('provider');
         $game_name = GameList::where('game_code', $transactionRequest['game_code'])->value('game_name');
-        
+
         $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
         $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
         PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
             [
                 // Batch-level
-                'member_account'    => $batchRequest['member_account'] ?? '',
+                'member_account' => $batchRequest['member_account'] ?? '',
                 'player_id' => $player_id,
                 'player_agent_id' => $player_agent_id,
-                'product_code'      => $batchRequest['product_code'] ?? 0,
+                'product_code' => $batchRequest['product_code'] ?? 0,
                 'provider_name' => $provider_name ?? $batchRequest['product_code'] ?? null,
-                'game_type'         => $batchRequest['game_type'] ?? '',
-                'operator_code'     => $fullRequest->operator_code,
-                'request_time'      => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
-                'sign'              => $fullRequest->sign,
-                'currency'          => $fullRequest->currency,
+                'game_type' => $batchRequest['game_type'] ?? '',
+                'operator_code' => $fullRequest->operator_code,
+                'request_time' => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
+                'sign' => $fullRequest->sign,
+                'currency' => $fullRequest->currency,
 
                 // Transaction-level
-                'action'            => $transactionRequest['action'] ?? '',
-                'amount'            => $transactionRequest['amount'] ?? 0,
-                'valid_bet_amount'  => $transactionRequest['valid_bet_amount'] ?? null,
-                'bet_amount'        => $transactionRequest['bet_amount'] ?? null,
-                'prize_amount'      => $transactionRequest['prize_amount'] ?? null,
-                'tip_amount'        => $transactionRequest['tip_amount'] ?? null,
-                'wager_code'        => $transactionRequest['wager_code'] ?? null,
-                'wager_status'      => $transactionRequest['wager_status'] ?? null,
-                'round_id'          => $transactionRequest['round_id'] ?? null,
-                'payload'           => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
-                'settle_at'         => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
+                'action' => $transactionRequest['action'] ?? '',
+                'amount' => $transactionRequest['amount'] ?? 0,
+                'valid_bet_amount' => $transactionRequest['valid_bet_amount'] ?? null,
+                'bet_amount' => $transactionRequest['bet_amount'] ?? null,
+                'prize_amount' => $transactionRequest['prize_amount'] ?? null,
+                'tip_amount' => $transactionRequest['tip_amount'] ?? null,
+                'wager_code' => $transactionRequest['wager_code'] ?? null,
+                'wager_status' => $transactionRequest['wager_status'] ?? null,
+                'round_id' => $transactionRequest['round_id'] ?? null,
+                'payload' => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
+                'settle_at' => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
                 'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
-                'game_code'         => $transactionRequest['game_code'] ?? null,
+                'game_code' => $transactionRequest['game_code'] ?? null,
                 'game_name' => $game_name ?? $transactionRequest['game_code'] ?? null,
-                'channel_code'      => $transactionRequest['channel_code'] ?? null,
-                'status'            => $status,
-                'before_balance'    => $beforeBalance,
-                'balance'           => $afterBalance,
+                'channel_code' => $transactionRequest['channel_code'] ?? null,
+                'status' => $status,
+                'before_balance' => $beforeBalance,
+                'balance' => $afterBalance,
 
             ]
         );

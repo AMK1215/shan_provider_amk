@@ -12,7 +12,7 @@ class BannerController extends Controller
     public function index()
     {
         $banners = Banner::where('admin_id', auth()->id())->get(); // Fetch banners for the logged-in admin
-        //return $banners;
+        // return $banners;
 
         return view('admin.banners.index', compact('banners'));
     }

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class PoneWinePlayerBetsTableSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class PoneWinePlayerBetsTableSeeder extends Seeder
                 DB::table('pone_wine_player_bets')->insert([
                     'user_id' => $userIds[array_rand($userIds)] ?? 1, // Fallback to 1 if empty
                     'pone_wine_bet_id' => $betId,
-                    'user_name' => 'Player_' . Str::random(5),
+                    'user_name' => 'Player_'.Str::random(5),
                     'win_lose_amt' => rand(-500, 500),
                     'created_at' => now(),
                     'updated_at' => now(),

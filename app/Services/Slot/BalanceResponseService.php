@@ -9,8 +9,7 @@ class BalanceResponseService
     /**
      * Build a successful batch balance response
      *
-     * @param array $balanceData Array of member balance data
-     * @return array
+     * @param  array  $balanceData  Array of member balance data
      */
     public static function buildSuccessResponse(array $balanceData): array
     {
@@ -23,18 +22,12 @@ class BalanceResponseService
                     'code' => SeamlessWalletCode::SUCCESS->value,
                     'message' => '',
                 ];
-            }, $balanceData)
+            }, $balanceData),
         ];
     }
 
     /**
      * Build an error response for a specific member
-     *
-     * @param string $memberAccount
-     * @param int $productCode
-     * @param SeamlessWalletCode $responseCode
-     * @param string|null $message
-     * @return array
      */
     public static function buildMemberErrorResponse(
         string $memberAccount,
@@ -53,10 +46,6 @@ class BalanceResponseService
 
     /**
      * Build a global error response
-     *
-     * @param SeamlessWalletCode $responseCode
-     * @param string|null $message
-     * @return array
      */
     public static function buildGlobalErrorResponse(
         SeamlessWalletCode $responseCode,
@@ -66,18 +55,12 @@ class BalanceResponseService
             'error' => [
                 'code' => $responseCode->value,
                 'message' => $message ?? $responseCode->name,
-            ]
+            ],
         ];
     }
 
     /**
      * Build a single member balance response
-     *
-     * @param string $memberAccount
-     * @param int $productCode
-     * @param float $balance
-     * @param float $beforeBalance
-     * @return array
      */
     public static function buildSingleMemberResponse(
         string $memberAccount,

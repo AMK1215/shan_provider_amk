@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Carbon\Carbon;
 
 class SEOGameListSeeder extends Seeder
 {
@@ -26,7 +26,7 @@ class SEOGameListSeeder extends Seeder
                         'game_name' => $game['game_name'],
                         'game_type' => $game['game_type'],
                         'image_url' => $game['image_url'],
-                       'provider_product_id' => $game['product_id'],
+                        'provider_product_id' => $game['product_id'],
                         'game_type_id' => 3,
                         'product_id' => 1,
                         'product_code' => $game['product_code'],
@@ -40,4 +40,4 @@ class SEOGameListSeeder extends Seeder
             }
         }
     }
-} 
+}

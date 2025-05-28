@@ -15,26 +15,26 @@ class PermissionRoleTableSeeder extends Seeder
             'owner_access',
             'agent_index', 'agent_create', 'agent_edit', 'agent_delete',
             'transfer_log', 'make_transfer',
-            'game_type_access', 'provider_access', 'provider_create', 'provider_edit', 'provider_delete', 'provider_index'
+            'game_type_access', 'provider_access', 'provider_create', 'provider_edit', 'provider_delete', 'provider_index',
         ],
         'Agent' => [
             'agent_access',
             'subagent_index', 'subagent_create', 'subagent_edit', 'subagent_delete',
-            'transfer_log', 'make_transfer', 'player_index', 'player_create', 'player_edit', 'player_delete', 
-            'game_type_access', 'deposit', 'withdraw', 'bank', 'contact'
+            'transfer_log', 'make_transfer', 'player_index', 'player_create', 'player_edit', 'player_delete',
+            'game_type_access', 'deposit', 'withdraw', 'bank', 'contact',
         ],
         'SubAgent' => [
             'subagent_access',
             'player_index', 'player_create', 'player_edit', 'player_delete',
-            'transfer_log', 'make_transfer', 'withdraw', 'deposit', 'bank', 'contact', 'report_check'
+            'transfer_log', 'make_transfer', 'withdraw', 'deposit', 'bank', 'contact', 'report_check',
         ],
         'Player' => [
             'player_access', 'withdraw', 'deposit', 'bank', 'contact',
         ],
         'SystemWallet' => [
-            'system_wallet_access', 'withdraw', 'deposit', 'bank', 'contact', 
-            'report_check', 'owner_access', 'agent_access', 'subagent_access', 'player_access'
-        ]
+            'system_wallet_access', 'withdraw', 'deposit', 'bank', 'contact',
+            'report_check', 'owner_access', 'agent_access', 'subagent_access', 'player_access',
+        ],
     ];
 
     private const ROLE_IDS = [
@@ -42,7 +42,7 @@ class PermissionRoleTableSeeder extends Seeder
         'Agent' => 2,
         'SubAgent' => 3,
         'Player' => 4,
-        'SystemWallet' => 5
+        'SystemWallet' => 5,
     ];
 
     public function run(): void
@@ -77,7 +77,7 @@ class PermissionRoleTableSeeder extends Seeder
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error in PermissionRoleTableSeeder: ' . $e->getMessage());
+            Log::error('Error in PermissionRoleTableSeeder: '.$e->getMessage());
             throw $e;
         }
     }
@@ -87,8 +87,8 @@ class PermissionRoleTableSeeder extends Seeder
         $existingRoles = Role::whereIn('id', array_values(self::ROLE_IDS))->pluck('id')->toArray();
         $missingRoles = array_diff(array_values(self::ROLE_IDS), $existingRoles);
 
-        if (!empty($missingRoles)) {
-            throw new \RuntimeException("Missing required roles with IDs: " . implode(', ', $missingRoles));
+        if (! empty($missingRoles)) {
+            throw new \RuntimeException('Missing required roles with IDs: '.implode(', ', $missingRoles));
         }
     }
 
@@ -98,8 +98,8 @@ class PermissionRoleTableSeeder extends Seeder
         $existingPermissions = Permission::whereIn('title', $allPermissions)->pluck('title')->toArray();
         $missingPermissions = array_diff($allPermissions, $existingPermissions);
 
-        if (!empty($missingPermissions)) {
-            throw new \RuntimeException("Missing required permissions: " . implode(', ', $missingPermissions));
+        if (! empty($missingPermissions)) {
+            throw new \RuntimeException('Missing required permissions: '.implode(', ', $missingPermissions));
         }
     }
 
@@ -107,9 +107,9 @@ class PermissionRoleTableSeeder extends Seeder
     {
         try {
             DB::table('permission_role')->truncate();
-            Log::info("Cleaned up existing permission assignments");
+            Log::info('Cleaned up existing permission assignments');
         } catch (\Exception $e) {
-            Log::error("Failed to cleanup existing permission assignments: " . $e->getMessage());
+            Log::error('Failed to cleanup existing permission assignments: '.$e->getMessage());
             throw $e;
         }
     }
@@ -119,9 +119,9 @@ class PermissionRoleTableSeeder extends Seeder
         try {
             $role = Role::findOrFail($roleId);
             $role->permissions()->sync($permissions);
-            Log::info("Assigned " . count($permissions) . " permissions to {$roleName} role");
+            Log::info('Assigned '.count($permissions)." permissions to {$roleName} role");
         } catch (\Exception $e) {
-            Log::error("Failed to assign permissions to {$roleName} role: " . $e->getMessage());
+            Log::error("Failed to assign permissions to {$roleName} role: ".$e->getMessage());
             throw $e;
         }
     }
@@ -134,9 +134,9 @@ class PermissionRoleTableSeeder extends Seeder
             $assignedPermissions = $role->permissions()->pluck('title')->toArray();
             $missingPermissions = array_diff($expectedPermissions, $assignedPermissions);
 
-            if (!empty($missingPermissions)) {
+            if (! empty($missingPermissions)) {
                 throw new \RuntimeException(
-                    "Role '{$roleName}' is missing permissions: " . implode(', ', $missingPermissions)
+                    "Role '{$roleName}' is missing permissions: ".implode(', ', $missingPermissions)
                 );
             }
         }

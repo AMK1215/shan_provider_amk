@@ -13,12 +13,12 @@ class TransferLog extends Model
         'amount',
         'type',
         'description',
-        'meta'
+        'meta',
     ];
 
     protected $casts = [
         'meta' => 'array',
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     public function fromUser(): BelongsTo
@@ -30,4 +30,4 @@ class TransferLog extends Model
     {
         return $this->belongsTo(User::class, 'to_user_id');
     }
-} 
+}

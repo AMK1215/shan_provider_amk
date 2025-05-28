@@ -3,54 +3,57 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Response;
 use WeStacks\TeleBot\TeleBot;
-use Illuminate\Support\Arr;
-
 
 class TelegramBotController extends Controller
 {
-    //+++++++++++++++++++++++++++++++++++++++
+    // +++++++++++++++++++++++++++++++++++++++
     private $bot;
+
     private $message_text;
+
     private $chat_id;
+
     private $fixed_chat_id = 1916864529; // <-- Set your fixed chat ID here
-    //+++++++++++++++++++++++++++++++++++++++
+
+    // +++++++++++++++++++++++++++++++++++++++
     public function __construct()
     {
         $this->bot = new TeleBot(config('telegram.bot_token'));
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function index()
     {
         return view('welcome');
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // chat box send 
+    // chat box send
 
     public function send(Request $request)
     {
         $message = $request->input('message');
         $chat_id = 1916864529;
-    
+
         $replyText = "✅ You said: $message";
-    
+
         $bot = new TeleBot([
             'token' => config('telegram.bot_token'),
         ]);
-    
+
         $bot->sendMessage([
             'chat_id' => $chat_id,
-            'text'    => $replyText,
+            'text' => $replyText,
         ]);
-    
+
         return response()->json(['reply' => $replyText]);
     }
-    
 
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
     public function telegram_webhook(Request $request)
     {
         try {
@@ -67,7 +70,7 @@ class TelegramBotController extends Controller
                 $messages = config("telegram_welcome.$lang");
 
                 if (empty($messages)) {
-                    $messages = config("telegram_welcome.en");
+                    $messages = config('telegram_welcome.en');
                 }
 
                 $text = Arr::random($messages);
@@ -79,15 +82,16 @@ class TelegramBotController extends Controller
                     'reply_markup' => [
                         'inline_keyboard' => [[
                             ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
-                            ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos']
-                        ]]
+                            ['text' => '📺 Watch Demo', 'url' => 'https://www.youtube.com/@code-180/videos'],
+                        ]],
                     ],
                 ]);
             }
 
             return response('ok', 200);
         } catch (\Throwable $e) {
-            \Log::error('Telegram Webhook Error: ' . $e->getMessage());
+            \Log::error('Telegram Webhook Error: '.$e->getMessage());
+
             return response('Internal Server Error', 500);
         }
     }
@@ -97,10 +101,11 @@ class TelegramBotController extends Controller
         if (preg_match('/[\x{1000}-\x{109F}]/u', $text)) {
             return 'mm';
         }
+
         return 'en';
     }
 
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // public function sendMessage(Request $request)
     // {
     //     $chat_id = $request->input('chat_id', $this->fixed_chat_id);
@@ -109,7 +114,7 @@ class TelegramBotController extends Controller
     //             'chat_id'      => $chat_id,
     //             'text'         => 'Welcome To Code-180 Youtube Channel',
     //             'reply_markup' => [
-    //                 'inline_keyboard' => [[[ 
+    //                 'inline_keyboard' => [[[
     //                     'text' => '@code-180',
     //                     'url'  => 'https://www.youtube.com/@code-180/videos',
     //                 ]]],
@@ -121,164 +126,181 @@ class TelegramBotController extends Controller
     //     return Response::json($message);
     // }
     public function sendMessage(Request $request)
-{
-    $chat_id = $request->input('chat_id', $this->fixed_chat_id);
-    $text = $request->input('text', '🎰 Welcome to Lucky Million! Ready to spin and win big?');
+    {
+        $chat_id = $request->input('chat_id', $this->fixed_chat_id);
+        $text = $request->input('text', '🎰 Welcome to Lucky Million! Ready to spin and win big?');
 
-    try {
-        $message = $this->bot->sendMessage([
-            'chat_id' => $chat_id,
-            'text' => $text,
-            'reply_markup' => [
-                'inline_keyboard' => [[
-                    ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
-                    ['text' => '📺 Watch Demo', 'url' => 'https://youtube.com/@amk-technology?si=LkiWGWlzPN_Z4ILn']
-                ]]
-            ],
-            'parse_mode' => 'HTML',
-        ]);
-    } catch (\Exception $e) {
-        $message = 'Message: ' . $e->getMessage();
+        try {
+            $message = $this->bot->sendMessage([
+                'chat_id' => $chat_id,
+                'text' => $text,
+                'reply_markup' => [
+                    'inline_keyboard' => [[
+                        ['text' => '🎮 Play Now', 'url' => 'https://luckymillion.pro'],
+                        ['text' => '📺 Watch Demo', 'url' => 'https://youtube.com/@amk-technology?si=LkiWGWlzPN_Z4ILn'],
+                    ]],
+                ],
+                'parse_mode' => 'HTML',
+            ]);
+        } catch (\Exception $e) {
+            $message = 'Message: '.$e->getMessage();
+        }
+
+        return Response::json($message);
     }
 
-    return Response::json($message);
-}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendPhoto(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendPhoto([
                 'chat_id' => $chat_id,
-                'photo'   => [
-                    'file'     => fopen(asset('public/upload/img.jpg'), 'r'),
+                'photo' => [
+                    'file' => fopen(asset('public/upload/img.jpg'), 'r'),
                     'filename' => 'demoImg.jpg',
                 ],
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendAudio(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendAudio([
                 'chat_id' => $chat_id,
-                'audio'   => fopen(asset('public/upload/demo.mp3'), 'r'),
-                'caption' => "Demo Audio File",
+                'audio' => fopen(asset('public/upload/demo.mp3'), 'r'),
+                'caption' => 'Demo Audio File',
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendVideo(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendVideo([
                 'chat_id' => $chat_id,
-                'video'   => fopen(asset('public/upload/Password.mp4'), 'r'),
+                'video' => fopen(asset('public/upload/Password.mp4'), 'r'),
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendVoice(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendVoice([
                 'chat_id' => $chat_id,
-                'voice'   => fopen(asset('public/upload/demo.mp3'), 'r'),
+                'voice' => fopen(asset('public/upload/demo.mp3'), 'r'),
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendDocument(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendDocument([
-                'chat_id'  => $chat_id,
+                'chat_id' => $chat_id,
                 'document' => fopen(asset('public/upload/Test_Doc.pdf'), 'r'),
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendLocation(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendLocation([
-                'chat_id'   => $chat_id,
-                'latitude'  => 19.6840852,
+                'chat_id' => $chat_id,
+                'latitude' => 19.6840852,
                 'longitude' => 60.972437,
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendVenue(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendVenue([
-                'chat_id'   => $chat_id,
-                'latitude'  => 19.6840852,
+                'chat_id' => $chat_id,
+                'latitude' => 19.6840852,
                 'longitude' => 60.972437,
-                'title'     => 'The New Word Of Code',
-                'address'   => 'Address For The Place',
+                'title' => 'The New Word Of Code',
+                'address' => 'Address For The Place',
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendContact(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendContact([
-                'chat_id'      => $chat_id,
-                'photo'        => 'https://picsum.photos/640',
+                'chat_id' => $chat_id,
+                'photo' => 'https://picsum.photos/640',
                 'phone_number' => '1234567890',
-                'first_name'   => 'Code-180',
+                'first_name' => 'Code-180',
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public function sendPoll(Request $request)
     {
         $chat_id = $request->input('chat_id', $this->fixed_chat_id);
         try {
             $message = $this->bot->sendPoll([
-                'chat_id'  => $chat_id,
+                'chat_id' => $chat_id,
                 'question' => 'What is best coding language for 2023',
-                'options'  => ['python', 'javascript', 'typescript', 'php', 'java'],
+                'options' => ['python', 'javascript', 'typescript', 'php', 'java'],
             ]);
         } catch (\Exception $e) {
-            $message = 'Message: ' . $e->getMessage();
+            $message = 'Message: '.$e->getMessage();
         }
+
         return Response::json($message);
     }
 
@@ -286,8 +308,9 @@ class TelegramBotController extends Controller
     {
         try {
             $response = file_get_contents(
-                config('telegram.api_url') . config('telegram.bot_token') . config('telegram.endpoints.get_webhook_info')
+                config('telegram.api_url').config('telegram.bot_token').config('telegram.endpoints.get_webhook_info')
             );
+
             return Response::json(json_decode($response));
         } catch (Exception $e) {
             return Response::json(['error' => $e->getMessage()], 500);
@@ -299,9 +322,10 @@ class TelegramBotController extends Controller
         try {
             $url = config('telegram.webhook_url');
             $response = file_get_contents(
-                config('telegram.api_url') . config('telegram.bot_token') . 
-                config('telegram.endpoints.set_webhook') . '?url=' . $url
+                config('telegram.api_url').config('telegram.bot_token').
+                config('telegram.endpoints.set_webhook').'?url='.$url
             );
+
             return Response::json(json_decode($response));
         } catch (Exception $e) {
             return Response::json(['error' => $e->getMessage()], 500);
@@ -312,9 +336,10 @@ class TelegramBotController extends Controller
     {
         try {
             $response = file_get_contents(
-                config('telegram.api_url') . config('telegram.bot_token') . 
+                config('telegram.api_url').config('telegram.bot_token').
                 config('telegram.endpoints.delete_webhook')
             );
+
             return Response::json(json_decode($response));
         } catch (Exception $e) {
             return Response::json(['error' => $e->getMessage()], 500);
@@ -325,7 +350,4 @@ class TelegramBotController extends Controller
     {
         return view('telegram.test');
     }
-
-    
-
 }

@@ -10,15 +10,16 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::create('telegram_chats', function (Blueprint $table) {
-        $table->id();
-        $table->string('user_id'); // session ID, Telegram chat ID, or user ID
-        $table->text('message');
-        $table->enum('sender', ['user', 'bot']);
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('telegram_chats', function (Blueprint $table) {
+            $table->id();
+            $table->string('user_id'); // session ID, Telegram chat ID, or user ID
+            $table->text('message');
+            $table->enum('sender', ['user', 'bot']);
+            $table->timestamps();
+        });
+    }
+
     /**
      * Reverse the migrations.
      */

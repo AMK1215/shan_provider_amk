@@ -100,4 +100,4 @@ enum CurrencyCode: string
     case UZS2 = 'UZS2'; // 1:1000
     case VND2 = 'VND2'; // 1:1000
     case MMK3 = 'MMK3'; // 1:100
-} 
+}

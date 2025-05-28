@@ -70,4 +70,4 @@ return [
     |
     */
     'action' => 'typing',
-]; 
+];

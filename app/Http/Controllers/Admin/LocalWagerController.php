@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Wager;
+use Illuminate\Http\Request;
 
 class LocalWagerController extends Controller
 {
@@ -24,12 +24,14 @@ class LocalWagerController extends Controller
             $query->where('created_at_api', '<=', strtotime($request->end_date) * 1000);
         }
         $wagers = $query->orderByDesc('created_at_api')->paginate(50);
+
         return view('admin.local_wager.index', compact('wagers'));
     }
 
     public function show($id)
     {
         $wager = Wager::findOrFail($id);
+
         return view('admin.local_wager.show', compact('wager'));
     }
-} 
+}

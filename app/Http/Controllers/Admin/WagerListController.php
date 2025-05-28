@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WagerListController extends Controller
 {
-    
     public function index()
     {
         return view('admin.wager_list.index');
@@ -25,7 +24,7 @@ class WagerListController extends Controller
         $offset = $request->input('offset', 0);
         $size = $request->input('size', 100);
         $request_time = now()->timestamp;
-        $sign = md5($request_time . $secret_key . 'getwagers' . $operator_code);
+        $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
         $member_account = $request->input('member_account');
         $status = $request->input('status');
 
@@ -38,11 +37,15 @@ class WagerListController extends Controller
             'sign' => $sign,
             'request_time' => $request_time,
         ];
-        if ($member_account) $params['member_account'] = $member_account;
-        if ($status) $params['status'] = $status;
+        if ($member_account) {
+            $params['member_account'] = $member_account;
+        }
+        if ($status) {
+            $params['status'] = $status;
+        }
 
         try {
-            $response = Http::get($api_url . '/api/operators/wagers', $params);
+            $response = Http::get($api_url.'/api/operators/wagers', $params);
             if ($response->successful()) {
                 return response()->json($response->json());
             } else {
@@ -63,7 +66,7 @@ class WagerListController extends Controller
         $member_account = $request->input('member_account');
         $status = $request->input('status');
         $request_time = now()->timestamp;
-        $sign = md5($request_time . $secret_key . 'getwagers' . $operator_code);
+        $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
 
         $params = [
             'operator_code' => $operator_code,
@@ -73,10 +76,14 @@ class WagerListController extends Controller
             'sign' => $sign,
             'request_time' => $request_time,
         ];
-        if ($member_account) $params['member_account'] = $member_account;
-        if ($status) $params['status'] = $status;
+        if ($member_account) {
+            $params['member_account'] = $member_account;
+        }
+        if ($status) {
+            $params['status'] = $status;
+        }
 
-        $response = Http::get($api_url . '/api/operators/wagers', $params);
+        $response = Http::get($api_url.'/api/operators/wagers', $params);
         $data = $response->json();
 
         $headers = [
@@ -87,10 +94,10 @@ class WagerListController extends Controller
         $columns = [
             'id', 'member_account', 'round_id', 'currency', 'provider_id', 'provider_line_id',
             'game_type', 'game_code', 'valid_bet_amount',
-            'bet_amount', 'prize_amount', 'status', 'settled_at', 'created_at', 'updated_at'
+            'bet_amount', 'prize_amount', 'status', 'settled_at', 'created_at', 'updated_at',
         ];
 
-        return new StreamedResponse(function() use ($data, $columns) {
+        return new StreamedResponse(function () use ($data, $columns) {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, $columns);
             foreach ($data['wagers'] as $wager) {
@@ -114,7 +121,7 @@ class WagerListController extends Controller
         $secret_key = config('seamless_key.secret_key');
         $api_url = config('seamless_key.api_url');
         $request_time = now()->timestamp;
-        $sign = md5($request_time . $secret_key . 'getwager' . $operator_code);
+        $sign = md5($request_time.$secret_key.'getwager'.$operator_code);
 
         $params = [
             'operator_code' => $operator_code,
@@ -122,7 +129,7 @@ class WagerListController extends Controller
             'request_time' => $request_time,
         ];
 
-        $response = Http::get($api_url . "/api/operators/wagers/{$id}", $params);
+        $response = Http::get($api_url."/api/operators/wagers/{$id}", $params);
         $data = $response->json();
         $wager = $data['wager'] ?? null;
 
@@ -135,7 +142,7 @@ class WagerListController extends Controller
         $secret_key = config('seamless_key.secret_key');
         $api_url = config('seamless_key.api_url');
         $request_time = now()->timestamp;
-        $sign = md5($request_time . $secret_key . 'productlist' . $operator_code);
+        $sign = md5($request_time.$secret_key.'productlist'.$operator_code);
 
         $params = [
             'operator_code' => $operator_code,
@@ -143,10 +150,10 @@ class WagerListController extends Controller
             'request_time' => $request_time,
         ];
 
-        $response = Http::get($api_url . "/api/operators/{$wager_code}/game-history", $params);
+        $response = Http::get($api_url."/api/operators/{$wager_code}/game-history", $params);
         $data = $response->json();
         $content = $data['content'] ?? '';
 
         return view('admin.wager_list.game_history', compact('content'));
     }
-} 
+}

@@ -1,26 +1,25 @@
 <?php
 
+use App\Http\Controllers\Admin\AdsVedioController;
+use App\Http\Controllers\Admin\AgentController;
+use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Admin\BannerAdsController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\BannerTextController;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\LocalWagerController;
+use App\Http\Controllers\Admin\MasterController;
+use App\Http\Controllers\Admin\PaymentTypeController;
+use App\Http\Controllers\Admin\PlayerController;
+use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SubAccountController;
+use App\Http\Controllers\Admin\TopTenWithdrawController;
+use App\Http\Controllers\Admin\TransferLogController;
+use App\Http\Controllers\Admin\WagerListController;
+use App\Http\Controllers\Admin\WinnerTextController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AdsVedioController;
-use App\Http\Controllers\Admin\WinnerTextController;
-use App\Http\Controllers\Admin\TopTenWithdrawController;
-use App\Http\Controllers\Admin\BannerController;
-use App\Http\Controllers\Admin\BannerAdsController;
-use App\Http\Controllers\Admin\BannerTextController;
-use App\Http\Controllers\Admin\PromotionController;
-use App\Http\Controllers\Admin\ContactController;
-use App\Http\Controllers\Admin\PaymentTypeController;
-use App\Http\Controllers\Admin\BankController;
-use App\Http\Controllers\Admin\MasterController;
-use App\Http\Controllers\Admin\TransferLog\TransferLogController;
-use App\Http\Controllers\Admin\WagerListController;
-use App\Http\Controllers\Admin\LocalWagerController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\AgentController;
-use App\Http\Controllers\Admin\SubAccountController;
-use App\Http\Controllers\Admin\PlayerController;
-
 
 Route::group([
     'prefix' => 'admin',
@@ -42,9 +41,8 @@ Route::group([
 
     Route::get('/player-list', [HomeController::class, 'playerList'])->name('playerList');
 
+    // banner etc start
 
-    // banner etc start 
-    
     Route::resource('video-upload', AdsVedioController::class);
     Route::resource('winner_text', WinnerTextController::class);
     Route::resource('top-10-withdraws', TopTenWithdrawController::class);
@@ -57,8 +55,7 @@ Route::group([
     Route::resource('bank', BankController::class);
     // banner etc end
 
-    // master, agent, sub-agent 
-    
+    // master, agent, sub-agent
 
     // agent start
     Route::resource('agent', AgentController::class);
@@ -73,20 +70,42 @@ Route::group([
     Route::post('agent-changepassword/{id}', [AgentController::class, 'makeChangePassword'])->name('agent.makeChangePassword');
     // agent end
 
-    // sub-agent start 
+    // sub-agent start
     Route::resource('subacc', SubAccountController::class);
+    Route::put('subacc/{id}/ban', [SubAccountController::class, 'banSubAcc'])->name('subacc.ban');
+    Route::get('subacc-changepassword/{id}', [SubAccountController::class, 'getChangePassword'])->name('subacc.getChangePassword');
+    Route::post('subacc-changepassword/{id}', [SubAccountController::class, 'makeChangePassword'])->name('subacc.makeChangePassword');
+    Route::get('subacc-permission/{id}', [SubAccountController::class, 'permission'])->name('subacc.permission');
+    Route::post('subacc-permission/update/{id}', [SubAccountController::class, 'updatePermission'])->name('subacc.permission.update');
+    Route::get('subacc-profile/{id}', [SubAccountController::class, 'subAgentProfile'])
+        ->name('subacc.profile');
+    Route::get('subacc-agent-players', [SubAccountController::class, 'agentPlayers'])
+        ->name('subacc.agent_players');
     // sub-agent end
-    // report log 
-    Route::get('/master-report/{id}', [MasterController::class, 'MasterReportIndex'])->name('master.report');
+    // agent create player start
+    Route::resource('player', PlayerController::class);
+    Route::put('player/{id}/ban', [PlayerController::class, 'banUser'])->name('player.ban');
+    Route::get('player-cash-in/{player}', [PlayerController::class, 'getCashIn'])->name('player.getCashIn');
+    Route::post('player-cash-in/{player}', [PlayerController::class, 'makeCashIn'])->name('player.makeCashIn');
+    Route::get('player/cash-out/{player}', [PlayerController::class, 'getCashOut'])->name('player.getCashOut');
+    Route::post('player/cash-out/update/{player}', [PlayerController::class, 'makeCashOut'])
+        ->name('player.makeCashOut');
+    Route::get('player-changepassword/{id}', [PlayerController::class, 'getChangePassword'])->name('player.getChangePassword');
+    Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
+    Route::get('/players-list', [PlayerController::class, 'player_with_agent'])->name('playerListForAdmin');
+    // agent create player end
+    // report log
+
     Route::get('/agent-report/{id}', [AgentController::class, 'agentReportIndex'])->name('agent.report');
     Route::get('/player-report/{id}', [PlayerController::class, 'playerReportIndex'])->name('player.report');
 
-    //Shan Report
+    // Shan Report
     Route::get('/shan-report', [ReportController::class, 'shanReportIndex'])->name('shan_report');
 
-
     // master, agent sub-agent end
-    Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
+    Route::get('/transfer-logs', [TransferLogController::class, 'index'])->name('transfer-logs.index');
+
+    // Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
     Route::get('transferlog/{id}', [TransferLogController::class, 'transferLog'])->name('transferLogDetail');
 
     Route::get('wager-list', [WagerListController::class, 'index'])->name('wager-list');
@@ -100,6 +119,6 @@ Route::group([
 
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.detail');
-    //Route::get('report/detail/{member_account}', [\App\Http\Controllers\Admin\ReportController::class, 'getReportDetails'])->name('admin.report.detail');
+    // Route::get('report/detail/{member_account}', [\App\Http\Controllers\Admin\ReportController::class, 'getReportDetails'])->name('admin.report.detail');
 
 });

@@ -29,4 +29,4 @@ class ApiResponseService
             'data' => $data ?? [],
         ];
     }
-} 
+}

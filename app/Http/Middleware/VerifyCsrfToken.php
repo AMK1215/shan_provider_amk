@@ -13,6 +13,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'telegram-message-webhook', // exclude from CSRF
-       //'https://luckymillion.pro/telegram-message-webhook',
+        // 'https://luckymillion.pro/telegram-message-webhook',
     ];
 }

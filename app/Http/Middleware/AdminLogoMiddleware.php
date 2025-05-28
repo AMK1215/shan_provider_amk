@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
 use App\Enums\UserType;
+use App\Models\User;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -28,12 +28,12 @@ class AdminLogoMiddleware
                         $siteName = $current->site_name;
                         break;
                     }
-                    
+
                     // For other roles, check their own logo first
-                    if ($current->agent_logo && !$logoFilename) {
+                    if ($current->agent_logo && ! $logoFilename) {
                         $logoFilename = $current->agent_logo;
                     }
-                    if ($current->site_name && !$siteName) {
+                    if ($current->site_name && ! $siteName) {
                         $siteName = $current->site_name;
                     }
 
@@ -46,10 +46,10 @@ class AdminLogoMiddleware
                 }
 
                 // Fallback to user's own if still not found
-                if (!$logoFilename) {
+                if (! $logoFilename) {
                     $logoFilename = $user->agent_logo;
                 }
-                if (!$siteName) {
+                if (! $siteName) {
                     $siteName = $user->site_name;
                 }
 
@@ -59,17 +59,18 @@ class AdminLogoMiddleware
 
                 View::share([
                     'adminLogo' => $adminLogo,
-                    'siteName' => $siteName ?? "GSCPLUS",
+                    'siteName' => $siteName ?? 'GSCPLUS',
                 ]);
             } catch (\Exception $e) {
-                Log::error('Error in AdminLogoMiddleware: ' . $e->getMessage());
+                Log::error('Error in AdminLogoMiddleware: '.$e->getMessage());
                 // Fallback to default values
                 View::share([
                     'adminLogo' => asset('assets/img/logo/slot_maker.png'),
-                    'siteName' => "GSCPLUSSlotGameSite",
+                    'siteName' => 'GSCPLUSSlotGameSite',
                 ]);
             }
         }
+
         return $next($request);
     }
 
