@@ -138,13 +138,13 @@
             </a>
 
             <a href="{{ route('admin.logs', $player->id) }}"
-                data-bs-toggle="tooltip" data-bs-original-title="Reports"
+                data-bs-toggle="tooltip" data-bs-original-title="Logs"
                 class="btn btn-info btn-sm">
                 <i class="fas fa-right-left text-white me-1"></i>
                 Logs
             </a>
             <a href="{{ route('admin.transferLogDetail', $player->id) }}"
-                data-bs-toggle="tooltip" data-bs-original-title="Reports"
+                data-bs-toggle="tooltip" data-bs-original-title="Transfer Logs"
                 class="btn btn-info btn-sm">
                 <i class="fas fa-right-left text-white me-1"></i>
                 transferLogs
