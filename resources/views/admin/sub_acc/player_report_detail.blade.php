@@ -73,14 +73,42 @@
                         <!-- /.card-body -->
                     </div>
                     <!-- /.card -->
-                     <div class="card mb-3">
-                        <div class="card-body">
-                            <h5>Total Stake: {{ number_format($total_stake, 2) }}</h5>
-                            <h5>Total Bet: {{ number_format($total_bet, 2) }}</h5>
-                            <h5>Total Win: {{ number_format($total_win, 2) }}</h5>
-                            <h5>Total Lost: {{ number_format($total_lost, 2) }}</h5>
-                        </div>
-                     </div>
+                    <div class="row mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card text-center shadow-sm border-success">
+            <div class="card-body">
+                <h6 class="text-success"><i class="fas fa-layer-group"></i> Total Stake</h6>
+                <h3 class="fw-bold">{{ number_format($total_stake) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card text-center shadow-sm border-primary">
+            <div class="card-body">
+                <h6 class="text-primary"><i class="fas fa-coins"></i> Total Bet</h6>
+                <h3 class="fw-bold">{{ number_format($total_bet, 2) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mt-3 mt-md-0">
+        <div class="card text-center shadow-sm border-info">
+            <div class="card-body">
+                <h6 class="text-info"><i class="fas fa-trophy"></i> Total Win</h6>
+                <h3 class="fw-bold">{{ number_format($total_win, 2) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mt-3 mt-md-0">
+        <div class="card text-center shadow-sm border-danger">
+            <div class="card-body">
+                <h6 class="text-danger"><i class="fas fa-times-circle"></i> Total Lost</h6>
+                <h3 class="fw-bold">{{ number_format($total_lost, 2) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+
                 </div>
 
             </div>
