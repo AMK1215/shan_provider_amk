@@ -27,7 +27,7 @@ class TransferLogController extends Controller
                             ->whereIn('from_user_id', $relatedIds);
                     });
             });
-
+            
         // Apply filters if provided
         if ($request->has('type')) {
             $query->where('type', $request->type);

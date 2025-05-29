@@ -553,6 +553,7 @@ public function getCashIn(User $player)
             TransferLog::create([
                 'from_user_id' => $agent->id,
                 'to_user_id' => $player->id,
+                'sub_agent_id' => $subAgent->id,
                 'sub_agent_name' => $subAgent->user_name,
                 'amount' => $request->amount,
                 'type' => 'deposit',
@@ -622,6 +623,7 @@ public function getCashIn(User $player)
             TransferLog::create([
                 'from_user_id' => $player->id,
                 'to_user_id' => $agent->id,
+                'sub_agent_id' => $subAgent->id,
                 'sub_agent_name' => $subAgent->user_name,
                 'amount' => $request->amount,
                 'type' => 'withdraw',
@@ -650,5 +652,36 @@ public function getCashIn(User $player)
     {
         return uniqid($prefix);
     }
+
+    // transfer log
+    public function subacc_log_index(Request $request)
+{
+    $user = Auth::user();
+
+    // Get subagent IDs for this agent
+    $subAgentIds = User::where('agent_id', $user->id)
+        ->whereHas('roles', function($q) {
+            $q->where('title', 'SubAgent');
+        })->pluck('id')->toArray();
+
+    $query = TransferLog::with(['fromUser', 'toUser'])
+        ->where(function($q) use ($user, $subAgentIds) {
+            $q->where('from_user_id', $user->id)
+              ->orWhereIn('sub_agent_id', $subAgentIds);
+        });
+
+    // Apply filters if provided
+    if ($request->has('type')) {
+        $query->where('type', $request->type);
+    }
+    if ($request->has('date_from') && $request->has('date_to')) {
+        $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
+    }
+
+    $transferLogs = $query->latest()->paginate(20);
+
+    return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
+        
+}
     
 }

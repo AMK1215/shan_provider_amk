@@ -48,6 +48,7 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
+                                    <th>Sub Agent Name</th>
                                     <th>Date</th>
                                     <th>From</th>
                                     <th>To</th>
@@ -59,6 +60,7 @@
                             <tbody>
                                 @forelse($transferLogs as $log)
                                 <tr>
+                                    <td>{{ $log->subAgent->user_name ?? 'N/A' }}</td>
                                     <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->fromUser->name ?? 'N/A' }}</td>
                                     <td>{{ $log->toUser->name ?? 'N/A' }}</td>
