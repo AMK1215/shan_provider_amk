@@ -533,10 +533,8 @@ public function getCashIn(User $player)
             $inputs = $request->validated();
             $inputs['refrence_id'] = $this->getRefrenceId();
 
-            $subAgent =  Auth::user();
-            $agent = $subAgent->agent;
-
-            $agent_id = $agent->agent_id;
+            $subAgent = Auth::user();      // The subagent making the request
+            $agent = $subAgent->agent;     // The parent agent (who owns the balance)
 
             $cashIn = $inputs['amount'];
 
@@ -555,6 +553,7 @@ public function getCashIn(User $player)
             TransferLog::create([
                 'from_user_id' => $agent->id,
                 'to_user_id' => $player->id,
+                'sub_agent_name' => $subAgent->user_name,
                 'amount' => $request->amount,
                 'type' => 'deposit',
                 'description' => 'Credit transfer from '.$agent->user_name.' to player',
