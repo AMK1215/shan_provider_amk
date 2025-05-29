@@ -73,6 +73,14 @@
                         <!-- /.card-body -->
                     </div>
                     <!-- /.card -->
+                     <div class="card mb-3">
+                        <div class="card-body">
+                            <h5>Total Stake: {{ number_format($total_stake, 2) }}</h5>
+                            <h5>Total Bet: {{ number_format($total_bet, 2) }}</h5>
+                            <h5>Total Win: {{ number_format($total_win, 2) }}</h5>
+                            <h5>Total Lost: {{ number_format($total_lost, 2) }}</h5>
+                        </div>
+                     </div>
                 </div>
 
             </div>
