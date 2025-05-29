@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
+use App\Services\WalletService;
+use App\Http\Requests\TransferLogRequest;
+//use App\Models\PlaceBet;
+
 
 class SubAccountController extends Controller
 {
