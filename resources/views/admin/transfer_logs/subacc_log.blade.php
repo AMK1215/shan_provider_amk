@@ -1,9 +1,31 @@
 @extends('layouts.master')
 
 @section('content')
-<div class="container-fluid">
-    <h2 class="mb-4">Transfer Logs</h2>
-    <div class="card">
+<section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Transfer Log</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                        <li class="breadcrumb-item active">Transfer Log</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-end mb-3">
+                        <a href="{{ route('home') }}" class="btn btn-success " style="width: 100px;"><i
+                                class="fas fa-plus text-white  mr-2"></i>Back</a>
+                    </div>
+                    <div class="card">
         <div class="card-body">
             <!-- Filter Form -->
             <form method="GET" class="row g-3 mb-3">
@@ -22,7 +44,7 @@
             </form>
             <!-- Table -->
             <div class="table-responsive">
-                <table class="table table-bordered table-hover">
+                <table id="mytable" class="table table-bordered table-hover">
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
@@ -65,5 +87,15 @@
             </div>
         </div>
     </div>
+                    <!-- /.card -->
+                </div>
+
+            </div>
+        </div>
+</section>
+
+<div class="container-fluid">
+    <h2 class="mb-4">Transfer Logs</h2>
+    
 </div>
 @endsection 
