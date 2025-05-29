@@ -81,6 +81,7 @@ Route::group([
         ->name('subacc.profile');
     Route::get('subacc-agent-players', [SubAccountController::class, 'agentPlayers'])
         ->name('subacc.agent_players');
+    Route::get('subacc/player/{id}/report', [SubAccountController::class, 'playerReport'])->name('subacc.player.report_detail');
     // sub-agent end
     // agent create player start
     Route::resource('player', PlayerController::class);

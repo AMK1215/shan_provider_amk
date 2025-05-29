@@ -384,4 +384,19 @@ class SubAccountController extends Controller
 
         return view('admin.sub_acc.agent_players', compact('players', 'agent'));
     }
+    
+    public function playerReport($id)
+{
+    $player = \App\Models\User::findOrFail($id);
+
+    // Fetch all bets for this player
+    $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
+        ->orderBy('created_at', 'desc')
+        ->get();
+        // total bet, total win, total lost
+
+
+    return view('admin.sub_acc.player_report_detail', compact('player', 'bets'));
+}
+    
 }
