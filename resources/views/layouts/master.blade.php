@@ -268,7 +268,19 @@
                             </li>
                         
                         @endcan
-                        
+
+                        @can('transfer_log')
+
+                        <li class="nav-item">
+                                <a href="{{ route('admin.subacc.tran.logs') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.subacc.tran.logs' ? 'active' : '' }}">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    <p>
+                                       Sub Agent Transfer Log
+                                    </p>
+                                </a>
+                            </li>
+                        @endcan
                         @can('senior_owner_access')
                             <li class="nav-item">
                                 <a href=""
