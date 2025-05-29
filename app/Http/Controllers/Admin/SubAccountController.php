@@ -642,6 +642,9 @@ public function getCashIn(User $player)
     }
 
 
-
+    private function getRefrenceId($prefix = 'REF')
+    {
+        return uniqid($prefix);
+    }
     
 }
