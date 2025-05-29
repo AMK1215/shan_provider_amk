@@ -87,7 +87,7 @@ Route::group([
     Route::get('/subacc/player/cash-out/{player}', [SubAccountController::class, 'getCashOut'])->name('subacc.player.getCashOut');
     Route::post('/subacc/player/cash-out/update/{player}', [SubAccountController::class, 'makeCashOut'])
         ->name('subacc.player.makeCashOut');
-    Route::get('/subacc/transfer-logs', [SubAccountController::class, 'subacc_log_index'])->name('subacc.transfer-logs');
+    Route::get('/subacc/transfer-logs', [SubAccountController::class, 'subacc_log_index'])->name('subacc.transfer.logs');
     // sub-agent end
     // agent create player start
     Route::resource('player', PlayerController::class);

@@ -258,8 +258,8 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.subacc.transfer-logs') }}"
-                                    class="nav-link {{ Route::current()->getName() == 'admin.subacc.transfer-logs' ? 'active' : '' }}">
+                                <a href="{{ route('admin.subacc.transfer.logs') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.subacc.transfer.logs' ? 'active' : '' }}">
                                     <i class="fas fa-exchange-alt"></i>
                                     <p>
                                         Transfer Log
