@@ -222,7 +222,7 @@
                                 class="nav-link {{ Route::current()->getName() == 'admin.transfer-logs.index' ? 'active' : '' }}">
                                 <i class="fas fa-exchange-alt"></i>
                                 <p>
-                                    Transaction Log
+                                    Owner Agent Transaction Log
                                 </p>
                             </a>
                         </li>
