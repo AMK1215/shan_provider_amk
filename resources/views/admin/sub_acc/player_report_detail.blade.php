@@ -33,30 +33,35 @@
                         <thead>
             <tr>
                 <th>#</th>
+                <th>PlayerID</th>
+                <th>Provider</th>
+                <th>Game</th>
+                <!-- <th>Game Type</th> -->
                 <th>Bet Amount</th>
                 <th>Payout</th>
+                <th>Win/Lost</th>
                 <th>Before Balance</th>
                 <th>After Balance</th>
-                <th>Game</th>
-                <th>Game Type</th>
-                <th>Provider</th>
                 <th>Request Time</th>
-                <th>Status</th>
+                <!-- <th>Status</th> -->
             </tr>
         </thead>
         <tbody>
             @foreach($bets as $index => $bet)
             <tr>
                 <td>{{ $index + 1 }}</td>
+                <td>{{ $bet->member_account }}</td>
+                <td>{{ $bet->provider_name }}</td>
+                <td>{{ $bet->game_name }}</td>
+                <!-- <td>{{ $bet->game_type }}</td> -->
                 <td>{{ number_format($bet->bet_amount, 2) }}</td>
                 <td>{{ number_format($bet->prize_amount, 2) }}</td>
+                <td>{{ number_format($bet->prize_amount - $bet->bet_amount, 2) }}</td>
                 <td>{{ number_format($bet->before_balance, 2) }}</td>
                 <td>{{ number_format($bet->balance, 2) }}</td>
-                <td>{{ $bet->game_name }}</td>
-                <td>{{ $bet->game_type }}</td>
-                <td>{{ $bet->provider_name }}</td>
-                <td>{{ $bet->request_time }}</td>
-                <td>{{ $bet->status }}</td>
+                <td>{{ \Carbon\Carbon::parse($bet->request_time)->timezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</td>
+                <!-- <td>{{ $bet->request_time }}</td> -->
+                <!-- <td>{{ $bet->status }}</td> -->
             </tr>
             @endforeach
         </tbody>
