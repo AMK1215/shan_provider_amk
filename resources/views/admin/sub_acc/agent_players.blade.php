@@ -59,8 +59,8 @@
     <th>Total Stake</th>
     <th>Total Bet</th>
     <th>Total Payout</th>
-    <th>Min Before Balance</th>
-    <th>Max Balance</th>
+    <!-- <th>Min Before Balance</th>
+    <th>Max Balance</th> -->
     <th>Status</th>
     <th>Actions</th>
     <th>Finance</th>
@@ -78,8 +78,8 @@
     <td>{{ $player->total_stake }}</td>
     <td>{{ number_format($player->total_bet, 2) }}</td>
     <td>{{ number_format($player->total_payout, 2) }}</td>
-    <td>{{ number_format($player->min_before_balance, 2) }}</td>
-    <td>{{ number_format($player->max_balance, 2) }}</td>
+    <!-- <td>{{ number_format($player->min_before_balance, 2) }}</td>
+    <td>{{ number_format($player->max_balance, 2) }}</td> -->
             <td>
                 @if($player->status)
                     <span class="badge bg-success">Active</span>
