@@ -122,7 +122,7 @@
 
         </td>
         <td>
-            <a href="{{ route('admin.player.getCashIn', $player->id) }}"
+            <a href="{{ route('admin.subacc.player.getCashIn', $player->id) }}"
                 data-bs-toggle="tooltip"
                 data-bs-original-title="Deposit To Player"
                 class="btn btn-info btn-sm">
