@@ -162,7 +162,7 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('player_index')
+                        @can('transfer_log')
                             <li class="nav-item">
                                 <a href="{{ route('admin.player.index') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.player.index' ? 'active' : '' }}">
@@ -222,7 +222,7 @@
                                 class="nav-link {{ Route::current()->getName() == 'admin.transfer-logs.index' ? 'active' : '' }}">
                                 <i class="fas fa-exchange-alt"></i>
                                 <p>
-                                    Owner Agent Transaction Log
+                                    Agent Transaction Log
                                 </p>
                             </a>
                         </li>
