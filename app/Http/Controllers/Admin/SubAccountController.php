@@ -655,33 +655,37 @@ public function getCashIn(User $player)
 
     // transfer log
     public function SubAgentTransferLog(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // Get subagent IDs for this agent
-    $subAgentIds = User::where('agent_id', $user->id)
-        ->whereHas('roles', function($q) {
-            $q->where('title', 'SubAgent');
-        })->pluck('id')->toArray();
+        if ($user->hasRole('SubAgent')) {
+            $query = TransferLog::with(['fromUser', 'toUser'])
+                ->where('sub_agent_id', $user->id);
+        } else {
+            // Get subagent IDs for this agent
+            $subAgentIds = User::where('agent_id', $user->id)
+                ->whereHas('roles', function($q) {
+                    $q->where('title', 'SubAgent');
+                })->pluck('id')->toArray();
 
-    $query = TransferLog::with(['fromUser', 'toUser'])
-        ->where(function($q) use ($user, $subAgentIds) {
-            $q->where('from_user_id', $user->id)
-              ->orWhereIn('sub_agent_id', $subAgentIds);
-        });
+            $query = TransferLog::with(['fromUser', 'toUser'])
+                ->where(function($q) use ($user, $subAgentIds) {
+                    $q->where('from_user_id', $user->id)
+                      ->orWhereIn('sub_agent_id', $subAgentIds);
+                });
+        }
 
-    // Apply filters if provided
-    if ($request->has('type')) {
-        $query->where('type', $request->type);
+        // Apply filters if provided
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->has('date_from') && $request->has('date_to')) {
+            $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
+        }
+
+        $transferLogs = $query->latest()->paginate(20);
+
+        return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
     }
-    if ($request->has('date_from') && $request->has('date_to')) {
-        $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
-    }
-
-    $transferLogs = $query->latest()->paginate(20);
-
-    return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
-        
-}
     
 }
