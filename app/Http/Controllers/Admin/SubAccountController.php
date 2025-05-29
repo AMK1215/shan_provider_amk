@@ -399,14 +399,46 @@ class SubAccountController extends Controller
 //     return view('admin.sub_acc.player_report_detail', compact('player', 'bets'));
 // }
 
-public function playerReport($id)
+// public function playerReport($id)
+// {
+//     $player = \App\Models\User::findOrFail($id);
+
+//     // Fetch all bets for this player
+//     $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
+//         ->orderBy('created_at', 'desc')
+//         ->get();
+
+//     // Calculate totals
+//     $total_stake = $bets->count();
+//     $total_bet = $bets->sum('bet_amount');
+//     $total_win = $bets->sum('prize_amount');
+//     $total_lost = $total_bet - $total_win;
+
+//     return view('admin.sub_acc.player_report_detail', compact(
+//         'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost'
+//     ));
+// }
+
+public function playerReport(Request $request, $id)
 {
     $player = \App\Models\User::findOrFail($id);
 
-    // Fetch all bets for this player
-    $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
-        ->orderBy('created_at', 'desc')
-        ->get();
+    $query = \App\Models\PlaceBet::where('member_account', $player->user_name);
+
+    // Filter by provider_name
+    if ($request->filled('provider_name')) {
+        $query->where('provider_name', $request->provider_name);
+    }
+
+    // Filter by date range
+    if ($request->filled('start_date')) {
+        $query->whereDate('request_time', '>=', $request->start_date);
+    }
+    if ($request->filled('end_date')) {
+        $query->whereDate('request_time', '<=', $request->end_date);
+    }
+
+    $bets = $query->orderBy('created_at', 'desc')->get();
 
     // Calculate totals
     $total_stake = $bets->count();
@@ -414,8 +446,14 @@ public function playerReport($id)
     $total_win = $bets->sum('prize_amount');
     $total_lost = $total_bet - $total_win;
 
+    // For provider dropdown
+    $providers = \App\Models\PlaceBet::where('member_account', $player->user_name)
+        ->select('provider_name')
+        ->distinct()
+        ->pluck('provider_name');
+
     return view('admin.sub_acc.player_report_detail', compact(
-        'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost'
+        'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost', 'providers'
     ));
 }
     

@@ -25,8 +25,34 @@
                         <a href="{{ route('home') }}" class="btn btn-success " style="width: 100px;"><i
                                 class="fas fa-plus text-white  mr-2"></i>Back</a>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
+                    <div class="mb-3">
+                        <div class="card">
+                        <form method="GET" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label for="provider_name" class="form-label">Provider</label>
+        <select name="provider_name" id="provider_name" class="form-control">
+            <option value="">All</option>
+            @foreach($providers as $provider)
+                <option value="{{ $provider }}" {{ request('provider_name') == $provider ? 'selected' : '' }}>{{ $provider }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="start_date" class="form-label">Start Date</label>
+        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}">
+    </div>
+    <div class="col-md-3">
+        <label for="end_date" class="form-label">End Date</label>
+        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}">
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+                        </div>
+                    </div>
+                        <div class="card">
+                            <div class="card-body">
                        
             <table id="mytable" class="table table-bordered table-hover">
 
