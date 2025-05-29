@@ -583,8 +583,10 @@ public function getCashIn(User $player)
             Response::HTTP_FORBIDDEN,
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
+        $subAgent =  Auth::user();
+        $agent = $subAgent->agent;
 
-        return view('admin.sub_acc.cash_out', compact('player'));
+        return view('admin.sub_acc.cash_out', compact('player', 'agent'));
     }
 
     public function makeCashOut(TransferLogRequest $request, User $player)
@@ -600,7 +602,8 @@ public function getCashIn(User $player)
             $inputs = $request->validated();
             $inputs['refrence_id'] = $this->getRefrenceId();
 
-            $agent = $this->getAgent() ?? Auth::user();
+            $subAgent = Auth::user();      // The subagent making the request
+            $agent = $subAgent->agent;     // The parent agent (who owns the balance)
 
             $cashOut = $inputs['amount'];
 
@@ -619,6 +622,7 @@ public function getCashIn(User $player)
             TransferLog::create([
                 'from_user_id' => $player->id,
                 'to_user_id' => $agent->id,
+                'sub_agent_name' => $subAgent->user_name,
                 'amount' => $request->amount,
                 'type' => 'withdraw',
                 'description' => 'Credit transfer from player to '.$agent->user_name,

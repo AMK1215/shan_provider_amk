@@ -129,7 +129,7 @@
                 <i class="fas fa-plus text-white me-1"></i>
                 Deposit
             </a>
-            <a href="{{ route('admin.player.getCashOut', $player->id) }}"
+            <a href="{{ route('admin.subacc.player.getCashOut', $player->id) }}"
                 data-bs-toggle="tooltip"
                 data-bs-original-title="WithDraw To Player"
                 class="btn btn-info btn-sm">

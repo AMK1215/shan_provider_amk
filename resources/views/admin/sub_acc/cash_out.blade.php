@@ -20,12 +20,15 @@
                 <div class="card-header">
                     <div class="card-title col-12">
                         <h5 class="d-inline fw-bold">Withdrawl</h5>
-                        <a href="{{ route('admin.player.index') }}" class="btn btn-primary float-right">
+                        <a href="{{ route('admin.subacc.agent_players') }}" class="btn btn-primary float-right">
                             <i class="fas fa-arrow-left" style="font-size: 20px;"></i> Back
                         </a>
                     </div>
                 </div>
-                <form action="{{route('admin.player.makeCashOut', $player->id)}}" method="POST">
+                <div class="mb-3">
+                    <span class="badge badge-success">{{ $agent->user_name }} : Agent Balance : {{ number_format(optional($agent)->balanceFloat, 2) }}</span>
+                </div>
+                <form action="{{route('admin.subacc.player.makeCashOut', $player->id)}}" method="POST">
                     @csrf
                     <div class="card-body mt-2">
                         <div class="row">

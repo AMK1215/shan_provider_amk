@@ -26,7 +26,7 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <span class="badge badge-success">{{ $agent->user_name }} : {{ number_format(optional($agent)->balanceFloat, 2) }}</span>
+                    <span class="badge badge-success">{{ $agent->user_name }} : Agent Balance : {{ number_format(optional($agent)->balanceFloat, 2) }}</span>
                 </div>
                 <form action="{{route('admin.subacc.player.makeCashIn', $player->id)}}" method="POST">
                     @csrf
