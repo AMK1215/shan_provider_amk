@@ -94,8 +94,5 @@
         </div>
 </section>
 
-<div class="container-fluid">
-    <h2 class="mb-4">Transfer Logs</h2>
-    
-</div>
+
 @endsection 

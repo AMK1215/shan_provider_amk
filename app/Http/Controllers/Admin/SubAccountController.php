@@ -654,7 +654,7 @@ public function getCashIn(User $player)
     }
 
     // transfer log
-    public function subacc_log_index(Request $request)
+    public function SubAgentTransferLog(Request $request)
 {
     $user = Auth::user();
 
