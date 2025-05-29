@@ -216,7 +216,7 @@ class SubAccountController extends Controller
     {
         $randomNumber = mt_rand(10000000, 99999999);
 
-        return 'SubAg'.$randomNumber;
+        return 'SUBAG'.$randomNumber;
     }
 
     // public function permission($id)
@@ -498,6 +498,145 @@ public function playerReport(Request $request, $id)
         'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost', 'providers'
     ));
 }
+
+
+// ----------------- Transaction method -------------
+public function getCashIn(User $player)
+    {
+        abort_if(
+            Gate::denies('subagent_deposit'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
+        $subAgent =  Auth::user();
+        $agent = $subAgent->agent;
+
+        return view('admin.sub_acc.cash_in', compact('player', 'agent'));
+    }
+
+    public function makeCashIn(TransferLogRequest $request, User $player)
+    {
+        abort_if(
+            Gate::denies('subagent_deposit'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
+        try {
+            DB::beginTransaction();
+            $inputs = $request->validated();
+            $inputs['refrence_id'] = $this->getRefrenceId();
+
+            $subAgent =  Auth::user();
+            $agent = $subAgent->agent;
+
+            $agent_id = $agent->agent_id;
+
+            $cashIn = $inputs['amount'];
+
+            if ($cashIn > $agent->balanceFloat) {
+
+                return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
+            }
+
+            app(WalletService::class)->transfer($agent, $player, $request->validated('amount'),
+                TransactionName::CreditTransfer, [
+                    'note' => $request->note,
+                    'old_balance' => $player->balanceFloat,
+                    'new_balance' => $player->balanceFloat + $request->amount,
+                ]);
+            // Log the transfer
+            TransferLog::create([
+                'from_user_id' => $agent->id,
+                'to_user_id' => $player->id,
+                'amount' => $request->amount,
+                'type' => 'deposit',
+                'description' => 'Credit transfer from '.$agent->user_name.' to player',
+                'meta' => [
+                    'transaction_type' => TransactionName::Deposit->value,
+                    'note' => $request->note,
+                    'old_balance' => $player->balanceFloat,
+                    'new_balance' => $player->balanceFloat + $request->amount,
+                ],
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'CashIn submitted successfully!');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function getCashOut(User $player)
+    {
+        abort_if(
+            Gate::denies('subagent_withdraw'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
+        return view('admin.sub_acc.cash_out', compact('player'));
+    }
+
+    public function makeCashOut(TransferLogRequest $request, User $player)
+    {
+        abort_if(
+            Gate::denies('subagent_withdraw'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
+        try {
+            DB::beginTransaction();
+            $inputs = $request->validated();
+            $inputs['refrence_id'] = $this->getRefrenceId();
+
+            $agent = $this->getAgent() ?? Auth::user();
+
+            $cashOut = $inputs['amount'];
+
+            if ($cashOut > $player->balanceFloat) {
+
+                return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
+            }
+
+            app(WalletService::class)->transfer($player, $agent, $request->validated('amount'),
+                TransactionName::DebitTransfer, [
+                    'note' => $request->note,
+                    'old_balance' => $player->balanceFloat,
+                    'new_balance' => $player->balanceFloat - $request->amount,
+                ]);
+            // Log the transfer
+            TransferLog::create([
+                'from_user_id' => $player->id,
+                'to_user_id' => $agent->id,
+                'amount' => $request->amount,
+                'type' => 'withdraw',
+                'description' => 'Credit transfer from player to '.$agent->user_name,
+                'meta' => [
+                    'transaction_type' => TransactionName::Withdraw->value,
+                    'note' => $request->note,
+                    'old_balance' => $player->balanceFloat,
+                    'new_balance' => $player->balanceFloat - $request->amount,
+                ],
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'CashOut submitted successfully!');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
 
 
     
