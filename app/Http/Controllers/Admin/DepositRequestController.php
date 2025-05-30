@@ -25,13 +25,15 @@ class DepositRequestController extends Controller
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
         $agent = $isSubAgent ? $user->agent : $user;
 
+        $sub_acc_id = $user->agent->id;
+
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $deposits = DepositRequest::with(['user', 'bank', 'agent'])
             ->where('agent_id', $agent->id)
-            ->when($isSubAgent, function ($query) use ($user) {
-                $query->where('sub_agent_id', $user->id);
+            ->when($isSubAgent, function ($query) use ($sub_acc_id) {
+                $query->where('sub_agent_id', $sub_acc_id->id);
             })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
