@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\WagerListController;
 use App\Http\Controllers\Admin\WinnerTextController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DepositRequestController;
+use App\Http\Controllers\Admin\WithDrawRequestController;
 
 Route::group([
     'prefix' => 'admin',
