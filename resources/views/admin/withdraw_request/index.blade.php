@@ -138,13 +138,12 @@
                                                         @endif
                                                     </form>
                                                 </div>
-                                            </td>
-                                            <td>
                                                 <div class="d-flex align-items-center">
                                                     <a href="{{ route('admin.agent.withdrawLog', $withdraw->id) }}"
                                                         class="text-white btn btn-info">Log</a>
                                                 </div>
                                             </td>
+                                           
                                         </tr>
                                     @endforeach
                                 </tbody>

@@ -73,10 +73,7 @@
                         @endif
                     </div>
                     <div class="row">
-                        <!-- <div class="col-md-4 text-center">
-                            <img src="{{ asset('assets/img/deposit/' . $deposit->image) }}" class="img-preview mb-2" alt="Deposit Slip">
-                            <div class="info-label">Deposit Slip</div>
-                        </div> -->
+                       
                         <div class="col-md-8">
                             <div class="section-title">Transaction Info</div>
                             <div class="info-row row">
