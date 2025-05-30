@@ -105,6 +105,10 @@
                                                     <a href="{{ route('admin.agent.depositView', $deposit->id) }}"
                                                         class="text-white btn btn-info">Detail</a>
                                                 </div>
+                                                <div class="d-flex align-items-center">
+                                                    <a href="{{ route('admin.agent.depositView', $deposit->id) }}"
+                                                        class="text-white btn btn-info">Log</a>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

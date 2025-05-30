@@ -114,7 +114,7 @@ class DepositRequestController extends Controller
 
             $deposit->update([
                 'status' => $request->status,
-                'note' => $request->note,
+                'note' => $note,
                 'sub_agent_id' => $user->id,
                 'sub_agent_name' => $user->user_name,
             ]);
@@ -140,6 +140,13 @@ class DepositRequestController extends Controller
        }
 
         return view('admin.deposit_request.view', compact('deposit', 'isSubAgent'));
+    }
+
+    // log deposit request 
+    public function DepositShowLog(DepositRequest $deposit)
+    {
+        $logs = $deposit->logs;
+        return view('admin.deposit_request.log', compact('logs'));
     }
 
     private function isExistingAgent($userId)
