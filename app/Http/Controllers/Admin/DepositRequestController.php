@@ -57,7 +57,7 @@ class DepositRequestController extends Controller
 
             // Check if user has permission to handle this deposit
             if ($deposit->agent_id !== $agent->id || 
-                ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
+                ($isSubAgent && $deposit->agent_id !== $agent->id)) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
