@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\DepositRequestController;
+use App\Http\Controllers\Api\V1\WithDrawRequestController;
+use App\Http\Controllers\Api\V1\BankController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,5 +52,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers']);
     Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
     Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
+
+    // fanicial api
+    Route::get('agentfinicialPaymentType', [BankController::class, 'all']);
+    Route::post('depositfinicial', [DepositRequestController::class, 'FinicialDeposit']);
+    Route::get('depositlogfinicial', [DepositRequestController::class, 'log']);
+    Route::get('paymentTypefinicial', [BankController::class, 'paymentType']);
+    Route::post('withdrawfinicial', [WithDrawRequestController::class, 'FinicalWithdraw']); 
+    Route::get('withdrawlog', [WithDrawRequestController::class, 'log']);
 
 });

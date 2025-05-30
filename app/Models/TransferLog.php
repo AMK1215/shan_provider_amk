@@ -32,8 +32,9 @@ class TransferLog extends Model
     {
         return $this->belongsTo(User::class, 'to_user_id');
     }
+
     public function subAgent()
-{
-    return $this->belongsTo(User::class, 'sub_agent_id');
-}
+    {
+        return $this->belongsTo(User::class, 'sub_agent_id');
+    }
 }

@@ -6,10 +6,12 @@ use Amp\Parallel\Worker\Execution;
 use App\Enums\TransactionName;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TransferLogRequest;
 use App\Models\Admin\Permission;
 use App\Models\Admin\Role;
 use App\Models\TransferLog;
 use App\Models\User;
+use App\Services\WalletService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +20,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
-use App\Services\WalletService;
-use App\Http\Requests\TransferLogRequest;
-//use App\Models\PlaceBet;
 
+// use App\Models\PlaceBet;
 
 class SubAccountController extends Controller
 {
@@ -389,124 +389,122 @@ class SubAccountController extends Controller
 
         return view('admin.sub_acc.agent_players', compact('players', 'agent'));
     }
-    
-//     public function playerReport($id)
-// {
-//     $player = \App\Models\User::findOrFail($id);
 
-//     // Fetch all bets for this player
-//     $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
-//         ->orderBy('created_at', 'desc')
-//         ->get();
-//         // total bet, total win, total lost
+    //     public function playerReport($id)
+    // {
+    //     $player = \App\Models\User::findOrFail($id);
 
+    //     // Fetch all bets for this player
+    //     $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+    //         // total bet, total win, total lost
 
-//     return view('admin.sub_acc.player_report_detail', compact('player', 'bets'));
-// }
+    //     return view('admin.sub_acc.player_report_detail', compact('player', 'bets'));
+    // }
 
-// public function playerReport($id)
-// {
-//     $player = \App\Models\User::findOrFail($id);
+    // public function playerReport($id)
+    // {
+    //     $player = \App\Models\User::findOrFail($id);
 
-//     // Fetch all bets for this player
-//     $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
-//         ->orderBy('created_at', 'desc')
-//         ->get();
+    //     // Fetch all bets for this player
+    //     $bets = \App\Models\PlaceBet::where('member_account', $player->user_name)
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
 
-//     // Calculate totals
-//     $total_stake = $bets->count();
-//     $total_bet = $bets->sum('bet_amount');
-//     $total_win = $bets->sum('prize_amount');
-//     $total_lost = $total_bet - $total_win;
+    //     // Calculate totals
+    //     $total_stake = $bets->count();
+    //     $total_bet = $bets->sum('bet_amount');
+    //     $total_win = $bets->sum('prize_amount');
+    //     $total_lost = $total_bet - $total_win;
 
-//     return view('admin.sub_acc.player_report_detail', compact(
-//         'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost'
-//     ));
-// }
+    //     return view('admin.sub_acc.player_report_detail', compact(
+    //         'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost'
+    //     ));
+    // }
 
-// public function playerReport(Request $request, $id)
-// {
-//     $player = \App\Models\User::findOrFail($id);
+    // public function playerReport(Request $request, $id)
+    // {
+    //     $player = \App\Models\User::findOrFail($id);
 
-//     $query = \App\Models\PlaceBet::where('member_account', $player->user_name);
+    //     $query = \App\Models\PlaceBet::where('member_account', $player->user_name);
 
-//     // Filter by provider_name
-//     // if ($request->filled('provider_name')) {
-//     //     $query->where('provider_name', $request->provider_name);
-//     // }
+    //     // Filter by provider_name
+    //     // if ($request->filled('provider_name')) {
+    //     //     $query->where('provider_name', $request->provider_name);
+    //     // }
 
-//     if ($request->filled('provider_name')) {
-//         $query->whereRaw('LOWER(TRIM(provider_name)) = ?', [strtolower(trim($request->provider_name))]);
-//     }
+    //     if ($request->filled('provider_name')) {
+    //         $query->whereRaw('LOWER(TRIM(provider_name)) = ?', [strtolower(trim($request->provider_name))]);
+    //     }
 
-//     // Filter by date range
-//     if ($request->filled('start_date')) {
-//         $query->whereDate('request_time', '>=', $request->start_date);
-//     }
-//     if ($request->filled('end_date')) {
-//         $query->whereDate('request_time', '<=', $request->end_date);
-//     }
+    //     // Filter by date range
+    //     if ($request->filled('start_date')) {
+    //         $query->whereDate('request_time', '>=', $request->start_date);
+    //     }
+    //     if ($request->filled('end_date')) {
+    //         $query->whereDate('request_time', '<=', $request->end_date);
+    //     }
 
-//     $bets = $query->orderBy('created_at', 'desc')->get();
+    //     $bets = $query->orderBy('created_at', 'desc')->get();
 
-//     // Calculate totals
-//     $total_stake = $bets->count();
-//     $total_bet = $bets->sum('bet_amount');
-//     $total_win = $bets->sum('prize_amount');
-//     $total_lost = $total_bet - $total_win;
+    //     // Calculate totals
+    //     $total_stake = $bets->count();
+    //     $total_bet = $bets->sum('bet_amount');
+    //     $total_win = $bets->sum('prize_amount');
+    //     $total_lost = $total_bet - $total_win;
 
-//     // For provider dropdown
-//     $providers = \App\Models\PlaceBet::where('member_account', $player->user_name)
-//         ->select('provider_name')
-//         ->distinct()
-//         ->pluck('provider_name');
+    //     // For provider dropdown
+    //     $providers = \App\Models\PlaceBet::where('member_account', $player->user_name)
+    //         ->select('provider_name')
+    //         ->distinct()
+    //         ->pluck('provider_name');
 
-//     return view('admin.sub_acc.player_report_detail', compact(
-//         'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost', 'providers'
-//     ));
-// }
+    //     return view('admin.sub_acc.player_report_detail', compact(
+    //         'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost', 'providers'
+    //     ));
+    // }
 
-public function playerReport(Request $request, $id)
-{
-    $player = \App\Models\User::findOrFail($id);
+    public function playerReport(Request $request, $id)
+    {
+        $player = \App\Models\User::findOrFail($id);
 
-    $query = \App\Models\PlaceBet::where('member_account', $player->user_name);
+        $query = \App\Models\PlaceBet::where('member_account', $player->user_name);
 
-    // Robust provider_name filter (case-insensitive, trimmed)
-    if ($request->filled('provider_name')) {
-        $query->whereRaw('LOWER(TRIM(provider_name)) = ?', [strtolower(trim($request->provider_name))]);
+        // Robust provider_name filter (case-insensitive, trimmed)
+        if ($request->filled('provider_name')) {
+            $query->whereRaw('LOWER(TRIM(provider_name)) = ?', [strtolower(trim($request->provider_name))]);
+        }
+
+        // Date range filter
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        $bets = $query->orderBy('created_at', 'desc')->get();
+
+        // Totals
+        $total_stake = $bets->count();
+        $total_bet = $bets->sum('bet_amount');
+        $total_win = $bets->sum('prize_amount');
+        $total_lost = $total_bet - $total_win;
+
+        // Provider dropdown
+        $providers = \App\Models\PlaceBet::where('member_account', $player->user_name)
+            ->select('provider_name')
+            ->distinct()
+            ->pluck('provider_name');
+
+        return view('admin.sub_acc.player_report_detail', compact(
+            'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost', 'providers'
+        ));
     }
 
-    // Date range filter
-    if ($request->filled('start_date')) {
-        $query->whereDate('created_at', '>=', $request->start_date);
-    }
-    if ($request->filled('end_date')) {
-        $query->whereDate('created_at', '<=', $request->end_date);
-    }
-
-    $bets = $query->orderBy('created_at', 'desc')->get();
-
-    // Totals
-    $total_stake = $bets->count();
-    $total_bet = $bets->sum('bet_amount');
-    $total_win = $bets->sum('prize_amount');
-    $total_lost = $total_bet - $total_win;
-
-    // Provider dropdown
-    $providers = \App\Models\PlaceBet::where('member_account', $player->user_name)
-        ->select('provider_name')
-        ->distinct()
-        ->pluck('provider_name');
-
-    return view('admin.sub_acc.player_report_detail', compact(
-        'player', 'bets', 'total_stake', 'total_bet', 'total_win', 'total_lost', 'providers'
-    ));
-}
-
-
-// ----------------- Transaction method -------------
-public function getCashIn(User $player)
+    // ----------------- Transaction method -------------
+    public function getCashIn(User $player)
     {
         abort_if(
             Gate::denies('subagent_deposit'),
@@ -514,7 +512,7 @@ public function getCashIn(User $player)
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
 
-        $subAgent =  Auth::user();
+        $subAgent = Auth::user();
         $agent = $subAgent->agent;
 
         return view('admin.sub_acc.cash_in', compact('player', 'agent'));
@@ -584,7 +582,7 @@ public function getCashIn(User $player)
             Response::HTTP_FORBIDDEN,
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
-        $subAgent =  Auth::user();
+        $subAgent = Auth::user();
         $agent = $subAgent->agent;
 
         return view('admin.sub_acc.cash_out', compact('player', 'agent'));
@@ -647,7 +645,6 @@ public function getCashIn(User $player)
         }
     }
 
-
     private function getRefrenceId($prefix = 'REF')
     {
         return uniqid($prefix);
@@ -664,14 +661,14 @@ public function getCashIn(User $player)
         } else {
             // Get subagent IDs for this agent
             $subAgentIds = User::where('agent_id', $user->id)
-                ->whereHas('roles', function($q) {
+                ->whereHas('roles', function ($q) {
                     $q->where('title', 'SubAgent');
                 })->pluck('id')->toArray();
 
             $query = TransferLog::with(['fromUser', 'toUser'])
-                ->where(function($q) use ($user, $subAgentIds) {
+                ->where(function ($q) use ($user, $subAgentIds) {
                     $q->where('from_user_id', $user->id)
-                      ->orWhereIn('sub_agent_id', $subAgentIds);
+                        ->orWhereIn('sub_agent_id', $subAgentIds);
                 });
         }
 
@@ -687,5 +684,4 @@ public function getCashIn(User $player)
 
         return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
     }
-    
 }

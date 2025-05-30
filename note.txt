@@ -166,7 +166,7 @@ sudo nano /etc/php/8.1/fpm/php.ini
 memory_limit = 1024M
 sudo systemctl restart php8.1-fpm
 sudo systemctl restart nginx
-php artisan make:migration create_permission_user_table --create=permission_user
+php artisan make:migration add_note_to_deposit_requests_table --create=deposit_requests
 
 /// 
 player list 

@@ -175,8 +175,8 @@
                         @endcan
                         @can('contact')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
+                                <a href="{{ route('admin.contact.index') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.contact.index' ? 'active' : '' }}">
                                     <i class="fas fa-address-book"></i>
                                     <p>
                                         Contact
@@ -186,8 +186,8 @@
                         @endcan
                         @can('bank')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
+                                <a href="{{ route('admin.bank.index') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.bank.index' ? 'active' : '' }}">
                                     <i class="fas fa-university"></i>
                                     <p>
                                         Bank
@@ -197,8 +197,8 @@
                         @endcan
                         @can('withdraw')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
+                                <a href="{{ route('admin.agent.withdraw') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.agent.withdraw' ? 'active' : '' }}">
                                     <i class="fas fa-comment-dollar"></i>
                                     <p>
                                         WithDraw Request
@@ -208,8 +208,8 @@
                         @endcan
                         @can('deposit')
                             <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
+                                <a href="{{ route('admin.agent.deposit') }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.agent.deposit' ? 'active' : '' }}">
                                     <i class="fab fa-dochub"></i>
                                     <p>
                                         Deposit Request

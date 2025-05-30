@@ -54,6 +54,17 @@ Route::group([
     Route::resource('paymentTypes', PaymentTypeController::class);
     Route::resource('bank', BankController::class);
     // banner etc end
+    // deposit request start
+    Route::get('finicialwithdraw', [WithDrawRequestController::class, 'index'])->name('agent.withdraw');
+    Route::post('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'statusChangeIndex'])->name('agent.withdrawStatusUpdate');
+    Route::post('finicialwithdraw/reject/{withdraw}', [WithDrawRequestController::class, 'statusChangeReject'])->name('agent.withdrawStatusreject');
+
+    Route::get('finicialdeposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
+    Route::get('finicialdeposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
+    Route::post('finicialdeposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');
+    Route::post('finicialdeposit/reject/{deposit}', [DepositRequestController::class, 'statusChangeReject'])->name('agent.depositStatusreject');
+
+    // deposit request end
 
     // master, agent, sub-agent
 
