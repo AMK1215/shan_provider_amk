@@ -14,16 +14,24 @@ use Illuminate\Support\Facades\Auth;
 
 class WithDrawRequestController extends Controller
 {
-    protected const SUB_AGENT_ROLE = 'Sub Agent';
+    protected const SUB_AGENT_ROLE = 'SubAgent';
 
     public function index(Request $request)
     {
-        // dd($request->all());
-        $agent = $this->getAgent() ?? Auth::user();
+        $user = Auth::user();
+        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
+        $agent = $isSubAgent ? $user->agent : $user;
+
+        $sub_acc_id = $user->agent;
+
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
-        $withdraws = WithDrawRequest::where('agent_id', $agent->id)
+        $withdraws = WithDrawRequest::with(['user', 'paymentType'])
+            ->where('agent_id', $agent->id)
+            ->when($isSubAgent, function ($query) use ($sub_acc_id) {
+                $query->where('agent_id', $sub_acc_id->id);
+            })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
             })
@@ -31,27 +39,31 @@ class WithDrawRequestController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        if ($request->input('status') !== 'all') {
-            $totalWithdraws = $withdraws->sum('amount');
-        } else {
-            $totalWithdraws = $withdraws->where('status', $request->input('status'))->sum('amount');
-        }
+        $totalWithdraws = $withdraws->sum('amount');
 
-        return view('admin.withdraw_request.index', compact('withdraws', 'totalWithdraws'));
+        return view('admin.withdraw_request.index', compact('withdraws', 'totalWithdraws', 'isSubAgent'));
     }
 
     public function statusChangeIndex(Request $request, WithDrawRequest $withdraw)
     {
-        $agent = $this->getAgent() ?? Auth::user();
-
+        //$agent = $this->getAgent() ?? Auth::user();
+        $user = Auth::user();
+            $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
+            //$agent = $isSubAgent ? $user->agent : $user;
+            $agent = $user->agent;
         $player = User::find($request->player);
 
         if ($request->status == 1 && $player->balanceFloat < $request->amount) {
             return redirect()->back()->with('error', 'Insufficient Balance!');
         }
 
+        $note = 'Withdraw request approved by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+
         $withdraw->update([
             'status' => $request->status,
+            'sub_agent_id' => $user->id,
+            'sub_agent_name' => $user->user_name,
+            'note' => $note,
         ]);
 
         if ($request->status == 1) {
@@ -71,9 +83,19 @@ class WithDrawRequestController extends Controller
             'status' => 'required|in:0,1,2',
         ]);
 
+        $user = Auth::user();
+        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
+        //$agent = $isSubAgent ? $user->agent : $user;
+        $agent = $user->agent;
+
         try {
+            $note = 'Withdraw request rejected by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+
             $withdraw->update([
                 'status' => $request->status,
+                'sub_agent_id' => $user->id,
+                'sub_agent_name' => $user->user_name,
+                'note' => $note,
             ]);
 
             return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');
