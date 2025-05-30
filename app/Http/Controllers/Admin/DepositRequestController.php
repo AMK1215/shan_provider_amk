@@ -25,7 +25,7 @@ class DepositRequestController extends Controller
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
         $agent = $isSubAgent ? $user->agent : $user;
 
-        $sub_acc_id = $user->agent->id;
+        $sub_acc_id = $user->agent;
 
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
