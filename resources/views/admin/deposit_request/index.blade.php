@@ -79,6 +79,7 @@
                                     <th>Status</th>
                                     <th>DateTime</th>
                                     <th>Action</th>
+                                    <th>DepositLog</th>
                                 </thead>
                                 <tbody>
                                     @foreach ($deposits as $deposit)
@@ -105,7 +106,10 @@
                                                     <a href="{{ route('admin.agent.depositView', $deposit->id) }}"
                                                         class="text-white btn btn-info">Detail</a>
                                                 </div>
-                                                <div class="d-flex align-items-center">
+                                                
+                                            </td>
+                                            <td>
+                                            <div class="d-flex align-items-center">
                                                     <a href="{{ route('admin.agent.depositView', $deposit->id) }}"
                                                         class="text-white btn btn-info">Log</a>
                                                 </div>
