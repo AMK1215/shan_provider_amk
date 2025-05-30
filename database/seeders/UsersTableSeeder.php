@@ -39,7 +39,7 @@ class UsersTableSeeder extends Seeder
         $walletService->deposit($systemWallet, 500 * 100_0000, TransactionName::CapitalDeposit);
 
         // Create 10 agents
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $agent = $this->createUser(
                 UserType::Agent,
                 "Agent $i",
@@ -53,7 +53,7 @@ class UsersTableSeeder extends Seeder
             $walletService->transfer($owner, $agent, $initialBalance, TransactionName::CreditTransfer);
 
             // Create 10 sub-agents for each agent
-            for ($j = 1; $j <= 10; $j++) {
+            for ($j = 1; $j <= 2; $j++) {
                 $subAgent = $this->createUser(
                     UserType::SubAgent,
                     "SubAgent $i-$j",
@@ -67,7 +67,7 @@ class UsersTableSeeder extends Seeder
                 $walletService->transfer($agent, $subAgent, $initialBalance, TransactionName::CreditTransfer);
 
                 // Create 10 players for each sub-agent
-                for ($k = 1; $k <= 10; $k++) {
+                for ($k = 1; $k <= 2; $k++) {
                     $player = $this->createUser(
                         UserType::Player,
                         "Player $i-$j-$k",

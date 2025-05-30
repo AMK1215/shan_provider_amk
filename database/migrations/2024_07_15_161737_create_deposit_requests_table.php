@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->unsignedBigInteger('sub_agent_id')->nullable();
-            $table->unsignedBigInteger('sub_agent_name')->nullable();
+            $table->string('sub_agent_name')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
