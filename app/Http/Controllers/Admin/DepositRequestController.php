@@ -25,13 +25,15 @@ class DepositRequestController extends Controller
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
         $agent = $isSubAgent ? $user->agent : $user;
 
+        $sub_acc_id = $user->agent;
+
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $deposits = DepositRequest::with(['user', 'bank', 'agent'])
             ->where('agent_id', $agent->id)
-            ->when($isSubAgent, function ($query) use ($user) {
-                $query->where('sub_agent_id', $user->id);
+            ->when($isSubAgent, function ($query) use ($sub_acc_id) {
+                $query->where('agent_id', $sub_acc_id->id);
             })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
@@ -50,14 +52,12 @@ class DepositRequestController extends Controller
         try {
             $user = Auth::user();
             $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-            $agent = $isSubAgent ? $user->agent : $user;
+            //$agent = $isSubAgent ? $user->agent : $user;
+            $agent = $user->agent;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id) {
-                return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
-            }
-
-            if ($isSubAgent && $deposit->sub_agent_id !== $user->id) {
+            if ($deposit->agent_id !== $agent->id || 
+                ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -103,11 +103,8 @@ class DepositRequestController extends Controller
             $agent = $isSubAgent ? $user->agent : $user;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id) {
-                return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
-            }
-
-            if ($isSubAgent && $deposit->sub_agent_id !== $user->id) {
+            if ($deposit->agent_id !== $agent->id || 
+                ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -115,7 +112,7 @@ class DepositRequestController extends Controller
 
             $deposit->update([
                 'status' => $request->status,
-                'note' => $note,
+                'note' => $request->note,
                 'sub_agent_id' => $user->id,
                 'sub_agent_name' => $user->user_name,
             ]);
@@ -133,11 +130,8 @@ class DepositRequestController extends Controller
         $agent = $isSubAgent ? $user->agent : $user;
 
         // Check if user has permission to view this deposit
-        if ($deposit->agent_id !== $agent->id) {
-            abort(Response::HTTP_FORBIDDEN, 'You do not have permission to view this deposit request!');
-        }
-
-        if ($isSubAgent && $deposit->sub_agent_id !== $user->id) {
+        if ($deposit->agent_id !== $agent->id || 
+            ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
             abort(Response::HTTP_FORBIDDEN, 'You do not have permission to view this deposit request!');
         }
 
