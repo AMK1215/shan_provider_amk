@@ -103,10 +103,10 @@ class DepositRequestController extends Controller
             $agent = $isSubAgent ? $user->agent : $user;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id || 
-                ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
-                return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
-            }
+            // if ($deposit->agent_id !== $agent->id || 
+            //     ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
+            //     return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
+            // }
 
             $note = 'Deposit request rejected by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
 
@@ -130,10 +130,10 @@ class DepositRequestController extends Controller
         $agent = $isSubAgent ? $user->agent : $user;
 
         // Check if user has permission to view this deposit
-        if ($deposit->agent_id !== $agent->id || 
-            ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
-            abort(Response::HTTP_FORBIDDEN, 'You do not have permission to view this deposit request!');
-        }
+        // if ($deposit->agent_id !== $agent->id || 
+        //     ($isSubAgent && $deposit->sub_agent_id !== $user->id)) {
+        //     abort(Response::HTTP_FORBIDDEN, 'You do not have permission to view this deposit request!');
+        // }
 
         return view('admin.deposit_request.view', compact('deposit', 'isSubAgent'));
     }
