@@ -61,14 +61,14 @@
                 <div class="card card-detail mt-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="mb-0">Withdraw Request Detail</h4>
-                        <a href="{{ route('admin.agent.deposit') }}" class="btn btn-outline-primary"><i class="fas fa-arrow-left mr-1"></i>Back</a>
+                        <a href="{{ route('admin.agent.withdraw') }}" class="btn btn-outline-primary"><i class="fas fa-arrow-left mr-1"></i>Back</a>
                     </div>
                     <div class="mb-3">
-                        @if ($deposit->status == 0)
+                        @if ($withdraw->status == 0)
                             <span class="badge badge-warning badge-status"><i class="fas fa-hourglass-half mr-1"></i>Pending</span>
-                        @elseif ($deposit->status == 1)
+                        @elseif ($withdraw->status == 1)
                             <span class="badge badge-success badge-status"><i class="fas fa-check-circle mr-1"></i>Approved</span>
-                        @elseif ($deposit->status == 2)
+                        @elseif ($withdraw->status == 2)
                             <span class="badge badge-danger badge-status"><i class="fas fa-times-circle mr-1"></i>Rejected</span>
                         @endif
                     </div>
@@ -81,50 +81,46 @@
                             <div class="section-title">Transaction Info</div>
                             <div class="info-row row">
                                 <div class="col-5 info-label">User Name</div>
-                                <div class="col-7 info-value"><i class="fas fa-user mr-1 text-primary"></i>{{ $deposit->user->name }}</div>
+                                <div class="col-7 info-value"><i class="fas fa-user mr-1 text-primary"></i>{{ $withdraw->user->name }}</div>
                             </div>
                             <div class="info-row row">
                                 <div class="col-5 info-label">Amount</div>
-                                <div class="col-7 info-value"><i class="fas fa-coins mr-1 text-warning"></i>{{ number_format($deposit->amount) }}</div>
+                                <div class="col-7 info-value"><i class="fas fa-coins mr-1 text-warning"></i>{{ number_format($withdraw->amount) }}</div>
                             </div>
                             <div class="info-row row">
-                                <div class="col-5 info-label">Reference No</div>
-                                <div class="col-7 info-value"><i class="fas fa-receipt mr-1 text-info"></i>{{ $deposit->refrence_no }}</div>
+                                <div class="col-5 info-label">Account Name</div>
+                                <div class="col-7 info-value"><i class="fas fa-id-card mr-1 text-secondary"></i>{{ $withdraw->account_name }}</div>
+                            </div>
+                            <div class="info-row row">
+                                <div class="col-5 info-label">Account No</div>
+                                <div class="col-7 info-value"><i class="fas fa-hashtag mr-1 text-dark"></i>{{ $withdraw->account_number }}</div>
                             </div>
                             <div class="info-row row">
                                 <div class="col-5 info-label">Date & Time</div>
-                                <div class="col-7 info-value"><i class="fas fa-calendar-alt mr-1 text-success"></i>{{ $deposit->created_at->setTimezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</div>
+                                <div class="col-7 info-value"><i class="fas fa-calendar-alt mr-1 text-success"></i>{{ $withdraw->created_at->setTimezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</div>
                             </div>
                             <div class="section-title mt-4">Bank Info</div>
                             <div class="info-row row">
-                                <div class="col-5 info-label">Bank Account Name</div>
-                                <div class="col-7 info-value"><i class="fas fa-id-card mr-1 text-secondary"></i>{{ $deposit->bank->account_name }}</div>
-                            </div>
-                            <div class="info-row row">
-                                <div class="col-5 info-label">Bank Account No</div>
-                                <div class="col-7 info-value"><i class="fas fa-hashtag mr-1 text-dark"></i>{{ $deposit->bank->account_number }}</div>
-                            </div>
-                            <div class="info-row row">
                                 <div class="col-5 info-label">Payment Method</div>
-                                <div class="col-7 info-value"><i class="fas fa-university mr-1 text-primary"></i>{{ $deposit->bank->paymentType->name }}</div>
+                                <div class="col-7 info-value"><i class="fas fa-university mr-1 text-primary"></i>{{ $withdraw->paymentType->name }}</div>
                             </div>
                             <div class="section-title mt-4">Approval Info</div>
                             <div class="info-row row">
                                 <div class="col-5 info-label">Approved/Rejected By</div>
                                 <div class="col-7 info-value">
-                                    @if ($deposit->status == 1)
+                                    @if ($withdraw->status == 1)
                                         <i class="fas fa-user-check mr-1 text-success"></i>
-                                    @elseif ($deposit->status == 2)
+                                    @elseif ($withdraw->status == 2)
                                         <i class="fas fa-user-times mr-1 text-danger"></i>
                                     @else
                                         <i class="fas fa-user-clock mr-1 text-warning"></i>
                                     @endif
-                                    {{ $deposit->sub_agent_name ?? '-' }}
+                                    {{ $withdraw->sub_agent_name ?? '-' }}
                                 </div>
                             </div>
                             <div class="info-row row">
                                 <div class="col-5 info-label">Note</div>
-                                <div class="col-7 info-value"><i class="fas fa-sticky-note mr-1 text-info"></i>{{ $deposit->note ?? '-' }}</div>
+                                <div class="col-7 info-value"><i class="fas fa-sticky-note mr-1 text-info"></i>{{ $withdraw->note ?? '-' }}</div>
                             </div>
                         </div>
                     </div>

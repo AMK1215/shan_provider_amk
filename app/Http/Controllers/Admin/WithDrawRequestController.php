@@ -119,7 +119,6 @@ class WithDrawRequestController extends Controller
     // log withdraw request 
     public function WithdrawShowLog(WithDrawRequest $withdraw)
     {
-        $deposit = $withdraw->deposit;
-        return view('admin.withdraw_request.view', compact('deposit'));
+        return view('admin.withdraw_request.view', ['withdraw' => $withdraw]);
     }
 }
