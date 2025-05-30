@@ -22,7 +22,8 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DepositRequestController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
-
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\GameListController;
 Route::group([
     'prefix' => 'admin',
     'as' => 'admin.',
@@ -55,6 +56,8 @@ Route::group([
     Route::resource('contact', ContactController::class);
     Route::resource('paymentTypes', PaymentTypeController::class);
     Route::resource('bank', BankController::class);
+    //Route::resource('product', ProductController::class);
+
     // banner etc end
     // deposit request start
     Route::get('finicialwithdraw', [WithDrawRequestController::class, 'index'])->name('agent.withdraw');
@@ -140,5 +143,27 @@ Route::group([
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.detail');
     // Route::get('report/detail/{member_account}', [\App\Http\Controllers\Admin\ReportController::class, 'getReportDetails'])->name('admin.report.detail');
+    // provider start 
+    Route::get('gametypes', [ProductController::class, 'index'])->name('gametypes.index');
+    Route::post('/game-types/{productId}/toggle-status', [ProductController::class, 'toggleStatus'])->name('gametypes.toggle-status');
+    Route::get('gametypes/{game_type_id}/product/{product_id}', [ProductController::class, 'edit'])->name('gametypes.edit');
+    Route::post('gametypes/{game_type_id}/product/{product_id}', [ProductController::class, 'update'])->name('gametypes.update');
+    
+    // game list start
+    Route::get('all-game-lists', [GameListController::class, 'GetGameList'])->name('gameLists.index');
+    Route::get('all-game-lists/{id}', [GameListController::class, 'edit'])->name('gameLists.edit');
+    Route::post('all-game-lists/{id}', [GameListController::class, 'update'])->name('gameLists.update');
+
+    Route::patch('gameLists/{id}/toggleStatus', [GameListController::class, 'toggleStatus'])->name('gameLists.toggleStatus');
+
+    Route::patch('hotgameLists/{id}/toggleStatus', [GameListController::class, 'HotGameStatus'])->name('HotGame.toggleStatus');
+
+    // pp hot
+
+    Route::patch('pphotgameLists/{id}/toggleStatus', [GameListController::class, 'PPHotGameStatus'])->name('PPHotGame.toggleStatus');
+    Route::get('game-list/{gameList}/edit', [GameListController::class, 'edit'])->name('game_list.edit');
+    Route::post('/game-list/{id}/update-image-url', [GameListController::class, 'updateImageUrl'])->name('game_list.update_image_url');
+    Route::get('game-list-order/{gameList}/edit', [GameListController::class, 'GameListOrderedit'])->name('game_list_order.edit');
+    Route::post('/game-lists/{id}/update-order', [GameListController::class, 'updateOrder'])->name('GameListOrderUpdate');
 
 });

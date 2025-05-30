@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\DepositRequestController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use App\Http\Controllers\Api\V1\BankController;
+use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\PromotionController;
+use App\Http\Controllers\Api\V1\BannerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,5 +63,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('paymentTypefinicial', [BankController::class, 'paymentType']);
     Route::post('withdrawfinicial', [WithDrawRequestController::class, 'FinicalWithdraw']); 
     Route::get('withdrawlog', [WithDrawRequestController::class, 'log']);
+
+
+    Route::get('contact', [ContactController::class, 'get']);
+    Route::get('promotion', [PromotionController::class, 'index']);
+    Route::get('winnerText', [BannerController::class, 'winnerText']);
+    Route::get('banner_Text', [BannerController::class, 'bannerText']);
+    Route::get('popup-ads-banner', [BannerController::class, 'AdsBannerIndex']);
+    Route::get('banner', [BannerController::class, 'index']);
+    Route::get('videoads', [BannerController::class, 'ApiVideoads']);
+    Route::get('toptenwithdraw', [BannerController::class, 'TopTen']);
+
 
 });

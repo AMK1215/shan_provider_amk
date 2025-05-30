@@ -33,18 +33,7 @@ class Product extends Model
         return $this->belongsToMany(GameType::class)->withPivot('image');
     }
 
-    //     public function gameTypes()
-    // {
-    //     return $this->belongsToMany(GameType::class, 'game_type_products')->withPivot('image');
-    // }
-
-    // public function getImgUrlAttribute()
-    // {
-    //     if (isset($this->pivot) && isset($this->pivot->image)) {
-    //         return asset('assets/img/game_logo/'.$this->pivot->image);
-    //     }
-
-    // }
+    
 
     public function getImgUrlAttribute()
     {
@@ -63,7 +52,7 @@ class Product extends Model
      */
     public function toggleStatus()
     {
-        $this->status = $this->status == 1 ? 0 : 1;
+        $this->status = $this->status == "ACTIVATED" ? "UNACTIVATED" : "ACTIVATED";
 
         return $this->save();
     }

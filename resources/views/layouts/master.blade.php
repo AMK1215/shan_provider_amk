@@ -281,7 +281,7 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('senior_owner_access')
+                        @can('owner_access')
                             <li class="nav-item">
                                 <a href=""
                                     class="nav-link">
@@ -297,23 +297,23 @@
                                 <a href="#" class="nav-link">
                                     <i class="fas fa-tools"></i>
                                     <p>
-                                        GSC Settings
+                                        GSCPLUS Settings
                                         <i class="fas fa-angle-left right"></i>
                                     </p>
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a href=""
-                                            class="nav-link">
+                                        <a href="{{ route('admin.gameLists.index') }}"
+                                            class="nav-link {{ Route::current()->getName() == 'admin.gameLists.index' ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>GSC GameList</p>
+                                            <p>GSCPLUS GameList</p>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href=""
-                                            class="nav-link">
+                                        <a href="{{ route('admin.gametypes.index') }}"
+                                            class="nav-link {{ Route::current()->getName() == 'admin.gametypes.index' ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>GSC GameProvider</p>
+                                            <p>GSCPLUS Provider</p>
                                         </a>
                                     </li>
 
@@ -481,10 +481,8 @@
         </li>
     </ul>
 </li>
-
-                        @endcan
-
-                </nav>
+@endcan
+    </nav>
                 <!-- /.sidebar-menu -->
             </div>
             <!-- /.sidebar -->
