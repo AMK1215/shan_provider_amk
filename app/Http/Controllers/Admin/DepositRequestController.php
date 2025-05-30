@@ -33,7 +33,7 @@ class DepositRequestController extends Controller
         $deposits = DepositRequest::with(['user', 'bank', 'agent'])
             ->where('agent_id', $agent->id)
             ->when($isSubAgent, function ($query) use ($sub_acc_id) {
-                $query->where('sub_agent_id', $sub_acc_id->id);
+                $query->where('agent_id', $sub_acc_id->id);
             })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
