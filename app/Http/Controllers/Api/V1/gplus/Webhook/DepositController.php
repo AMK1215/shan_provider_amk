@@ -29,7 +29,7 @@ class DepositController extends Controller
 
     public function deposit(Request $request)
     {
-        Log::info('Deposit API Request', ['request' => $request->all()]);
+        //Log::info('Deposit API Request', ['request' => $request->all()]);
 
         try {
             $request->validate([
@@ -59,7 +59,7 @@ class DepositController extends Controller
             'status' => collect($results)->every(fn ($r) => $r['code'] === SeamlessWalletCode::Success->value) ? 'success' : 'partial_success_or_failure',
         ]);
 
-        Log::info('Deposit API Response', ['response' => $results]);
+        //Log::info('Deposit API Response', ['response' => $results]);
 
         return ApiResponseService::success($results);
     }
@@ -215,7 +215,7 @@ class DepositController extends Controller
                         $afterTransactionBalance = $user->wallet->balanceFloat;
 
                         // Log success and add to results
-                        Log::info('Transaction successful', ['member_account' => $memberAccount, 'action' => $action, 'before' => $beforeTransactionBalance, 'after' => $afterTransactionBalance]);
+                        //Log::info('Transaction successful', ['member_account' => $memberAccount, 'action' => $action, 'before' => $beforeTransactionBalance, 'after' => $afterTransactionBalance]);
                         $results[] = [
                             'member_account' => $memberAccount,
                             'product_code' => $productCode,

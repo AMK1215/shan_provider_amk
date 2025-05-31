@@ -8,6 +8,8 @@ sudo systemctl restart php8.3-fpm # Replace 8.1 with your PHP version
 sudo systemctl restart nginx
 
 php -r "file_put_contents('/var/www/gsc_plus/storage/logs/laravel.log', '');"
+* * * * * cd /var/www/gsc_plus && php artisan schedule:run >> /dev/null 2>&1
+
 // create user and db 
 sudo -i -u postgres
 psql
