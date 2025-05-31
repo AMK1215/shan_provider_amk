@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\WagerList;
+use App\Models\Bet;
 use Carbon\Carbon;
 
 class FetchWagers extends Command
@@ -17,17 +17,16 @@ class FetchWagers extends Command
     {
         Log::debug('Starting FetchWagers command...');
 
-        $operator_code = config('seamless_key.agent_code');
-        $secret_key = config('seamless_key.secret_key');
-        $api_url = config('seamless_key.api_url');
+        $operatorCode = config('seamless.agent_code');
+        $secretKey = config('seamless.secret_key');
+        $apiUrl = config('seamless.api_url');
 
         Log::debug('API Config', [
-            'operator_code' => $operator_code,
-            'secret_key' => $secret_key,
-            'api_url' => $api_url,
+            'operator_code' => $operatorCode,
+            'api_url' => $apiUrl,
         ]);
 
-        if (empty($operator_code) || empty($secret_key) || empty($api_url)) {
+        if (empty($operatorCode) || empty($secretKey) || empty($apiUrl)) {
             Log::error('Seamless API configuration is missing');
             return;
         }
@@ -35,37 +34,30 @@ class FetchWagers extends Command
         $start = Carbon::now()->subMinutes(2);
         $end = $start->copy()->addMinutes(5);
 
-        Log::debug('Start', [
-            'start' => $start->format('Y-m-d H:i:s')
-        ]);
+        $startTimestamp = $start->timestamp * 1000;
+        $endTimestamp = $end->timestamp * 1000;
+       // $requestTime = Carbon::now()->timestamp * 1000;
+       $requestTime = now()->timestamp;
 
-        Log::debug('End', [
-            'end' => $end->format('Y-m-d H:i:s')
-        ]);
-        $request_time = now()->timestamp;
-        $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
 
-        Log::debug('Sign', [
-            'sign' => $sign
-        ]);
-
-        
+        $signString = $requestTime . $secretKey . 'getwagers' . $operatorCode;
+        $sign = md5($signString);
 
         Log::debug('Request Parameters', [
-            'start' => $start,
-            'end' => $end,
-            'request_time' => $request_time,
+            'start' => $startTimestamp,
+            'end' => $endTimestamp,
+            'request_time' => $requestTime,
             'sign' => $sign
         ]);
 
-        $url = "{$api_url}/api/operators/wagers";
+        $url = "{$apiUrl}/api/operators/wagers";
         Log::debug("Sending GET request to: {$url}");
 
         $response = Http::get($url, [
-            'operator_code' => $operator_code,
-            'start' => $start,
-            'end' => $end,
-            'request_time' => $request_time,
+            'operator_code' => $operatorCode,
+            'start' => $startTimestamp,
+            'end' => $endTimestamp,
+            'request_time' => $requestTime,
             'sign' => $sign,
             'size' => 1000
         ]);
@@ -92,7 +84,7 @@ class FetchWagers extends Command
                         'member_account' => $wager['member_account'] ?? 'N/A'
                     ]);
 
-                    WagerList::updateOrCreate(
+                    Bet::updateOrCreate(
                         ['id' => $wager['id']], // update if exists
                         [
                             'member_account' => $wager['member_account'] ?? '',

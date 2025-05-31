@@ -9,6 +9,7 @@ sudo systemctl restart nginx
 
 php -r "file_put_contents('/var/www/gsc_plus/storage/logs/laravel.log', '');"
 * * * * * cd /var/www/gsc_plus && php artisan schedule:run >> /dev/null 2>&1
+tail -f /var/log/mysql/error.log
 
 // create user and db 
 sudo -i -u postgres
@@ -276,3 +277,44 @@ public function index()
 
         return array_unique($relatedIds);
     }
+
+    ----------- player Controllers index -----------
+    public function index()
+    {
+        abort_if(
+            Gate::denies('player_index'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
+        $players = User::with(['roles', 'placeBets'])->whereHas('roles', fn ($query) => $query->where('role_id', self::PLAYER_ROLE))
+            ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+            ->where('agent_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $reportData = DB::table('users as p')
+            ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
+            ->groupBy('p.id')
+            ->selectRaw('p.id as player_id,SUM(place_bets.bet_amount) as total_bet_amount,SUM(place_bets.prize_amount) as total_payout_amount')
+            ->get()
+            ->keyBy('player_id');
+
+        $users = $players->map(function ($player) use ($reportData) {
+            $report = $reportData->get($player->id);
+            $poneWineTotalAmt = $player->children->flatMap->placeBets->sum('win_lose_amt');
+
+            return (object) [
+                'id' => $player->id,
+                'name' => $player->name,
+                'user_name' => $player->user_name,
+                'phone' => $player->phone,
+                'balanceFloat' => $player->balanceFloat,
+                'status' => $player->status,
+                'win_lose' => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)) + $poneWineTotalAmt,
+            ];
+        });
+
+        return view('admin.player.index', compact('users'));
+    }
+    ----------------

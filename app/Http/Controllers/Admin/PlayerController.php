@@ -57,8 +57,9 @@ class PlayerController extends Controller
 
         $reportData = DB::table('users as p')
             ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
+            ->where('place_bets.wager_status', 'SETTLED')
             ->groupBy('p.id')
-            ->selectRaw('p.id as player_id,SUM(place_bets.bet_amount) as total_bet_amount,SUM(place_bets.prize_amount) as total_payout_amount')
+            ->selectRaw('p.id as player_id, SUM(place_bets.bet_amount) as total_bet_amount, SUM(place_bets.prize_amount) as total_payout_amount')
             ->get()
             ->keyBy('player_id');
 
