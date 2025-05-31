@@ -41,45 +41,99 @@ class PlayerController extends Controller
     /**
      * Display a listing of the resource.
      */
+    // public function index()
+    // {
+    //     abort_if(
+    //         Gate::denies('player_index'),
+    //         Response::HTTP_FORBIDDEN,
+    //         '403 Forbidden |You cannot  Access this page because you do not have permission'
+    //     );
+
+    //     $players = User::with(['roles', 'placeBets'])->whereHas('roles', fn ($query) => $query->where('role_id', self::PLAYER_ROLE))
+    //         ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+    //         ->where('agent_id', auth()->id())
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+
+    //     $reportData = DB::table('users as p')
+    //         ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
+    //         ->where('place_bets.wager_status', 'SETTLED')
+    //         ->groupBy('p.id')
+    //         ->selectRaw('p.id as player_id, SUM(place_bets.bet_amount) as total_bet_amount, SUM(place_bets.prize_amount) as total_payout_amount')
+    //         ->get()
+    //         ->keyBy('player_id');
+
+    //     $users = $players->map(function ($player) use ($reportData) {
+    //         $report = $reportData->get($player->id);
+    //         $poneWineTotalAmt = $player->children->flatMap->placeBets->sum('win_lose_amt');
+
+    //         return (object) [
+    //             'id' => $player->id,
+    //             'name' => $player->name,
+    //             'user_name' => $player->user_name,
+    //             'phone' => $player->phone,
+    //             'balanceFloat' => $player->balanceFloat,
+    //             'status' => $player->status,
+    //             'win_lose' => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)) + $poneWineTotalAmt,
+    //         ];
+    //     });
+
+    //     return view('admin.player.index', compact('users'));
+    // }
     public function index()
-    {
-        abort_if(
-            Gate::denies('player_index'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+{
+    abort_if(
+        Gate::denies('player_index'),
+        Response::HTTP_FORBIDDEN,
+        '403 Forbidden | You cannot access this page because you do not have permission'
+    );
 
-        $players = User::with(['roles', 'placeBets'])->whereHas('roles', fn ($query) => $query->where('role_id', self::PLAYER_ROLE))
-            ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
-            ->where('agent_id', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+    // 1. Fetch all relevant players for this agent
+    $players = User::with(['roles', 'placeBets', 'children.placeBets'])
+        ->whereHas('roles', fn ($query) => $query->where('role_id', self::PLAYER_ROLE))
+        ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+        ->where('agent_id', auth()->id())
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        $reportData = DB::table('users as p')
-            ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
-            ->where('place_bets.wager_status', 'SETTLED')
-            ->groupBy('p.id')
-            ->selectRaw('p.id as player_id, SUM(place_bets.bet_amount) as total_bet_amount, SUM(place_bets.prize_amount) as total_payout_amount')
-            ->get()
-            ->keyBy('player_id');
+    // 2. Fetch report data, including total spin (count of bets)
+    $reportData = DB::table('users as p')
+        ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
+        ->where('place_bets.wager_status', 'SETTLED')
+        ->groupBy('p.id')
+        ->selectRaw('
+            p.id as player_id,
+            SUM(place_bets.bet_amount) as total_bet_amount,
+            SUM(place_bets.prize_amount) as total_payout_amount,
+            COUNT(place_bets.id) as total_spin_count
+        ')
+        ->get()
+        ->keyBy('player_id');
 
-        $users = $players->map(function ($player) use ($reportData) {
-            $report = $reportData->get($player->id);
-            $poneWineTotalAmt = $player->children->flatMap->placeBets->sum('win_lose_amt');
+    // 3. Build user collection with all needed fields
+    $users = $players->map(function ($player) use ($reportData) {
+        $report = $reportData->get($player->id);
+        // Calculate children's win/lose if relevant (classic approach, only if your model needs it)
+        //$poneWineTotalAmt = $player->children ? $player->children->flatMap->placeBets->sum('win_lose_amt') : 0;
 
-            return (object) [
-                'id' => $player->id,
-                'name' => $player->name,
-                'user_name' => $player->user_name,
-                'phone' => $player->phone,
-                'balanceFloat' => $player->balanceFloat,
-                'status' => $player->status,
-                'win_lose' => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)) + $poneWineTotalAmt,
-            ];
-        });
+        return (object) [
+            'id'           => $player->id,
+            'name'         => $player->name,
+            'user_name'    => $player->user_name,
+            'phone'        => $player->phone,
+            'balanceFloat' => $player->balanceFloat,
+            'status'       => $player->status,
+            'total_stake'  => $report->total_bet_amount ?? 0,      // Total bet/stake
+            'total_payout' => $report->total_payout_amount ?? 0,   // Total payout/win
+            'total_spin'   => $report->total_spin_count ?? 0,      // Total spins
+            'win_lose'     => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)),
+        ];
+    });
 
-        return view('admin.player.index', compact('users'));
-    }
+    // 4. Return to view
+    return view('admin.player.index', compact('users'));
+}
+
 
     /**
      * Display a listing of the users with their agents.
