@@ -23,10 +23,11 @@ class FetchWagers extends Command
 
         Log::debug('API Config', [
             'operator_code' => $operator_code,
+            'secret_key' => $secret_key,
             'api_url' => $api_url,
         ]);
 
-        if (empty($operatorCode) || empty($secretKey) || empty($api_url)) {
+        if (empty($operator_code) || empty($secret_key) || empty($api_url)) {
             Log::error('Seamless API configuration is missing');
             return;
         }
