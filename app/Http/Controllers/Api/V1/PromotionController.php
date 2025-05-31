@@ -15,7 +15,7 @@ class PromotionController extends Controller
     {
         $user = Auth::user();
 
-        $admin = $user->parent->parent;
+        $admin = $user->parent;
 
         $data = Promotion::where('admin_id', $admin->agent_id)->get();
 
