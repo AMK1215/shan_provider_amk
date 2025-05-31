@@ -25,6 +25,7 @@ use App\Models\GameType;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\PaymentType;
 
 class GSCPlusProviderController extends Controller
 {
@@ -79,5 +80,12 @@ class GSCPlusProviderController extends Controller
         $data = Bank::where('agent_id', $player->agent_id)->get();
 
         return $this->success(BankResource::collection($data), 'Payment Type list successfule');
+    }
+
+    public function paymentType()
+    {
+        $data = PaymentType::all();
+
+        return $this->success($data);
     }
 }
