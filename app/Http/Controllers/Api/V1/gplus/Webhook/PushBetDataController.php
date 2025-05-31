@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\gplus\Webhook;
 use App\Enums\SeamlessWalletCode;
 use App\Http\Controllers\Controller;
 use App\Models\PlaceBet;
+use App\Models\PushBet;
 use App\Models\User;
 use App\Services\ApiResponseService;
 use Illuminate\Http\Request;
@@ -79,7 +80,7 @@ class PushBetDataController extends Controller
             $settledAtInSeconds = (isset($tx['settled_at']) && $tx['settled_at']) ? floor($tx['settled_at'] / 1000) : null;
             $createdAtProviderInSeconds = (isset($tx['created_at']) && $tx['created_at']) ? floor($tx['created_at'] / 1000) : null;
 
-            $placeBet = PlaceBet::where('transaction_id', $transactionId)->first();
+            $placeBet = PushBet::where('transaction_id', $transactionId)->first();
 
             if ($placeBet) {
                 // Update existing record
@@ -104,7 +105,7 @@ class PushBetDataController extends Controller
                 //Log::info('Updated place_bets record via PushBetData', ['transaction_id' => $transactionId]);
             } else {
                 // Insert new record
-                PlaceBet::create([
+                PushBet::create([
                     'transaction_id' => $transactionId,
                     'member_account' => $tx['member_account'] ?? '',
                     'product_code' => $tx['product_code'] ?? 0,
