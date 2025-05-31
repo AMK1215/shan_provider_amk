@@ -32,9 +32,8 @@ class FetchWagers extends Command
             return;
         }
 
-        // $start = Carbon::now('Asia/Shanghai')->subMinutes(2)->format('Y-m-d H:i:s');
-        // $end = $start->copy()->addMinutes(5)->format('Y-m-d H:i:s');
-        $start = Carbon::now('Asia/Shanghai')->subMinutes(2);
+        $timezone = 'Asia/Shanghai'; // no trailing space!
+        $start = Carbon::now(trim($timezone))->subMinutes(2);
         $end = $start->copy()->addMinutes(5);
 
         Log::debug('Start', [
