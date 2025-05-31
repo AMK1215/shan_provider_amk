@@ -115,10 +115,12 @@ class PlayerController extends Controller
         $report = $reportData->get($player->id);
         // Calculate children's win/lose if relevant (classic approach, only if your model needs it)
         //$poneWineTotalAmt = $player->children ? $player->children->flatMap->placeBets->sum('win_lose_amt') : 0;
-        $bets = $player->children ? $player->children->flatMap->placeBets->orderBy('created_at', 'desc')->get() : 0;
-
-        // Totals
-        $total_spin = $bets->count();
+        $bets = $player->children
+        ? $player->children->flatMap->placeBets->sortByDesc('created_at')
+        : collect(); // always use collect() as default for collections
+    
+    $total_spin = $bets->count();
+    
 
         return (object) [
             'id'           => $player->id,
@@ -129,7 +131,7 @@ class PlayerController extends Controller
             'status'       => $player->status,
             'total_stake'  => $report->total_bet_amount ?? 0,      // Total bet/stake
             'total_payout' => $report->total_payout_amount ?? 0,   // Total payout/win
-            'total_spin'   => $total_spin,
+            'total_spin'   => $total_spin ?? 0,
             'win_lose'     => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)),
         ];
     });
