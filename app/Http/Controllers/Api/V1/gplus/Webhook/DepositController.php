@@ -41,6 +41,8 @@ class DepositController extends Controller
                 'sign' => 'required|string',
                 'request_time' => 'required|integer',
             ]);
+            // validate batch_requests log the request
+            Log::info('Deposit API Request', ['request' => $request->all()]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Deposit API Validation Failed', ['errors' => $e->errors()]);
 
