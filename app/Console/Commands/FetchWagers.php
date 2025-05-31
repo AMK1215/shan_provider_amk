@@ -49,7 +49,7 @@ class FetchWagers extends Command
         Log::debug('Request Parameters', [
             'start' => $startTimestamp,
             'end' => $endTimestamp,
-            'request_time' => $requestTime,
+            'request_time' => $request_time,
             'sign' => $sign
         ]);
 
@@ -60,7 +60,7 @@ class FetchWagers extends Command
             'operator_code' => $operator_code,
             'start' => $startTimestamp,
             'end' => $endTimestamp,
-            'request_time' => $requestTime,
+            'request_time' => $request_time,
             'sign' => $sign,
             'size' => 1000
         ]);
