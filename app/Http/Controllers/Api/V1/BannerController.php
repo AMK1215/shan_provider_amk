@@ -20,7 +20,7 @@ class BannerController extends Controller
     {
         $user = Auth::user();
 
-        $admin = $user->parent->parent;
+        $admin = $user->parent;
 
         $data = Banner::where('admin_id', $admin->agent_id)->get();
 
@@ -30,7 +30,7 @@ class BannerController extends Controller
     public function TopTen()
     {
         $user = Auth::user();
-        $admin = $user->parent->parent;
+        $admin = $user->parent;
 
         $data = TopTenWithdraw::where('admin_id', $admin->agent_id)->get();
 
@@ -41,7 +41,7 @@ class BannerController extends Controller
     {
         $user = Auth::user();
 
-        $admin = $user->parent->parent;
+        $admin = $user->parent;
 
         $data = BannerText::where('admin_id', $admin->agent_id)->get();
 
@@ -52,7 +52,7 @@ class BannerController extends Controller
     {
         $user = Auth::user();
 
-        $admin = $user->parent->parent;
+        $admin = $user->parent;
 
         $data = BannerAds::where('admin_id', $admin->agent_id)->get();
 
@@ -63,7 +63,7 @@ class BannerController extends Controller
     {
         $user = Auth::user();
 
-        $admin = $user->parent->parent;
+        $admin = $user->parent;
 
         $data = WinnerText::where('owner_id', $admin->agent_id)->latest()->first();
 
@@ -79,7 +79,7 @@ class BannerController extends Controller
         if ($user->parent) {
             // If the user has a parent (Agent or Player), go up the hierarchy
             //$admin = $user->parent->parent ?? $user->parent;
-            $admin = $user->parent->parent;
+            $admin = $user->parent;
 
         } else {
             // If the user is an Admin, they own the banners
