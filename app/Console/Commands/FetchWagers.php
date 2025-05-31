@@ -17,9 +17,11 @@ class FetchWagers extends Command
     {
         Log::debug('Starting FetchWagers command...');
 
-        $operatorCode = config('seamless.agent_code');
-        $secretKey = config('seamless.secret_key');
-        $apiUrl = config('seamless.api_url');
+        
+
+        $operator_code = config('seamless_key.agent_code');
+        $secret_key = config('seamless_key.secret_key');
+        $api_url = config('seamless_key.api_url');
 
         Log::debug('API Config', [
             'operator_code' => $operatorCode,
@@ -36,10 +38,14 @@ class FetchWagers extends Command
 
         $startTimestamp = $start->timestamp * 1000;
         $endTimestamp = $end->timestamp * 1000;
-        $requestTime = Carbon::now()->timestamp * 1000;
+        $request_time = now()->timestamp;
+        $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
 
-        $signString = $requestTime . $secretKey . 'getwagers' . $operatorCode;
-        $sign = md5($signString);
+        Log::debug('Sign', [
+            'sign' => $sign
+        ]);
+
+        
 
         Log::debug('Request Parameters', [
             'start' => $startTimestamp,
@@ -48,7 +54,7 @@ class FetchWagers extends Command
             'sign' => $sign
         ]);
 
-        $url = "{$apiUrl}/api/operators/wagers";
+        $url = "{$api_url}/api/operators/wagers";
         Log::debug("Sending GET request to: {$url}");
 
         $response = Http::get($url, [
