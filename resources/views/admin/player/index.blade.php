@@ -35,9 +35,9 @@
                                     <th>Phone</th>
                                     <th>Status</th>
                                     <th>Balance</th>
-                                    <th>Total Payout</th>
-                                    <th>Total Stake</th>
-                                    <th>Total Spin</th>
+                                    <th>TotalSpin</th>
+                                    <th>TotalBetAMT</th>
+                                    <th>TotalPayoutAMT</th>
                                     {{-- <th>CreatedAt</th> --}}
                                     <th>Action</th>
                                     <th>Transaction</th>
