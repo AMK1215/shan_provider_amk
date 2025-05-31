@@ -274,7 +274,7 @@ class WithdrawController extends Controller
         $game_name = GameList::where('game_code', $transactionRequest['game_code'])->value('game_name');
         $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
         $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
-        PlaceBet::updateOrCreate(
+        PlaceBet::Create(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Key for finding existing record
             [
                 // Batch-level data (from the main $request and $batchRequest)
