@@ -17,18 +17,16 @@ class FetchWagers extends Command
     {
         Log::debug('Starting FetchWagers command...');
 
-        
-
         $operator_code = config('seamless_key.agent_code');
         $secret_key = config('seamless_key.secret_key');
         $api_url = config('seamless_key.api_url');
 
         Log::debug('API Config', [
             'operator_code' => $operator_code,
-            'api_url' => $apiUrl,
+            'api_url' => $api_url,
         ]);
 
-        if (empty($operatorCode) || empty($secretKey) || empty($apiUrl)) {
+        if (empty($operatorCode) || empty($secretKey) || empty($api_url)) {
             Log::error('Seamless API configuration is missing');
             return;
         }
