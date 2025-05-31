@@ -317,4 +317,5 @@ public function index()
 
         return view('admin.player.index', compact('users'));
     }
-    ----------------
+                                                    <!-- <td class="{{$user->win_lose >= 0 ? 'text-success text-bold' : 'text-danger text-bold'}}">{{ number_format($user->win_lose)}}</td> -->
+    ---------------- 
