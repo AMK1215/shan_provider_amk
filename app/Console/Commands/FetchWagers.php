@@ -52,8 +52,8 @@ class FetchWagers extends Command
         
 
         Log::debug('Request Parameters', [
-            'start' => $startTimestamp,
-            'end' => $endTimestamp,
+            'start' => $start,
+            'end' => $end,
             'request_time' => $request_time,
             'sign' => $sign
         ]);
@@ -63,8 +63,8 @@ class FetchWagers extends Command
 
         $response = Http::get($url, [
             'operator_code' => $operator_code,
-            'start' => $startTimestamp,
-            'end' => $endTimestamp,
+            'start' => $start,
+            'end' => $end,
             'request_time' => $request_time,
             'sign' => $sign,
             'size' => 1000
