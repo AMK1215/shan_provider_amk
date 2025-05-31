@@ -32,9 +32,8 @@ class FetchWagers extends Command
             return;
         }
 
-        $timezone = 'Asia/Yangon'; // no trailing space!
-        $start = Carbon::now(trim($timezone))->subMinutes(2);
-        $end = $start->copy()->addMinutes(5);
+        $start = Carbon::now()->subMinutes(2)->format('Y-m-d H:i:s');
+        $end = $start->copy()->addMinutes(5)->format('Y-m-d H:i:s');
 
         Log::debug('Start', [
             'start' => $start
@@ -53,8 +52,8 @@ class FetchWagers extends Command
         
 
         Log::debug('Request Parameters', [
-            'start' => $start,
-            'end' => $end,
+            'start' => $startTimestamp,
+            'end' => $endTimestamp,
             'request_time' => $request_time,
             'sign' => $sign
         ]);
@@ -64,11 +63,11 @@ class FetchWagers extends Command
 
         $response = Http::get($url, [
             'operator_code' => $operator_code,
-            'start' => $start,
-            'end' => $end,
+            'start' => $startTimestamp,
+            'end' => $endTimestamp,
             'request_time' => $request_time,
             'sign' => $sign,
-            'size' => 100
+            'size' => 1000
         ]);
 
         Log::debug('API Response Status', [
