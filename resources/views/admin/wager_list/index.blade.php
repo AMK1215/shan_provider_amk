@@ -21,7 +21,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-flex justify-content-end mb-3">
-                    <a href="{{ route('admin.master.create') }}" class="btn btn-success " style="width: 100px;"><i
+                    <a href="" class="btn btn-success " style="width: 100px;"><i
                             class="fas fa-plus text-white  mr-2"></i>Create</a>
                 </div>
                 <div class="card">
