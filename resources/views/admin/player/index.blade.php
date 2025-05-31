@@ -60,10 +60,10 @@
                                                     </td>
                                                     <td class="text-bold">{{ number_format($user->balanceFloat) }}</td>
                                                     <!-- <td class="{{$user->win_lose >= 0 ? 'text-success text-bold' : 'text-danger text-bold'}}">{{ number_format($user->win_lose)}}</td> -->
-                                                    <td class="text-bold">{{ number_format($user->total_payout) }}</td>
-                                                    <td class="text-bold">{{ number_format($user->total_stake) }}</td>
-                                                    <td class="text-bold">{{ number_format($user->total_spin) }}</td>
-                                                    </td>
+                                                    <td>{{ $user->total_spin }}</td>
+                                                    <td>{{ number_format($user->total_bet_amount, 2) }}</td>
+                                                    <td>{{ number_format($user->total_payout_amount, 2) }}</td>
+                                                    
                                                     <td>
                                                         @if ($user->status == 1)
                                                             <a onclick="event.preventDefault(); document.getElementById('banUser-{{ $user->id }}').submit();"

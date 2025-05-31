@@ -88,57 +88,102 @@ class PlayerController extends Controller
         '403 Forbidden | You cannot access this page because you do not have permission'
     );
 
-    // 1. Fetch all relevant players for this agent
-    $players = User::with(['roles', 'placeBets', 'children.placeBets'])
-        ->whereHas('roles', fn ($query) => $query->where('role_id', self::PLAYER_ROLE))
-        ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+    // 1. Get all relevant players (under this agent)
+    $players = User::with('roles')
+        ->whereHas('roles', fn($query) => $query->where('role_id', self::PLAYER_ROLE))
         ->where('agent_id', auth()->id())
+        ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
         ->orderBy('created_at', 'desc')
         ->get();
 
-    // 2. Fetch report data, including total spin (count of bets)
-    $reportData = DB::table('users as p')
-        ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
-        ->where('place_bets.wager_status', 'SETTLED')
-        ->groupBy('p.id')
-        ->selectRaw('
-            p.id as player_id,
-            SUM(place_bets.bet_amount) as total_bet_amount,
-            SUM(place_bets.prize_amount) as total_payout_amount,
-            COUNT(place_bets.id) as total_spin_count
-        ')
+    // 2. Get all "settled" bets summary for these players, keyed by player_id
+    $playerIds = $players->pluck('id');
+    $betSummary = \App\Models\PlaceBet::query()
+        ->selectRaw('player_id, COUNT(*) as total_spin, SUM(bet_amount) as total_bet_amount, SUM(prize_amount) as total_payout_amount')
+        ->whereIn('player_id', $playerIds)
+        ->where('wager_status', 'SETTLED')
+        ->groupBy('player_id')
         ->get()
         ->keyBy('player_id');
 
-    // 3. Build user collection with all needed fields
-    $users = $players->map(function ($player) use ($reportData) {
-        $report = $reportData->get($player->id);
-        // Calculate children's win/lose if relevant (classic approach, only if your model needs it)
-        //$poneWineTotalAmt = $player->children ? $player->children->flatMap->placeBets->sum('win_lose_amt') : 0;
-        $bets = $player->children
-        ? $player->children->flatMap->placeBets->sortByDesc('created_at')
-        : collect(); // always use collect() as default for collections
-    
-    $total_spin = $bets->count();
-    
-
+    // 3. Merge data and pass to view
+    $users = $players->map(function ($player) use ($betSummary) {
+        $summary = $betSummary->get($player->id);
         return (object) [
-            'id'           => $player->id,
-            'name'         => $player->name,
-            'user_name'    => $player->user_name,
-            'phone'        => $player->phone,
-            'balanceFloat' => $player->balanceFloat,
-            'status'       => $player->status,
-            'total_stake'  => $report->total_bet_amount ?? 0,      // Total bet/stake
-            'total_payout' => $report->total_payout_amount ?? 0,   // Total payout/win
-            'total_spin'   => $total_spin ?? 0,
-            'win_lose'     => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)),
+            'id'                => $player->id,
+            'name'              => $player->name,
+            'user_name'         => $player->user_name,
+            'phone'             => $player->phone,
+            'balanceFloat'      => $player->balanceFloat,
+            'status'            => $player->status,
+            'total_spin'        => $summary->total_spin ?? 0,
+            'total_bet_amount'  => $summary->total_bet_amount ?? 0,
+            'total_payout_amount' => $summary->total_payout_amount ?? 0,
         ];
     });
 
-    // 4. Return to view
     return view('admin.player.index', compact('users'));
 }
+
+//     public function index()
+// {
+//     abort_if(
+//         Gate::denies('player_index'),
+//         Response::HTTP_FORBIDDEN,
+//         '403 Forbidden | You cannot access this page because you do not have permission'
+//     );
+
+//     // 1. Fetch all relevant players for this agent
+//     $players = User::with(['roles', 'placeBets', 'children.placeBets'])
+//         ->whereHas('roles', fn ($query) => $query->where('role_id', self::PLAYER_ROLE))
+//         ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+//         ->where('agent_id', auth()->id())
+//         ->orderBy('created_at', 'desc')
+//         ->get();
+
+//     // 2. Fetch report data, including total spin (count of bets)
+//     $reportData = DB::table('users as p')
+//         ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
+//         ->where('place_bets.wager_status', 'SETTLED')
+//         ->groupBy('p.id')
+//         ->selectRaw('
+//             p.id as player_id,
+//             SUM(place_bets.bet_amount) as total_bet_amount,
+//             SUM(place_bets.prize_amount) as total_payout_amount,
+//             COUNT(place_bets.id) as total_spin_count
+//         ')
+//         ->get()
+//         ->keyBy('player_id');
+
+//     // 3. Build user collection with all needed fields
+//     $users = $players->map(function ($player) use ($reportData) {
+//         $report = $reportData->get($player->id);
+//         // Calculate children's win/lose if relevant (classic approach, only if your model needs it)
+//         //$poneWineTotalAmt = $player->children ? $player->children->flatMap->placeBets->sum('win_lose_amt') : 0;
+//         $bets = $player->children
+//         ? $player->children->flatMap->placeBets->sortByDesc('created_at')
+//         : collect(); // always use collect() as default for collections
+    
+//     $total_spin = $bets->count();
+    
+
+//         return (object) [
+//             'id'           => $player->id,
+//             'name'         => $player->name,
+//             'user_name'    => $player->user_name,
+//             'phone'        => $player->phone,
+//             'balanceFloat' => $player->balanceFloat,
+//             'status'       => $player->status,
+//             'total_stake'  => $report->total_bet_amount ?? 0,      // Total bet/stake
+//             'total_payout' => $report->total_payout_amount ?? 0,   // Total payout/win
+//             'total_spin'   => $total_spin ?? 0,
+//             'win_lose'     => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)),
+//         ];
+//     });
+
+//     // 4. Return to view
+//     return view('admin.player.index', compact('users'));
+// }
 
 
     /**
