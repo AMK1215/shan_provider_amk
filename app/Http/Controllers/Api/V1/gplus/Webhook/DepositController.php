@@ -359,7 +359,7 @@ class DepositController extends Controller
 
         $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
         $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
-        PlaceBet::Create(
+        PlaceBet::updateOrCreate(
             ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
             [
                 // Batch-level
