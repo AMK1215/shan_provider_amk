@@ -32,15 +32,15 @@ class FetchWagers extends Command
             return;
         }
 
-        $start = Carbon::now()->subMinutes(2)->format('Y-m-d H:i:s');
-        $end = $start->copy()->addMinutes(5)->format('Y-m-d H:i:s');
+        $start = Carbon::now()->subMinutes(2);
+        $end = $start->copy()->addMinutes(5);
 
         Log::debug('Start', [
-            'start' => $start
+            'start' => $start->format('Y-m-d H:i:s')
         ]);
 
         Log::debug('End', [
-            'end' => $end
+            'end' => $end->format('Y-m-d H:i:s')
         ]);
         $request_time = now()->timestamp;
         $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
