@@ -24,7 +24,7 @@ class FetchWagers extends Command
         $api_url = config('seamless_key.api_url');
 
         Log::debug('API Config', [
-            'operator_code' => $operatorCode,
+            'operator_code' => $operator_code,
             'api_url' => $apiUrl,
         ]);
 
@@ -58,7 +58,7 @@ class FetchWagers extends Command
         Log::debug("Sending GET request to: {$url}");
 
         $response = Http::get($url, [
-            'operator_code' => $operatorCode,
+            'operator_code' => $operator_code,
             'start' => $startTimestamp,
             'end' => $endTimestamp,
             'request_time' => $requestTime,
