@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB; // Import the Exception class for better clarity
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
+
 
 class DepositController extends Controller
 {
@@ -344,57 +346,131 @@ class DepositController extends Controller
      *
      * @param  int|null  $requestTime  The original request_time from the full request
      */
-    private function logPlaceBet(array $batchRequest, Request $fullRequest, array $transactionRequest, string $status, ?int $requestTime, ?string $errorMessage = null, ?float $beforeBalance = null, ?float $afterBalance = null): void
-    {
-        // Convert milliseconds to seconds if necessary
-        $requestTimeInSeconds = $requestTime ? floor($requestTime / 1000) : null;
-        $settleAtTime = $transactionRequest['settle_at'] ?? $transactionRequest['settled_at'] ?? null;
-        $settleAtInSeconds = $settleAtTime ? floor($settleAtTime / 1000) : null;
-        // Assuming 'created_at' from provider is also a timestamp in milliseconds
-        $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
-        $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
 
-        $provider_name = GameList::where('product_code', $batchRequest['product_code'])->value('provider');
-        $game_name = GameList::where('game_code', $transactionRequest['game_code'])->value('game_name');
 
-        $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
-        $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
-        PlaceBet::updateOrCreate(
-            ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
-            [
-                // Batch-level
+private function logPlaceBet(
+    array $batchRequest,
+    Request $fullRequest,
+    array $transactionRequest,
+    string $status,
+    ?int $requestTime,
+    ?string $errorMessage = null,
+    ?float $beforeBalance = null,
+    ?float $afterBalance = null
+): void {
+    // Convert milliseconds to seconds if necessary for timestamp columns
+    $requestTimeInSeconds = $requestTime ? floor($requestTime / 1000) : null;
+    $settleAtTime = $transactionRequest['settle_at'] ?? $transactionRequest['settled_at'] ?? null;
+    $settleAtInSeconds = $settleAtTime ? floor($settleAtTime / 1000) : null;
+    $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
+    $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
+    $provider_name = GameList::where('product_code', $batchRequest['product_code'])->value('provider');
+    $game_name = GameList::where('game_code', $transactionRequest['game_code'])->value('game_name');
+    $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
+    $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
+
+    try {
+        PlaceBet::create([
+            'transaction_id'    => $transactionRequest['id'] ?? '',
+            'member_account'    => $batchRequest['member_account'] ?? '',
+            'player_id'         => $player_id,
+            'player_agent_id'   => $player_agent_id,
+            'product_code'      => $batchRequest['product_code'] ?? 0,
+            'provider_name'     => $provider_name ?? $batchRequest['product_code'] ?? null,
+            'game_type'         => $batchRequest['game_type'] ?? '',
+            'operator_code'     => $fullRequest->operator_code,
+            'request_time'      => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
+            'sign'              => $fullRequest->sign,
+            'currency'          => $fullRequest->currency,
+            'action'            => $transactionRequest['action'] ?? '',
+            'amount'            => $transactionRequest['amount'] ?? 0,
+            'valid_bet_amount'  => $transactionRequest['valid_bet_amount'] ?? null,
+            'bet_amount'        => $transactionRequest['bet_amount'] ?? null,
+            'prize_amount'      => $transactionRequest['prize_amount'] ?? null,
+            'tip_amount'        => $transactionRequest['tip_amount'] ?? null,
+            'wager_code'        => $transactionRequest['wager_code'] ?? null,
+            'wager_status'      => $transactionRequest['wager_status'] ?? null,
+            'round_id'          => $transactionRequest['round_id'] ?? null,
+            'payload'           => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
+            'settle_at'         => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
+            'created_at_provider'=> $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
+            'game_code'         => $transactionRequest['game_code'] ?? null,
+            'game_name'         => $game_name ?? $transactionRequest['game_code'] ?? null,
+            'channel_code'      => $transactionRequest['channel_code'] ?? null,
+            'status'            => $status,
+            'before_balance'    => $beforeBalance,
+            'balance'           => $afterBalance,
+            'error_message'     => $errorMessage, // Optional, if you have this field
+        ]);
+    } catch (QueryException $e) {
+        // MySQL: 23000, PostgreSQL: 23505
+        if (in_array($e->getCode(), ['23000', '23505'])) {
+            // Duplicate detected: log it, but do NOT overwrite existing record
+            Log::warning('Duplicate transaction detected in logPlaceBet', [
+                'transaction_id' => $transactionRequest['id'] ?? '',
                 'member_account' => $batchRequest['member_account'] ?? '',
-                'player_id' => $player_id,
-                'player_agent_id' => $player_agent_id,
-                'product_code' => $batchRequest['product_code'] ?? 0,
-                'provider_name' => $provider_name ?? $batchRequest['product_code'] ?? null,
-                'game_type' => $batchRequest['game_type'] ?? '',
-                'operator_code' => $fullRequest->operator_code,
-                'request_time' => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
-                'sign' => $fullRequest->sign,
-                'currency' => $fullRequest->currency,
-
-                // Transaction-level
-                'action' => $transactionRequest['action'] ?? '',
-                'amount' => $transactionRequest['amount'] ?? 0,
-                'valid_bet_amount' => $transactionRequest['valid_bet_amount'] ?? null,
-                'bet_amount' => $transactionRequest['bet_amount'] ?? null,
-                'prize_amount' => $transactionRequest['prize_amount'] ?? null,
-                'tip_amount' => $transactionRequest['tip_amount'] ?? null,
-                'wager_code' => $transactionRequest['wager_code'] ?? null,
-                'wager_status' => $transactionRequest['wager_status'] ?? null,
-                'round_id' => $transactionRequest['round_id'] ?? null,
-                'payload' => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
-                'settle_at' => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
-                'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
-                'game_code' => $transactionRequest['game_code'] ?? null,
-                'game_name' => $game_name ?? $transactionRequest['game_code'] ?? null,
-                'channel_code' => $transactionRequest['channel_code'] ?? null,
-                'status' => $status,
-                'before_balance' => $beforeBalance,
-                'balance' => $afterBalance,
-
-            ]
-        );
+                'error' => $e->getMessage(),
+            ]);
+            // You might want to do something else, e.g. fire an event or count duplicates
+            // But do NOT insert/update anything here for audit safety
+        } else {
+            // Other DB errors: let them bubble up or handle as you see fit
+            throw $e;
+        }
     }
+}
+
+    // private function logPlaceBet(array $batchRequest, Request $fullRequest, array $transactionRequest, string $status, ?int $requestTime, ?string $errorMessage = null, ?float $beforeBalance = null, ?float $afterBalance = null): void
+    // {
+    //     // Convert milliseconds to seconds if necessary
+    //     $requestTimeInSeconds = $requestTime ? floor($requestTime / 1000) : null;
+    //     $settleAtTime = $transactionRequest['settle_at'] ?? $transactionRequest['settled_at'] ?? null;
+    //     $settleAtInSeconds = $settleAtTime ? floor($settleAtTime / 1000) : null;
+    //     // Assuming 'created_at' from provider is also a timestamp in milliseconds
+    //     $createdAtProviderTime = $transactionRequest['created_at'] ?? null;
+    //     $createdAtProviderInSeconds = $createdAtProviderTime ? floor($createdAtProviderTime / 1000) : null;
+
+    //     $provider_name = GameList::where('product_code', $batchRequest['product_code'])->value('provider');
+    //     $game_name = GameList::where('game_code', $transactionRequest['game_code'])->value('game_name');
+
+    //     $player_id = User::where('user_name', $batchRequest['member_account'])->value('id');
+    //     $player_agent_id = User::where('user_name', $batchRequest['member_account'])->value('agent_id');
+    //     PlaceBet::updateOrCreate(
+    //         ['transaction_id' => $transactionRequest['id'] ?? ''], // Use transaction_id for uniqueness
+    //         [
+    //             // Batch-level
+    //             'member_account' => $batchRequest['member_account'] ?? '',
+    //             'player_id' => $player_id,
+    //             'player_agent_id' => $player_agent_id,
+    //             'product_code' => $batchRequest['product_code'] ?? 0,
+    //             'provider_name' => $provider_name ?? $batchRequest['product_code'] ?? null,
+    //             'game_type' => $batchRequest['game_type'] ?? '',
+    //             'operator_code' => $fullRequest->operator_code,
+    //             'request_time' => $requestTimeInSeconds ? now()->setTimestamp($requestTimeInSeconds) : null,
+    //             'sign' => $fullRequest->sign,
+    //             'currency' => $fullRequest->currency,
+
+    //             // Transaction-level
+    //             'action' => $transactionRequest['action'] ?? '',
+    //             'amount' => $transactionRequest['amount'] ?? 0,
+    //             'valid_bet_amount' => $transactionRequest['valid_bet_amount'] ?? null,
+    //             'bet_amount' => $transactionRequest['bet_amount'] ?? null,
+    //             'prize_amount' => $transactionRequest['prize_amount'] ?? null,
+    //             'tip_amount' => $transactionRequest['tip_amount'] ?? null,
+    //             'wager_code' => $transactionRequest['wager_code'] ?? null,
+    //             'wager_status' => $transactionRequest['wager_status'] ?? null,
+    //             'round_id' => $transactionRequest['round_id'] ?? null,
+    //             'payload' => isset($transactionRequest['payload']) ? json_encode($transactionRequest['payload']) : null,
+    //             'settle_at' => $settleAtInSeconds ? now()->setTimestamp($settleAtInSeconds) : null,
+    //             'created_at_provider' => $createdAtProviderInSeconds ? now()->setTimestamp($createdAtProviderInSeconds) : null,
+    //             'game_code' => $transactionRequest['game_code'] ?? null,
+    //             'game_name' => $game_name ?? $transactionRequest['game_code'] ?? null,
+    //             'channel_code' => $transactionRequest['channel_code'] ?? null,
+    //             'status' => $status,
+    //             'before_balance' => $beforeBalance,
+    //             'balance' => $afterBalance,
+
+    //         ]
+    //     );
+    // }
 }
