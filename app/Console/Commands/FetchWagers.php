@@ -32,7 +32,7 @@ class FetchWagers extends Command
             return;
         }
 
-        $timezone = 'Asia/Shanghai'; // no trailing space!
+        $timezone = 'Asia/Yangon'; // no trailing space!
         $start = Carbon::now(trim($timezone))->subMinutes(2);
         $end = $start->copy()->addMinutes(5);
 
@@ -43,7 +43,7 @@ class FetchWagers extends Command
         Log::debug('End', [
             'end' => $end
         ]);
-        $request_time = now('Asia/Shanghai ')->timestamp;
+        $request_time = now()->timestamp;
         $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
 
         Log::debug('Sign', [
