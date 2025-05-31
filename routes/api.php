@@ -62,7 +62,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('depositlogfinicial', [DepositRequestController::class, 'log']);
     Route::get('paymentTypefinicial', [GSCPlusProviderController::class, 'paymentType']);
     Route::post('withdrawfinicial', [WithDrawRequestController::class, 'FinicalWithdraw']); 
-    Route::get('withdrawlog', [WithDrawRequestController::class, 'log']);
+    Route::get('withdrawlogfinicial', [WithDrawRequestController::class, 'log']);
 
 
     Route::get('contact', [ContactController::class, 'get']);
