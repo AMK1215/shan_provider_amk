@@ -79,45 +79,71 @@ class TransferLogController extends Controller
 {
     $user = Auth::user();
 
-    // 1. Identify the top-level agent (could be themselves or their parent if subagent)
+    // 1. Find parent agent if current user is a subagent
     $agent = $user;
     if ($user->hasRole('SubAgent') && $user->agent_id) {
         $agent = \App\Models\User::find($user->agent_id);
     }
 
-    // 2. Collect all IDs allowed to view this log: the subagent, their agent, and optionally owner
+    // 2. Gather allowed IDs (subagent and parent agent)
     $allowedIds = [$user->id];
     if ($agent && $agent->id !== $user->id) {
         $allowedIds[] = $agent->id;
     }
 
-    // (Optional) If owner should always see, add owner id, e.g.:
-    // if ($user->hasRole('Owner')) { $allowedIds[] = $user->id; }
+    // 3. Fetch all transfer logs involving these IDs
+    $transferLogs = \App\Models\TransferLog::with(['fromUser', 'toUser'])
+        ->where(function ($q) use ($allowedIds) {
+            $q->whereIn('from_user_id', $allowedIds)
+              ->orWhereIn('to_user_id', $allowedIds);
+        })
+        ->latest()
+        ->get();
 
-    // 3. Fetch the log with eager relationships
-    $transferLog = \App\Models\TransferLog::with(['fromUser', 'toUser'])->findOrFail($id);
-
-    // 4. Allow access if this log involves either the subagent or their agent
-    if (
-        !in_array($transferLog->from_user_id, $allowedIds)
-        && !in_array($transferLog->to_user_id, $allowedIds)
-    ) {
-        abort(403, 'You do not have access to this transfer log.');
+    // 4. (Optional) If you want to highlight a specific log, you can still fetch it:
+    $transferLog = $transferLogs->where('id', $id)->first();
+    if (!$transferLog) {
+        abort(404, 'Transfer log not found or not accessible.');
     }
 
-    return view('admin.player.log_detail', compact('transferLog'));
+    return view('admin.transfer_logs.player_transfer_log_index', compact('transferLog', 'transferLogs'));
 }
 
 
 //     public function PlayertransferLog($id)
 // {
-//     // Load the transfer log with both fromUser and toUser relationships
+//     $user = Auth::user();
+
+//     // 1. Identify the top-level agent (could be themselves or their parent if subagent)
+//     $agent = $user;
+//     if ($user->hasRole('SubAgent') && $user->agent_id) {
+//         $agent = \App\Models\User::find($user->agent_id);
+//     }
+
+//     // 2. Collect all IDs allowed to view this log: the subagent, their agent, and optionally owner
+//     $allowedIds = [$user->id];
+//     if ($agent && $agent->id !== $user->id) {
+//         $allowedIds[] = $agent->id;
+//     }
+
+//     // (Optional) If owner should always see, add owner id, e.g.:
+//     // if ($user->hasRole('Owner')) { $allowedIds[] = $user->id; }
+
+//     // 3. Fetch the log with eager relationships
 //     $transferLog = \App\Models\TransferLog::with(['fromUser', 'toUser'])->findOrFail($id);
 
-//     // Optional: You can add authorization if needed (to restrict view access)
-//     // $this->authorize('view', $transferLog);
+//     // 4. Allow access if this log involves either the subagent or their agent
+//     if (
+//         !in_array($transferLog->from_user_id, $allowedIds)
+//         && !in_array($transferLog->to_user_id, $allowedIds)
+//     ) {
+//         abort(403, 'You do not have access to this transfer log.');
+//     }
 
 //     return view('admin.player.log_detail', compact('transferLog'));
 // }
+
+
+
 
 }

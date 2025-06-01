@@ -41,7 +41,7 @@
                                     {{-- <th>CreatedAt</th> --}}
                                     <th>Action</th>
                                     <th>Transaction</th>
-                                    <th>Log</th>
+                                    <th>TransferLog</th>
                                 </thead>
                                 <tbody>
                                     @if (isset($users))
@@ -130,7 +130,7 @@
                                                     </td>
                                                     <td>
                                                             @foreach ($user->logs as $log)
-                                                                <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">Log #{{ $log->id }}</a><br>
+                                                                <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">TransferLog</a><br>
                                                             @endforeach
                                                         </td>
                                                 </tr>
