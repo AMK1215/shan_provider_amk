@@ -72,9 +72,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="mt-4">
-                        {{ $transferLogs->links() }}
-                    </div>
+                    
                 </div>
             </div>
         </div>
