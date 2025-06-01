@@ -75,39 +75,63 @@ class TransferLogController extends Controller
         return array_unique($relatedIds);
     }
 
-    public function PlayertransferLog($id)
+    public function relatedTransferLogs($relatedUserId)
 {
     $user = Auth::user();
+    $relatedUser = \App\Models\User::findOrFail($relatedUserId);
 
-    // 1. Find parent agent if current user is a subagent
-    $agent = $user;
-    if ($user->hasRole('SubAgent') && $user->agent_id) {
-        $agent = \App\Models\User::find($user->agent_id);
-    }
+    // (Optionally) Only allow if related user is a child or parent, or else abort
+    // ...classic check here...
 
-    // 2. Gather allowed IDs (subagent and parent agent)
-    $allowedIds = [$user->id];
-    if ($agent && $agent->id !== $user->id) {
-        $allowedIds[] = $agent->id;
-    }
-
-    // 3. Fetch all transfer logs involving these IDs
+    // Show all logs just between $user and $relatedUser
     $transferLogs = \App\Models\TransferLog::with(['fromUser', 'toUser'])
-        ->where(function ($q) use ($allowedIds) {
-            $q->whereIn('from_user_id', $allowedIds)
-              ->orWhereIn('to_user_id', $allowedIds);
+        ->where(function ($q) use ($user, $relatedUser) {
+            $q->where('from_user_id', $user->id)
+              ->where('to_user_id', $relatedUser->id);
+        })
+        ->orWhere(function ($q) use ($user, $relatedUser) {
+            $q->where('from_user_id', $relatedUser->id)
+              ->where('to_user_id', $user->id);
         })
         ->latest()
         ->get();
 
-    // 4. (Optional) If you want to highlight a specific log, you can still fetch it:
-    $transferLog = $transferLogs->where('id', $id)->first();
-    if (!$transferLog) {
-        abort(404, 'Transfer log not found or not accessible.');
-    }
-
-    return view('admin.transfer_logs.player_transfer_log_index', compact('transferLog', 'transferLogs'));
+    return view('admin.player.related_transfer_logs', compact('transferLogs', 'relatedUser'));
 }
+
+//     public function PlayertransferLog($id)
+// {
+//     $user = Auth::user();
+
+//     // 1. Find parent agent if current user is a subagent
+//     $agent = $user;
+//     if ($user->hasRole('SubAgent') && $user->agent_id) {
+//         $agent = \App\Models\User::find($user->agent_id);
+//     }
+
+//     // 2. Gather allowed IDs (subagent and parent agent)
+//     $allowedIds = [$user->id];
+//     if ($agent && $agent->id !== $user->id) {
+//         $allowedIds[] = $agent->id;
+//     }
+
+//     // 3. Fetch all transfer logs involving these IDs
+//     $transferLogs = \App\Models\TransferLog::with(['fromUser', 'toUser'])
+//         ->where(function ($q) use ($allowedIds) {
+//             $q->whereIn('from_user_id', $allowedIds)
+//               ->orWhereIn('to_user_id', $allowedIds);
+//         })
+//         ->latest()
+//         ->get();
+
+//     // 4. (Optional) If you want to highlight a specific log, you can still fetch it:
+//     $transferLog = $transferLogs->where('id', $id)->first();
+//     if (!$transferLog) {
+//         abort(404, 'Transfer log not found or not accessible.');
+//     }
+
+//     return view('admin.transfer_logs.player_transfer_log_index', compact('transferLog', 'transferLogs'));
+// }
 
 
 //     public function PlayertransferLog($id)

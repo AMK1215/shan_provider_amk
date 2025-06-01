@@ -56,11 +56,9 @@
         </tr>
     </thead>
     <tbody>
-        @foreach($transferLogs as $log)
-            <tr @if($transferLog && $transferLog->id == $log->id) style="background: #ffd" @endif>
-                <td>
-                    <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">{{ $log->id }}</a>
-                </td>
+    @foreach($transferLogs as $log)
+            <tr>
+                <td>{{ $log->id }}</td>
                 <td>{{ $log->fromUser->user_name ?? '-' }}</td>
                 <td>{{ $log->toUser->user_name ?? '-' }}</td>
                 <td>{{ $log->amount }}</td>
