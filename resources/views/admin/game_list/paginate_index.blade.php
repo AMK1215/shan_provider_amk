@@ -60,7 +60,7 @@
                                             </td>
                                             <td>{{ $game_list->status }}</td>
                                             <td>
-                                                <span class="badge {{ $game_list->hot_status == 1 ? 'bg-success' : 'bg-danger' }}">
+                                                <span class="badge {{ $game_list->hot_status == 1 ? 'bg-success' : 'bg-info' }}">
                                                     {{ $game_list->hot_status == 1 ? 'HotGame' : 'NormalGame' }}
                                                 </span>
                                                 
@@ -72,7 +72,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" class="btn btn-{{ $game_list->hot_status == 1 ? 'danger' : 'success' }} btn-sm">
-                                                {{ $game_list->hot_status == 1 ? 'Set Normal' : 'Set Hot' }}
+                                                {{ $game_list->hot_status == 1 ? 'Set Hot' : 'Set Normal' }}
                                                 </button>
                                                 </form>
                                             </td>
