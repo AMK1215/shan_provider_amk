@@ -75,7 +75,7 @@ class TransferLogController extends Controller
         return array_unique($relatedIds);
     }
 
-    public function relatedTransferLogs($relatedUserId)
+    public function PlayertransferLog($relatedUserId)
 {
     $user = Auth::user();
     $relatedUser = \App\Models\User::findOrFail($relatedUserId);
