@@ -52,7 +52,11 @@
             <th>From</th>
             <th>To</th>
             <th>Amount</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Approved By</th>
             <th>Date</th>
+
         </tr>
     </thead>
     <tbody>
@@ -62,11 +66,18 @@
                 <td>{{ $log->fromUser->user_name ?? '-' }}</td>
                 <td>{{ $log->toUser->user_name ?? '-' }}</td>
                 <td>{{ $log->amount }}</td>
+                <td>
+                <span class="badge {{ $log->type === 'credit_transfer' ? 'badge-success' : 'badge-danger' }}">
+                    {{ ucfirst(str_replace('_', ' ', $log->type)) }}
+                </span>
+                </td>
+            <td>{{ $log->description }}</td>
                 <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
+                <td>{{ $log->subAgent->user_name ?? '-' }}</td>
             </tr>
         @endforeach
     </tbody>
-                        </table>
+</table>
                     </div>
 
                     <!-- Pagination -->
