@@ -55,6 +55,7 @@
                                     <th>Amount</th>
                                     <th>Type</th>
                                     <th>Description</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -71,6 +72,9 @@
                                         </span>
                                     </td>
                                     <td>{{ $log->description }}</td>
+                                    <td>
+                                        <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}" class="btn btn-primary">View</a>
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
