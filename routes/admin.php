@@ -129,7 +129,7 @@ Route::group([
     Route::get('/transfer-logs', [TransferLogController::class, 'index'])->name('transfer-logs.index');
 
     // Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
-    Route::get('transferlog/{id}', [TransferLogController::class, 'transferLog'])->name('transferLogDetail');
+    Route::get('playertransferlog/{id}', [TransferLogController::class, 'PlayertransferLog'])->name('PlayertransferLogDetail');
 
     Route::get('wager-list', [WagerListController::class, 'index'])->name('wager-list');
     Route::get('wager-list/fetch', [WagerListController::class, 'fetch'])->name('wager-list.fetch');

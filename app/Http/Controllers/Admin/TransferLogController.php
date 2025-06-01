@@ -75,7 +75,7 @@ class TransferLogController extends Controller
         return array_unique($relatedIds);
     }
 
-    public function transferLog($id)
+    public function PlayertransferLog($id)
 {
     // Load the transfer log with both fromUser and toUser relationships
     $transferLog = \App\Models\TransferLog::with(['fromUser', 'toUser'])->findOrFail($id);
