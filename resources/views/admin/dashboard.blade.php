@@ -31,7 +31,7 @@
             </div>
 
             <!-- Downline Total Balance -->
-            @if(in_array($role, ['Owner', 'Agent', 'SubAgent']))
+            <!-- @if(in_array($role, ['Owner', 'Agent', 'SubAgent']))
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
@@ -43,7 +43,7 @@
                     </div>
                 </div>
             </div>
-            @endif
+            @endif -->
 
             <!-- Player Balance -->
             @if($playerBalance > 0)
