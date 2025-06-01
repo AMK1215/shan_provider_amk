@@ -41,6 +41,7 @@
                                     {{-- <th>CreatedAt</th> --}}
                                     <th>Action</th>
                                     <th>Transaction</th>
+                                    <th>Log</th>
                                 </thead>
                                 <tbody>
                                     @if (isset($users))
@@ -119,11 +120,7 @@
                                                             <i class="fas fa-right-left text-white me-1"></i>
                                                             Logs
                                                         </a>
-                                                        <td>
-                                                            @foreach ($user->logs as $log)
-                                                                <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">Log #{{ $log->id }}</a><br>
-                                                            @endforeach
-                                                        </td>
+                                                       
                                                         <a href="{{ route('admin.subacc.player.report_detail', $user->id) }}"
                                                             data-bs-toggle="tooltip" data-bs-original-title="Reports"
                                                             class="btn btn-info btn-sm ">
@@ -131,6 +128,11 @@
                                                             Reports
                                                         </a>
                                                     </td>
+                                                    <td>
+                                                            @foreach ($user->logs as $log)
+                                                                <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">Log #{{ $log->id }}</a><br>
+                                                            @endforeach
+                                                        </td>
                                                 </tr>
                                             @endforeach
                                         @else
