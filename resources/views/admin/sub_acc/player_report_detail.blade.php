@@ -116,14 +116,14 @@
             </div>
         </div>
     </div>
-    <!-- <div class="col-md-3 col-6 mt-3 mt-md-0">
+    <div class="col-md-3 col-6 mt-3 mt-md-0">
         <div class="card text-center shadow-sm border-info">
             <div class="card-body">
-                <h6 class="text-info"><i class="fas fa-trophy"></i> Total Win</h6>
+                <h6 class="text-info"><i class="fas fa-trophy"></i> Total Payout</h6>
                 <h3 class="fw-bold">{{ number_format($total_win, 2) }}</h3>
             </div>
         </div>
-    </div> -->
+    </div>
 
     <div class="col-md-3 col-6 mt-3 mt-md-0">
     <div class="card text-center shadow-sm border-{{ $net_win < 0 ? 'danger' : 'success' }}">
