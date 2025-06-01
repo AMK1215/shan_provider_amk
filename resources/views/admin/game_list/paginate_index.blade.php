@@ -61,8 +61,16 @@
                                             <td>{{ $game_list->status }}</td>
                                             <td>
                                                 <span class="badge {{ $game_list->hot_status == 1 ? 'bg-success' : 'bg-danger' }}">
-                                                    {{ $game_list->hot_status == 1 ? 'Active' : 'Inactive' }}
+                                                    {{ $game_list->hot_status == 1 ? 'HotGame' : 'NormalGame' }}
                                                 </span>
+                                                <form action="{{ route('admin.HotGame.toggleStatus', $game_list->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-{{ $game_list->hot_status == 1 ? 'danger' : 'success' }} btn-sm">
+                                                {{ $game_list->hot_status == 1 ? 'Set Normal' : 'Set Hot' }}
+                                                </button>
+                                                </form>
+
                                                 
                                             </td>
                                             <td>{{ $game_list->action }}</td>

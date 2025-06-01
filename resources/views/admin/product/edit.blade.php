@@ -44,7 +44,7 @@
                                 <div class="form-group">
                                     <label>Name<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control"
-                                        value="{{ $gameType->products[0]['provider_name'] }}" readonly> @error('name')
+                                        value="{{ $gameType->products[0]['product_name'] }}" readonly> @error('name')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
