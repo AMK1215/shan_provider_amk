@@ -73,18 +73,56 @@ class ProductController extends Controller
         return view('admin.product.edit', compact('gameType', 'productId'));
     }
 
+    // public function update(Request $request, $gameTypeId, $productId)
+    // {
+    //     $image = $request->file('image');
+    //     $ext = $image->getClientOriginalExtension();
+    //     $filename = uniqid('game_type').'.'.$ext;
+    //     $image->move(public_path('assets/img/game_logo/'), $filename);
+
+    //     DB::table('game_type_product')->where('game_type_id', $gameTypeId)->where('product_id', $productId)
+    //         ->update(['image' => $filename]);
+
+    //     return redirect()->route('admin.gametypes.index');
+    // }
+
     public function update(Request $request, $gameTypeId, $productId)
-    {
+{
+    // Validate the file (optional, but good practice)
+    $request->validate([
+        'image' => 'nullable|image|max:2048',
+    ]);
+
+    $data = [];
+
+    if ($request->hasFile('image')) {
         $image = $request->file('image');
         $ext = $image->getClientOriginalExtension();
         $filename = uniqid('game_type').'.'.$ext;
         $image->move(public_path('assets/img/game_logo/'), $filename);
 
-        DB::table('game_type_product')->where('game_type_id', $gameTypeId)->where('product_id', $productId)
-            ->update(['image' => $filename]);
+        // Optionally: delete old image (if you want)
+        $oldImage = DB::table('game_type_product')
+            ->where('game_type_id', $gameTypeId)
+            ->where('product_id', $productId)
+            ->value('image');
+        if ($oldImage && file_exists(public_path('assets/img/game_logo/'.$oldImage))) {
+            @unlink(public_path('assets/img/game_logo/'.$oldImage));
+        }
 
-        return redirect()->route('admin.gametypes.index');
+        $data['image'] = $filename;
     }
+
+    if (!empty($data)) {
+        DB::table('game_type_product')
+            ->where('game_type_id', $gameTypeId)
+            ->where('product_id', $productId)
+            ->update($data);
+    }
+
+    return redirect()->route('admin.gametypes.index')->with('success', 'Image updated!');
+}
+
 
     public function GameListFetch(Request $request)
     {

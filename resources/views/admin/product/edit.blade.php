@@ -27,7 +27,7 @@
                         </a>
                     </div>
                 </div>
-                <form action="{{ route('admin.gametypes.update', [$gameType->id, $productId]) }}" method="post"
+                <form action="{{ route('admin.gametypesproduct.update', [$gameType->id, $productId]) }}" method="post"
                     enctype="multipart/form-data">
                     @csrf
                     <div class="card-body mt-2">
@@ -49,11 +49,18 @@
                                     @enderror
                                 </div>
                                 <div class="form-group">
-                                    <label>Image<span class="text-danger">*</span></label>
-                                    <input type="file" class="form-control" name="image">
-                                    <img src="{{ $gameType->products[0]->getImgUrlAttribute() }}" alt=""
-                                        width="100px">
-                                </div>
+                                <label>Image<span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" name="image">
+                                @php
+                                    $pivotImage = optional($gameType->products[0])->pivot->image ?? null;
+                                @endphp
+                                @if($pivotImage)
+                                    <img src="{{ asset('assets/img/game_logo/'.$pivotImage) }}" width="100px" alt="Current Image">
+                                @endif
+
+                            </div>
+
+
                             </div>
 
                         </div>

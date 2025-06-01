@@ -148,7 +148,9 @@ Route::group([
     Route::post('/game-types/{productId}/toggle-status', [ProductController::class, 'toggleStatus'])->name('gametypes.toggle-status');
     Route::get('gametypes/{game_type_id}/product/{product_id}', [ProductController::class, 'edit'])->name('gametypes.edit');
     Route::post('gametypes/{game_type_id}/product/{product_id}', [ProductController::class, 'update'])->name('gametypes.update');
-    
+    Route::post('admin/gametypes/{gameTypeId}/{productId}/update', [ProductController::class, 'update'])
+    ->name('gametypesproduct.update');
+
     // game list start
     Route::get('all-game-lists', [GameListController::class, 'GetGameList'])->name('gameLists.index');
     Route::get('all-game-lists/{id}', [GameListController::class, 'edit'])->name('gameLists.edit');

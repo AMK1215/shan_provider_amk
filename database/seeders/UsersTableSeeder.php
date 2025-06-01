@@ -49,7 +49,7 @@ class UsersTableSeeder extends Seeder
                 'AGENT'.Str::random(6)
             );
             // Random initial balance between 1.5M to 2.5M
-            $initialBalance = rand(15, 25) * 100_000000;
+            $initialBalance = rand(15, 25) * 100_000;
             $walletService->transfer($owner, $agent, $initialBalance, TransactionName::CreditTransfer);
 
             // Create 10 sub-agents for each agent
@@ -63,7 +63,7 @@ class UsersTableSeeder extends Seeder
                     'SUB'.Str::random(6)
                 );
                 // Random initial balance between 800K to 1.2M
-                $initialBalance = rand(8, 12) * 100_00000;
+                $initialBalance = rand(2, 3) * 100_00;
                 $walletService->transfer($agent, $subAgent, $initialBalance, TransactionName::CreditTransfer);
 
                 // Create 10 players for each sub-agent
@@ -77,7 +77,7 @@ class UsersTableSeeder extends Seeder
                         'PLAYER'.Str::random(6)
                     );
                     // Random initial balance between 4K to 6K
-                    $initialBalance = rand(4, 6) * 100_000;
+                    $initialBalance = rand(2, 3) * 100_00;
                     $walletService->transfer($subAgent, $player, $initialBalance, TransactionName::CreditTransfer);
                 }
             }
