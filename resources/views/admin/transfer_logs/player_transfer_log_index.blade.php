@@ -72,8 +72,8 @@
                 </span>
                 </td>
             <td>{{ $log->description }}</td>
-                <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
                 <td>{{ $log->subAgent->user_name ?? '-' }}</td>
+                <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
             </tr>
         @endforeach
     </tbody>
