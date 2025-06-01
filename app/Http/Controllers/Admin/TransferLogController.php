@@ -96,7 +96,7 @@ class TransferLogController extends Controller
         ->latest()
         ->get();
 
-    return view('admin.admin.transfer_logs.player_transfer_log_index', compact('transferLogs', 'relatedUser'));
+    return view('admin.transfer_logs.player_transfer_log_index', compact('transferLogs', 'relatedUser'));
 }
 
 //     public function PlayertransferLog($id)
