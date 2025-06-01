@@ -59,7 +59,7 @@ class PlayerController extends Controller
             UNION ALL
             SELECT u.id FROM users u INNER JOIN descendants d ON u.agent_id = d.id
         )
-        SELECT id FROM users WHERE id IN (SELECT id FROM descendants) AND type = 'player'
+        SELECT id FROM users WHERE id IN (SELECT id FROM descendants) AND type = '40'
     ", [$startId]))->pluck('id');
 
     // Step 2: Eager-load roles for the players, and whatever else you want
