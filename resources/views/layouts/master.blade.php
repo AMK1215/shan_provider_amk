@@ -222,7 +222,7 @@
                                 class="nav-link {{ Route::current()->getName() == 'admin.transfer-logs.index' ? 'active' : '' }}">
                                 <i class="fas fa-exchange-alt"></i>
                                 <p>
-                                    Agent Transaction Log
+                                    Transaction Log
                                 </p>
                             </a>
                         </li>
@@ -282,15 +282,7 @@
                             </li>
                         @endcan
                         @can('owner_access')
-                            <li class="nav-item">
-                                <a href=""
-                                    class="nav-link">
-                                    <i class="far fa-registered"></i>
-                                    <p>
-                                        Role
-                                    </p>
-                                </a>
-                            </li>
+                            
 
                             <li
                                 class="nav-item">
@@ -317,13 +309,13 @@
                                         </a>
                                     </li>
 
-                                    <li class="nav-item">
+                                    <!-- <li class="nav-item">
                                         <a href=""
                                             class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>GSC GameType</p>
                                         </a>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </li>
                         @endcan
@@ -355,7 +347,7 @@
                                         </p>
                                     </a>
                                 </li>
-                                <li class="nav-item menu-open">
+                                <!-- <li class="nav-item menu-open">
                                     <a href=""
                                         class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
@@ -372,8 +364,8 @@
                                            Shan Report
                                         </p>
                                     </a>
-                                </li>
-                                <li class="nav-item">
+                                </li> -->
+                                <!-- <li class="nav-item">
                                     <a href=""
                                         class="nav-link">
                                         <i class="fab fa-dochub"></i>
@@ -391,7 +383,7 @@
                                             Daily Report
                                         </p>
                                     </a>
-                                </li>
+                                </li> -->
                                 @can('senior_owner_access')
                                     <li class="nav-item menu-open">
                                         <a href=""
