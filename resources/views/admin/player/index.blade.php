@@ -119,12 +119,11 @@
                                                             <i class="fas fa-right-left text-white me-1"></i>
                                                             Logs
                                                         </a>
-                                                        <a href="{{ route('admin.PlayertransferLogDetail', $user->id) }}"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="Reports"
-                                                            class="btn btn-info btn-sm">
-                                                            <i class="fas fa-right-left text-white me-1"></i>
-                                                            transferLogs
-                                                        </a>
+                                                        <td>
+                                                            @foreach ($user->logs as $log)
+                                                                <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">Log #{{ $log->id }}</a><br>
+                                                            @endforeach
+                                                        </td>
                                                         <a href="{{ route('admin.subacc.player.report_detail', $user->id) }}"
                                                             data-bs-toggle="tooltip" data-bs-original-title="Reports"
                                                             class="btn btn-info btn-sm ">
