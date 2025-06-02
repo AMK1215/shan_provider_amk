@@ -234,7 +234,6 @@ class PermissionsTableSeeder extends Seeder
                 'updated_at' => now(),
             ],
             // subagent permission
-            
             [
                 'title' => 'subagent_player_create',
                 'group' => 'subagent',

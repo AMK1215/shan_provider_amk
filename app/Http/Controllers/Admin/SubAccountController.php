@@ -33,7 +33,7 @@ class SubAccountController extends Controller
     // protected const SUB_AGENT_PROFILE = 'subagent_permission';
     protected const SUB_AGENT_PERMISSIONS = [
         'subagent_access',
-        'subagent_player_view',
+        'player_view',
         'subagent_player_create',
         'subagent_withdraw',
         'subagent_deposit'
