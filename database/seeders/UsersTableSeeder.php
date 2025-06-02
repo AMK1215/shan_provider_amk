@@ -49,37 +49,22 @@ class UsersTableSeeder extends Seeder
                 'AGENT'.Str::random(6)
             );
             // Random initial balance between 1.5M to 2.5M
-            $initialBalance = rand(1, 2) * 100_0000;
+            $initialBalance = rand(1, 2) * 100_000;
             $walletService->transfer($owner, $agent, $initialBalance, TransactionName::CreditTransfer);
 
-            // Create 10 sub-agents for each agent
-            for ($j = 1; $j <= 2; $j++) {
-                $subAgent = $this->createUser(
-                    UserType::SubAgent,
-                    "SubAgent $i-$j",
-                    'SUB'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($j, 2, '0', STR_PAD_LEFT),
-                    '091765432'.str_pad($i, 1, '0', STR_PAD_LEFT).str_pad($j, 1, '0', STR_PAD_LEFT),
+            // Create players directly under each agent (no sub-agents)
+            for ($k = 1; $k <= 4; $k++) {
+                $player = $this->createUser(
+                    UserType::Player,
+                    "Player $i-$k",
+                    'PLAYER'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
+                    '091111111'.str_pad($i, 1, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     $agent->id,
-                    'SUB'.Str::random(6)
+                    'PLAYER'.Str::random(6)
                 );
-                // Random initial balance between 800K to 1.2M
-                $initialBalance = rand(3, 2) * 100_000;
-                $walletService->transfer($agent, $subAgent, $initialBalance, TransactionName::CreditTransfer);
-
-                // Create 10 players for each sub-agent
-                for ($k = 1; $k <= 2; $k++) {
-                    $player = $this->createUser(
-                        UserType::Player,
-                        "Player $i-$j-$k",
-                        'PLAYER'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($j, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
-                        '091111111'.str_pad($i, 1, '0', STR_PAD_LEFT).str_pad($j, 1, '0', STR_PAD_LEFT).str_pad($k, 1, '0', STR_PAD_LEFT),
-                        $subAgent->id,
-                        'PLAYER'.Str::random(6)
-                    );
-                    // Fixed initial balance of 10,000
-                    $initialBalance = 10000;
-                    $walletService->transfer($subAgent, $player, $initialBalance, TransactionName::CreditTransfer);
-                }
+                // Fixed initial balance of 10,000
+                $initialBalance = 10000;
+                $walletService->transfer($agent, $player, $initialBalance, TransactionName::CreditTransfer);
             }
         }
     }
