@@ -234,79 +234,14 @@ class PermissionsTableSeeder extends Seeder
                 'updated_at' => now(),
             ],
             // subagent permission
-            [
-                'title' => 'subagent_permission',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_permission_edit',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_permission_delete',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_permission_create',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_permission_index',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_permission_access',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_permission_update',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_player_access',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_player_index',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            
             [
                 'title' => 'subagent_player_create',
                 'group' => 'subagent',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'title' => 'subagent_player_edit',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_player_delete',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
+            
             [
                 'title' => 'subagent_deposit',
                 'group' => 'subagent',
@@ -319,26 +254,16 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'title' => 'subagent_transfer',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_transfer_log',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'title' => 'subagent_report',
-                'group' => 'subagent',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            
             [
                 'title' => 'player_view',
+                'group' => 'subagent',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            [
+                'title' => 'subagent_access',
                 'group' => 'subagent',
                 'created_at' => now(),
                 'updated_at' => now(),
