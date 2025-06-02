@@ -38,7 +38,8 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover table-bordered mb-0">
+                    <table id="mytable" class="table table-bordered table-hover">
+
                             <thead class="thead-light">
                                 <tr>
                                     <th>Player</th>
@@ -79,7 +80,7 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">Total Stake Count: <strong>{{ $total['totalstake'] }}</strong></li>
                         <li class="list-group-item">Total Bet Amount: <strong class="text-success">{{ number_format($total['totalBetAmt'], 2) }}</strong></li>
-                        <li class="list-group-item">Total Win Amount: <strong class="text-info">{{ number_format($total['totalWinAmt'], 2) }}</strong></li>
+                        <li class="list-group-item">Total Payout Amount: <strong class="text-info">{{ number_format($total['totalWinAmt'], 2) }}</strong></li>
                     </ul>
                 </div>
             </div>

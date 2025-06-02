@@ -24,7 +24,8 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover table-bordered mb-0">
+                        <table id="mytable" class="table table-bordered table-hover">
+
                                 <thead class="thead-light">
                                     <tr>
                                         <th>ID</th>
