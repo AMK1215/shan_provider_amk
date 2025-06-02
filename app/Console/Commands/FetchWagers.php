@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\Bet;
+use App\Models\WagerList;
 use Carbon\Carbon;
 
 class FetchWagers extends Command
@@ -81,7 +81,7 @@ class FetchWagers extends Command
                         'member_account' => $wager['member_account'] ?? 'N/A'
                     ]);
 
-                    Bet::updateOrCreate(
+                    WagerList::updateOrCreate(
                         ['id' => $wager['id']], // update if exists
                         [
                             'member_account' => $wager['member_account'] ?? '',
