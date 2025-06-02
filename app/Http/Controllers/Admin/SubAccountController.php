@@ -296,7 +296,7 @@ class SubAccountController extends Controller
         $total_stake = $bets->count();
         $total_bet = $bets->where('action', 'BET')->sum('bet_amount');
         //$total_bet = $bets->sum('bet_amount');
-        $total_win = $bets->where('action', 'SETTLED')->sum('prize_amount');
+        $total_win = $bets->where('wager_status', 'SETTLED')->sum('prize_amount');
         $total_lost = $total_bet - $total_win;
         $net_win = $total_win - $total_bet; // Positive if won, negative if lost
 
