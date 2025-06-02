@@ -35,7 +35,7 @@
                                     <th>Phone</th>
                                     <th>Status</th>
                                     <th>Balance</th>
-                                    <th>TotalSpin</th>
+                                    <!-- <th>TotalSpin</th> -->
                                     <th>TotalBetAMT</th>
                                     <th>TotalPayoutAMT</th>
                                     {{-- <th>CreatedAt</th> --}}
@@ -60,7 +60,7 @@
                                                             class="badge bg-gradient-{{ $user->status == 1 ? 'success' : 'danger' }}">{{ $user->status == 1 ? 'active' : 'inactive' }}</small>
                                                     </td>
                                                     <td class="text-bold">{{ number_format($user->balanceFloat) }}</td>
-                                                    <td>{{ $user->total_spin }}</td>
+                                                    <!-- <td>{{ $user->total_spin }}</td> -->
                                                     <td>{{ number_format($user->total_bet_amount, 2) }}</td>
                                                     <td>{{ number_format($user->total_payout_amount, 2) }}</td>
                                                     
