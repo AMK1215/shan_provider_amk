@@ -39,9 +39,11 @@
                                     <th>TotalBetAMT</th>
                                     <th>TotalPayoutAMT</th>
                                     {{-- <th>CreatedAt</th> --}}
+                                    @can('subagent_access')
                                     <th>Action</th>
                                     <th>Transaction</th>
                                     <th>TransferLog</th>
+                                    @endcan
                                 </thead>
                                 <tbody>
                                     @if (isset($users))
