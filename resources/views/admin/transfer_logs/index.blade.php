@@ -56,7 +56,7 @@
                                     <th>Date</th>
                                     <th>Description</th>
                                     <th>ApprovedBy</th>
-                                    <th>Action</th>
+                                    <!-- <th>Action</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -83,9 +83,9 @@
                                     <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->description }}</td>
                                     <td>{{ $log->approved_by ?? 'N/A' }}</td>
-                                    <td>
+                                    <!-- <td>
                                         <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}" class="btn btn-primary">View</a>
-                                    </td>
+                                    </td> -->
                                 </tr>
                                 @empty
                                 <tr>
