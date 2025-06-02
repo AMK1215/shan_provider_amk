@@ -100,14 +100,14 @@
                     </div>
                     <!-- /.card -->
                     <div class="row mb-4">
-    <div class="col-md-3 col-6">
+    <!-- <div class="col-md-3 col-6">
         <div class="card text-center shadow-sm border-success">
             <div class="card-body">
                 <h6 class="text-success"><i class="fas fa-layer-group"></i> Total Stake</h6>
                 <h3 class="fw-bold">{{ number_format($total_stake) }}</h3>
             </div>
         </div>
-    </div>
+    </div> -->
     <div class="col-md-3 col-6">
         <div class="card text-center shadow-sm border-primary">
             <div class="card-body">
