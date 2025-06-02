@@ -147,7 +147,7 @@ class AgentController extends Controller
                     'to_user_id' => $agent->id,
                     'amount' => $transfer_amount,
                     'type' => 'credit_transfer',
-                    'description' => 'Initial credit transfer from owner to new agent',
+                    'description' => 'Initial Top Up from Owner to new agent',
                     'meta' => [
                         'transaction_type' => TransactionName::CreditTransfer->value,
                         'old_balance' => $agent->balanceFloat,
@@ -257,8 +257,8 @@ class AgentController extends Controller
                 'from_user_id' => $admin->id,
                 'to_user_id' => $agent->id,
                 'amount' => $request->amount,
-                'type' => 'credit_transfer',
-                'description' => $request->note ?? 'Cash in from owner to agent',
+                'type' => 'top_up',
+                'description' => $request->note ?? 'TopUp from owner to ' . $agent->user_name,
                 'meta' => [
                     'transaction_type' => TransactionName::CreditTransfer->value,
                     'old_balance' => $agent->balanceFloat,
@@ -305,8 +305,8 @@ class AgentController extends Controller
                 'from_user_id' => $agent->id,
                 'to_user_id' => $admin->id,
                 'amount' => $request->amount,
-                'type' => 'debit_transfer',
-                'description' => $request->note ?? 'Cash out from agent to owner',
+                'type' => 'withdraw',
+                'description' => $request->note ?? 'Withdraw from ' . $agent->user_name . ' to owner',
                 'meta' => [
                     'transaction_type' => TransactionName::DebitTransfer->value,
                     'old_balance' => $agent->balanceFloat,

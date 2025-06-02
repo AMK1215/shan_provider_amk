@@ -269,7 +269,7 @@
                         
                         @endcan
 
-                        @can('transfer_log')
+                        @can('subagent_access')
 
                         <li class="nav-item">
                                 <a href="{{ route('admin.subacc.tran.logs') }}"

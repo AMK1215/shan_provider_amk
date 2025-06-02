@@ -48,23 +48,32 @@
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
-                            <th>SubAgent</th>
                             <th>From</th>
                             <th>To</th>
                             <th>Amount</th>
                             <th>Type</th>
                             <th>Description</th>
                             <th>Date</th>
+                            <th>ApprovedBy</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($transferLogs as $log)
                             <tr>
                                 <td>{{ $loop->iteration + ($transferLogs->currentPage() - 1) * $transferLogs->perPage() }}</td>
-                                <td>{{ $log->sub_agent_name ?? '-' }}</td>
                                 <td>{{ $log->fromUser->user_name ?? '-' }}</td>
                                 <td>{{ $log->toUser->user_name ?? '-' }}</td>
-                                <td>{{ number_format($log->amount, 2) }}</td>
+                                <td>
+                                @if($log->type === 'deposit')
+                                    <span class="badge badge-success">
+                                        + {{ number_format($log->amount, 2) }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-danger">
+                                    - {{ number_format($log->amount, 2) }}
+                                    </span>
+                                @endif
+                                </td>
                                 <td>
                                     <span class="badge {{ $log->type == 'deposit' ? 'bg-success' : 'bg-danger' }}">
                                         {{ ucfirst($log->type) }}
@@ -72,6 +81,8 @@
                                 </td>
                                 <td>{{ $log->description }}</td>
                                 <td>{{ \Carbon\Carbon::parse($log->created_at)->timezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</td>
+                                <td>{{ $log->sub_agent_name ?? '-' }}</td>
+
                             </tr>
                         @empty
                             <tr>

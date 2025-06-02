@@ -54,8 +54,9 @@
             <th>Amount</th>
             <th>Type</th>
             <th>Description</th>
-            <th>Approved By</th>
             <th>Date</th>
+            <th>Approved By</th>
+            
 
         </tr>
     </thead>
@@ -65,15 +66,26 @@
                 <td>{{ $log->id }}</td>
                 <td>{{ $log->fromUser->user_name ?? '-' }}</td>
                 <td>{{ $log->toUser->user_name ?? '-' }}</td>
-                <td>{{ $log->amount }}</td>
                 <td>
-                <span class="badge {{ $log->type === 'credit_transfer' ? 'badge-success' : 'badge-danger' }}">
+                @if($log->type === 'deposit')
+                    <span class="badge badge-success">
+                        + {{ number_format($log->amount, 2) }}
+                    </span>
+                @else
+                    <span class="badge badge-danger">
+                    - {{ number_format($log->amount, 2) }}
+                    </span>
+                @endif
+                </td>
+                <td>
+                <span class="badge {{ $log->type === 'deposit' ? 'badge-success' : 'badge-danger' }}">
                     {{ ucfirst(str_replace('_', ' ', $log->type)) }}
                 </span>
                 </td>
             <td>{{ $log->description }}</td>
+            <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
                 <td>{{ $log->subAgent->user_name ?? '-' }}</td>
-                <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
+               
             </tr>
         @endforeach
     </tbody>

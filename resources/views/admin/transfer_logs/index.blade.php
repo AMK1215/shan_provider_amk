@@ -48,31 +48,41 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th>Sub Agent Name</th>
-                                    <th>Date</th>
+                                    
                                     <th>From</th>
                                     <th>To</th>
                                     <th>Amount</th>
                                     <th>Type</th>
+                                    <th>Date</th>
                                     <th>Description</th>
+                                    <th>ApprovedBy</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($transferLogs as $log)
                                 <tr>
-                                    <td>{{ $log->subAgent->user_name ?? 'N/A' }}</td>
-                                    <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->fromUser->name ?? 'N/A' }}</td>
                                     <td>{{ $log->toUser->name ?? 'N/A' }}</td>
-                                    <td>{{ number_format($log->amount, 2) }}</td>
                                     <td>
-                                        <span class="badge {{ $log->type === 'credit_transfer' ? 'badge-success' : 'badge-danger' }}">
+                                        @if($log->type === 'top_up')
+                                            <span class="badge badge-success">
+                                               + {{ number_format($log->amount, 2) }}
+                                            </span>
+                                        @else
+                                          <span class="badge badge-danger">
+                                            - {{ number_format($log->amount, 2) }}
+                                          </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $log->type === 'top_up' ? 'badge-success' : 'badge-danger' }}">
                                             {{ ucfirst(str_replace('_', ' ', $log->type)) }}
                                         </span>
                                     </td>
+                                    <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->description }}</td>
-                                    <td>
+                                    <td>{{ $log->approved_by ?? 'N/A' }}</td>
                                         <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}" class="btn btn-primary">View</a>
                                     </td>
                                 </tr>

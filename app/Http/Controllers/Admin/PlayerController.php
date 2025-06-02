@@ -350,8 +350,8 @@ class PlayerController extends Controller
                 'from_user_id' => $agent->id,
                 'to_user_id' => $user->id,
                 'amount' => $inputs['amount'],
-                'type' => 'credit_transfer',
-                'description' => 'Initial credit transfer from agent to new player',
+                'type' => 'top_up',
+                'description' => 'Initial Top Up from agent to new player',
                 'meta' => [
                     'transaction_type' => TransactionName::CreditTransfer->value,
                     'old_balance' => $user->balanceFloat,
