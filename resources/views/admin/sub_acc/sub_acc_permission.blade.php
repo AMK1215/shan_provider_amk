@@ -25,6 +25,7 @@
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input"
+                                                readonly="readonly"
                                                 type="checkbox"
                                                 name="permissions[]"
                                                 value="{{ $permission->id }}"
@@ -43,7 +44,7 @@
                 </div>
             @endforeach
         </div>
-        <button type="submit" class="btn btn-primary mt-3">Update Permissions</button>
+        <button type="submit" class="btn btn-primary mt-3" disabled>Update Permissions</button>
     </form>
 </div>
 
