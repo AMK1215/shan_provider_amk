@@ -55,7 +55,9 @@
                                     <th>Type</th>
                                     <th>Date</th>
                                     <th>Description</th>
-                                    <!-- <th>ApprovedBy</th> -->
+                                    @can('subagent_access')
+                                    <th>ApprovedBy</th>
+                                    @endcan
                                     <!-- <th>Action</th> -->
                                 </tr>
                             </thead>
@@ -82,7 +84,9 @@
                                     </td>
                                     <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->description }}</td>
-                                    <!-- <td>{{ $log->approved_by ?? 'N/A' }}</td> -->
+                                    @can('subagent_access')
+                                    <td>{{ $log->approved_by ?? 'N/A' }}</td>
+                                    @endcan
                                     <!-- <td>
                                         <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}" class="btn btn-primary">View</a>
                                     </td> -->

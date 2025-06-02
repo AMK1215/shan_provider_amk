@@ -499,7 +499,7 @@ class PlayerController extends Controller
                 'from_user_id' => $agent->id,
                 'to_user_id' => $player->id,
                 'amount' => $request->amount,
-                'type' => 'deposit',
+                'type' => 'top_up',
                 'description' => 'Credit transfer from '.$agent->user_name.' to player',
                 'meta' => [
                     'transaction_type' => TransactionName::Deposit->value,

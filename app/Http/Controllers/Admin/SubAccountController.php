@@ -365,8 +365,8 @@ class SubAccountController extends Controller
                 'sub_agent_id' => $subAgent->id,
                 'sub_agent_name' => $subAgent->user_name,
                 'amount' => $request->amount,
-                'type' => 'deposit',
-                'description' => 'Credit transfer from '.$agent->user_name.' to player',
+                'type' => 'top_up',
+                'description' => 'TopUp transfer from '.$agent->user_name.' to player',
                 'meta' => [
                     'transaction_type' => TransactionName::Deposit->value,
                     'note' => $request->note,
