@@ -44,7 +44,7 @@
                                     <th>Player</th>
                                     <th>Stake Count</th>
                                     <th>Total Bet</th>
-                                    <th>Total Win</th>
+                                    <th>TotalPayoutAmount</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

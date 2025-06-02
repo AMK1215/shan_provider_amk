@@ -58,11 +58,17 @@ class ReportController extends Controller
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $query = PlaceBet::query()
+            // ->select(
+            //     'member_account',
+            //     DB::raw('COUNT(*) as stake_count'),
+            //     DB::raw('SUM(COALESCE(bet_amount, amount, 0)) as total_bet'),
+            //     DB::raw('SUM(CASE WHEN prize_amount > 0 THEN prize_amount ELSE 0 END) as total_win')
+            // )
             ->select(
                 'member_account',
-                DB::raw('COUNT(*) as stake_count')->where('action', 'BET'),
-                DB::raw('SUM(COALESCE(bet_amount, amount, 0)) as total_bet')->where('action', 'BET'),
-                DB::raw('SUM(CASE WHEN prize_amount > 0 THEN prize_amount ELSE 0 END) as total_win')->where('wager_status', 'SETTLED')
+                DB::raw("COUNT(CASE WHEN action = 'BET' THEN 1 END) as stake_count"),
+                DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) ELSE 0 END) as total_bet"),
+                DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount ELSE 0 END) as total_win")
             )
             ->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
