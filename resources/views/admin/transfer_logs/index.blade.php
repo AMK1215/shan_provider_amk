@@ -17,8 +17,8 @@
                                     <label for="type">Transfer Type</label>
                                     <select name="type" id="type" class="form-control">
                                         <option value="">All Types</option>
-                                        <option value="credit_transfer" {{ request('type') == 'credit_transfer' ? 'selected' : '' }}>Credit Transfer</option>
-                                        <option value="debit_transfer" {{ request('type') == 'debit_transfer' ? 'selected' : '' }}>Debit Transfer</option>
+                                        <option value="top_up" {{ request('type') == 'top_up' ? 'selected' : '' }}>TopUp</option>
+                                        <option value="withdraw" {{ request('type') == 'withdraw' ? 'selected' : '' }}>Withdraw</option>
                                     </select>
                                 </div>
                             </div>
