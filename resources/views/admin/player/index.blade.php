@@ -63,7 +63,7 @@
                                                     <!-- <td>{{ $user->total_spin }}</td> -->
                                                     <td>{{ number_format($user->total_bet_amount, 2) }}</td>
                                                     <td>{{ number_format($user->total_payout_amount, 2) }}</td>
-                                                    
+                                                    @can('subagent_access')
                                                     <td>
                                                         @if ($user->status == 1)
                                                             <a onclick="event.preventDefault(); document.getElementById('banUser-{{ $user->id }}').submit();"
@@ -133,6 +133,7 @@
                                                                 <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">TransferLog</a><br>
                                                             @endforeach
                                                         </td>
+                                                    @endcan
                                                 </tr>
                                             @endforeach
                                         @else
