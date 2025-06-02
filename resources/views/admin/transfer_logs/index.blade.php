@@ -45,7 +45,7 @@
 
                     <!-- Transfer Logs Table -->
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                    <table id="mytable" class="table table-bordered table-hover">
                             <thead>
                                 <tr>
                                     
