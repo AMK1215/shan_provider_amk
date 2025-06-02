@@ -79,9 +79,9 @@ class AgentController extends Controller
      */
     public function create(): View
     {
-        if (! Gate::allows('agent_create')) {
-            abort(403);
-        }
+        // if (! Gate::allows('agent_create')) {
+        //     abort(403);
+        // }
 
         $agent_name = $this->generateRandomString();
         $paymentTypes = PaymentType::all();
@@ -97,9 +97,9 @@ class AgentController extends Controller
      */
     public function store(AgentRequest $request): RedirectResponse
     {
-        if (! Gate::allows('agent_create')) {
-            abort(403);
-        }
+        // if (! Gate::allows('agent_create')) {
+        //     abort(403);
+        // }
 
         $owner = Auth::user();
         $inputs = $request->validated();
