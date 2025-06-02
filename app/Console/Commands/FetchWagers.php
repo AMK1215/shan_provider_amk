@@ -17,16 +17,16 @@ class FetchWagers extends Command
     {
         Log::debug('Starting FetchWagers command...');
 
-        $operatorCode = config('seamless.agent_code');
-        $secretKey = config('seamless.secret_key');
-        $apiUrl = config('seamless.api_url');
+        $operator_code = config('seamless_key.agent_code');
+        $secret_key = config('seamless_key.secret_key');
+        $api_url = config('seamless_key.api_url');
 
         Log::debug('API Config', [
-            'operator_code' => $operatorCode,
-            'api_url' => $apiUrl,
+            'operator_code' => $operator_code,
+            'api_url' => $api_url,
         ]);
 
-        if (empty($operatorCode) || empty($secretKey) || empty($apiUrl)) {
+        if (empty($operator_code) || empty($secret_key) || empty($api_url)) {
             Log::error('Seamless API configuration is missing');
             return;
         }
@@ -37,29 +37,26 @@ class FetchWagers extends Command
         $startTimestamp = $start->timestamp * 1000;
         $endTimestamp = $end->timestamp * 1000;
        // $requestTime = Carbon::now()->timestamp * 1000;
-       $requestTime = now()->timestamp;
-
-
-        $signString = $requestTime . $secretKey . 'getwagers' . $operatorCode;
-        $sign = md5($signString);
+       $request_time = now()->timestamp;
+        $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
 
         Log::debug('Request Parameters', [
             'start' => $startTimestamp,
             'end' => $endTimestamp,
-            'request_time' => $requestTime,
+            'request_time' => $request_time,
             'sign' => $sign
         ]);
 
-        $url = "{$apiUrl}/api/operators/wagers";
+        $url = "{$api_url}/api/operators/wagers";
         Log::debug("Sending GET request to: {$url}");
 
         $response = Http::get($url, [
-            'operator_code' => $operatorCode,
+            'operator_code' => $operator_code,
             'start' => $startTimestamp,
             'end' => $endTimestamp,
-            'request_time' => $requestTime,
+            'request_time' => $request_time,
             'sign' => $sign,
-            'size' => 1000
+            'size' => 100
         ]);
 
         Log::debug('API Response Status', [
