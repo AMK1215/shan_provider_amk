@@ -337,6 +337,12 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'title' => 'player_view',
+                'group' => 'subagent',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
 
         ];
 
