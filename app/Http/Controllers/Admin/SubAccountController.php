@@ -495,4 +495,94 @@ class SubAccountController extends Controller
 
         return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
     }
+
+
+    public function PlayerCreate()
+    {
+        abort_if(
+            Gate::denies('subagent_access'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+        $player_name = $this->generateRandomString();
+        $agent = $this->getAgent() ?? Auth::user();
+        // $owner_id = User::where('agent_id', $agent->agent_id)->first();
+        // Get the related owner of the agent
+        $owner = User::where('id', $agent->agent_id)->first(); // Assuming `agent_id` refers to the owner's ID
+
+        // return $owner;
+
+        return view('admin.player.create', compact('player_name', 'owner'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function PlayerStore(PlayerRequest $request)
+    {
+        Gate::allows('subagent_access');
+
+        //$agent = $this->getAgent() ?? Auth::user();
+        $subAgent = Auth::user();      // The subagent making the request
+        $agent = $subAgent->agent;     // The parent agent (who owns the balance)
+
+        $siteLink = $agent->parent->site_link ?? 'null';
+
+        $inputs = $request->validated();
+
+        try {
+            DB::beginTransaction();
+            if (isset($inputs['amount']) && $inputs['amount'] > $agent->balanceFloat) {
+                return redirect()->back()->with('error', 'Balance Insufficient');
+            }
+
+            $user = User::create([
+                'name' => $inputs['name'],
+                'user_name' => $inputs['user_name'],
+                'password' => Hash::make($inputs['password']),
+                'phone' => $inputs['phone'],
+                'agent_id' => $agent->id,
+                'type' => UserType::Player,
+            ]);
+
+            $user->roles()->sync(self::PLAYER_ROLE);
+
+            if (isset($inputs['amount'])) {
+                app(WalletService::class)->transfer($agent, $user, $inputs['amount'],
+                    TransactionName::CreditTransfer, [
+                        'old_balance' => $user->balanceFloat,
+                        'new_balance' => $user->balanceFloat + $request->amount,
+                    ]);
+            }
+
+            // Log the transfer
+            TransferLog::create([
+                'from_user_id' => $agent->id,
+                'to_user_id' => $user->id,
+                'amount' => $inputs['amount'],
+                'type' => 'top_up',
+                'description' => 'Initial Top Up from agent to new player',
+                'meta' => [
+                    'transaction_type' => TransactionName::CreditTransfer->value,
+                    'old_balance' => $user->balanceFloat,
+                    'new_balance' => $user->balanceFloat + $inputs['amount'],
+                ],
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('successMessage', 'Player created successfully')
+                ->with('amount', $request->amount)
+                ->with('password', $request->password)
+                ->with('site_link', $siteLink)
+                ->with('user_name', $user->user_name);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating user: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'An error occurred while creating the player.');
+        }
+    }
+
 }

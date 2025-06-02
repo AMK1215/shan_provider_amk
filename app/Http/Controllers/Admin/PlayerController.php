@@ -293,7 +293,7 @@ class PlayerController extends Controller
     public function create()
     {
         abort_if(
-            Gate::denies('player_create'),
+            Gate::denies('subagent_access'),
             Response::HTTP_FORBIDDEN,
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
@@ -313,10 +313,10 @@ class PlayerController extends Controller
      */
     public function store(PlayerRequest $request)
     {
-        Gate::allows('player_store');
+        Gate::allows('subagent_access');
 
         $agent = $this->getAgent() ?? Auth::user();
-        $siteLink = $agent->parent->parent->parent->site_link ?? 'null';
+        $siteLink = $agent->parent->site_link ?? 'null';
 
         $inputs = $request->validated();
 

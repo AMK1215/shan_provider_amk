@@ -22,7 +22,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="d-flex justify-content-end mb-3">
-                        <a href="{{ route('admin.player.create') }}" class="btn btn-success " style="width: 100px;"><i
+                        <a href="{{ route('admin.subacc.player.create') }}" class="btn btn-success " style="width: 100px;"><i
                                 class="fas fa-plus text-white  mr-2"></i>Create</a>
                     </div>
                     <div class="card">
