@@ -290,10 +290,10 @@ class SubAccountController extends Controller
             $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        $bets = $query->orderBy('created_at', 'desc')->where('action', 'BET')->get();
+        $bets = $query->orderBy('created_at', 'desc')->get();
 
         // Totals
-        $total_stake = $bets->count();
+        $total_stake = $bets->where('action', 'BET')->count();
         $total_bet = $bets->where('action', 'BET')->sum('bet_amount');
         //$total_bet = $bets->sum('bet_amount');
         $total_win = $bets->where('wager_status', 'SETTLED')->sum('prize_amount');
