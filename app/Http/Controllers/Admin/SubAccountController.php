@@ -504,15 +504,17 @@ class SubAccountController extends Controller
             Response::HTTP_FORBIDDEN,
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
-        $player_name = $this->generateRandomString();
-        $agent = $this->getAgent() ?? Auth::user();
+        $player_name = $this->PlayergenerateRandomString();
+        //$agent = $this->getAgent() ?? Auth::user();
+        $subAgent = Auth::user();      // The subagent making the request
+        $agent = $subAgent->agent; 
         // $owner_id = User::where('agent_id', $agent->agent_id)->first();
         // Get the related owner of the agent
         $owner = User::where('id', $agent->agent_id)->first(); // Assuming `agent_id` refers to the owner's ID
 
         // return $owner;
 
-        return view('admin.player.create', compact('player_name', 'owner'));
+        return view('admin.sub_acc.player_create', compact('player_name', 'owner'));
     }
 
     /**
@@ -583,6 +585,13 @@ class SubAccountController extends Controller
 
             return redirect()->back()->with('error', 'An error occurred while creating the player.');
         }
+    }
+
+    private function PlayergenerateRandomString()
+    {
+        $randomNumber = mt_rand(10000000, 99999999);
+
+        return 'P'.$randomNumber;
     }
 
 }
