@@ -76,8 +76,8 @@ class UsersTableSeeder extends Seeder
                         $subAgent->id,
                         'PLAYER'.Str::random(6)
                     );
-                    // Random initial balance between 4K to 6K
-                    $initialBalance = rand(2, 3) * 100_00;
+                    // Fixed initial balance of 10,000
+                    $initialBalance = 10000;
                     $walletService->transfer($subAgent, $player, $initialBalance, TransactionName::CreditTransfer);
                 }
             }
