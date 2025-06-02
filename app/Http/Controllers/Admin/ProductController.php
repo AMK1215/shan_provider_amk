@@ -143,7 +143,7 @@ class ProductController extends Controller
                   ;
             });
         }
-        $products = $query->orderByDesc('id')->paginate(20);
+        $products = $query->orderBy('id', 'asc')->paginate(20);
         return view('admin.product.game_list', compact('products'));
     }
 

@@ -32,17 +32,11 @@ class SubAccountController extends Controller
 
     // protected const SUB_AGENT_PROFILE = 'subagent_permission';
     protected const SUB_AGENT_PERMISSIONS = [
-        'subagent_permission',
-        'subagent_permission_edit',
-        'subagent_player_access',
-        'subagent_player_index',
-        'subagent_player_create',
-        'subagent_player_edit',
-        'subagent_player_delete',
-        'subagent_deposit',
-        'subagent_withdraw',
-        'subagent_transfer',
-        'subagent_report',
+        'subagent_access',
+        'player_view',
+        'player_create',
+        'withdraw',
+        'deposit'
     ];
 
     public function index()
@@ -71,50 +65,6 @@ class SubAccountController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         $agent = User::create([
-    //             'user_name' => $request->user_name,
-    //             'name' => $request->name,
-    //             'phone' => $request->phone,
-    //             'password' => Hash::make($request->password),
-    //             'type' => UserType::SubAgent,
-    //             'agent_id' => Auth::id(),
-    //         ]);
-    //         $agent->roles()->sync(self::SUB_AGENT_ROlE);
-    //         $agent->permissions()->sync(self::SUB_AGENT_PROFILE);
-    //     } catch (Exception $e) {
-    //     }
-
-    //     return redirect()->route('admin.subacc.index');
-    // }
-
-    //     public function store(Request $request)
-    // {
-    //     try {
-    //         $agent = User::create([
-    //             'user_name' => $request->user_name,
-    //             'name' => $request->name,
-    //             'phone' => $request->phone,
-    //             'password' => Hash::make($request->password),
-    //             'type' => UserType::SubAgent,
-    //             'agent_id' => Auth::id(),
-    //         ]);
-    //         $agent->roles()->sync(self::SUB_AGENT_ROLE);
-
-    //         // Assign the subagent_permission by ID
-    //         $permissionId = \App\Models\Admin\Permission::where('title', self::SUB_AGENT_PROFILE)->value('id');
-    //         if ($permissionId) {
-    //             $agent->permissions()->sync([$permissionId]);
-    //         }
-    //     } catch (Exception $e) {
-    //         Log::error('Error creating sub-agent: ' . $e->getMessage());
-    //         return redirect()->back()->with('error', 'Failed to create sub-agent. Please try again.');
-    //     }
-
-    //     return redirect()->route('admin.subacc.index');
-    // }
 
     public function store(Request $request)
     {
@@ -224,20 +174,7 @@ class SubAccountController extends Controller
         return 'SUBAG'.$randomNumber;
     }
 
-    // public function permission($id)
-    // {
-    //     $subAgent = User::findOrFail($id);
-
-    //     // Ensure the current user is the parent agent
-    //     if ($subAgent->agent_id !== Auth::id()) {
-    //         abort(403, 'You do not have permission to manage this sub-agent.');
-    //     }
-
-    //     $permissions = Permission::all();
-    //     $subAgentPermissions = $subAgent->permissions->pluck('id')->toArray();
-
-    //     return view('admin.sub_acc.sub_acc_permission', compact('subAgent', 'permissions', 'subAgentPermissions'));
-    // }
+    
 
     public function permission($id)
     {
@@ -278,63 +215,7 @@ class SubAccountController extends Controller
         return view('admin.sub_acc.sub_acc_profile', compact('subAgent'));
     }
 
-    //     public function agentPlayers()
-    // {
-    //     $subAgent = auth()->user();
-
-    //     // Ensure the user is a subagent
-    //     if (!$subAgent->hasRole('SubAgent')) {
-    //         abort(403, 'Only subagents can access this page.');
-    //     }
-
-    //     // Get the parent agent
-    //     $agent = $subAgent->agent;
-
-    //     // Get all players under the parent agent
-    //     $players = \App\Models\User::whereHas('roles', function ($q) {
-    //             $q->where('title', 'Player');
-    //         })
-    //         ->where('agent_id', $agent->id)
-    //         ->get();
-    //         Log::info('Agent ID: ' . $agent->id);
-    //         Log::info('Players found: ' . $players->count());
-
-    //     return view('admin.sub_acc.agent_players', compact('players', 'agent'));
-    // }
-    // public function agentPlayers(Request $request)
-    // {
-    //     $subAgent = auth()->user();
-
-    //     if (!$subAgent->hasRole('SubAgent')) {
-    //         abort(403, 'Only subagents can access this page.');
-    //     }
-
-    //     $agent = $subAgent->agent;
-
-    //     $query = \App\Models\User::whereHas('roles', function ($q) {
-    //             $q->where('title', 'Player');
-    //         })
-    //         ->where('agent_id', $agent->id);
-
-    //     // Search by name or username
-    //     if ($request->filled('search')) {
-    //         $search = $request->input('search');
-    //         $query->where(function($q) use ($search) {
-    //             $q->where('name', 'ILIKE', "%$search%")
-    //               ->orWhere('user_name', 'ILIKE', "%$search%")
-    //               ->orWhere('phone', 'ILIKE', "%$search%");
-    //         });
-    //     }
-
-    //     // Filter by status
-    //     if ($request->filled('status')) {
-    //         $query->where('status', $request->input('status'));
-    //     }
-
-    //     $players = $query->orderBy('id', 'desc')->paginate(10)->appends($request->all());
-
-    //     return view('admin.sub_acc.agent_players', compact('players', 'agent'));
-    // }
+    
 
     public function agentPlayers(Request $request)
     {
@@ -389,8 +270,6 @@ class SubAccountController extends Controller
 
         return view('admin.sub_acc.agent_players', compact('players', 'agent'));
     }
-
-    
 
     public function playerReport(Request $request, $id)
     {

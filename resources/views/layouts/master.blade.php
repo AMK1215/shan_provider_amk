@@ -237,7 +237,7 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('subagent_permission')
+                        @can('subagent_access')
                             <li class="nav-item">
                                 <a href="{{ route('admin.subacc.profile', auth()->user()->id) }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.profile' ? 'active' : '' }}">
