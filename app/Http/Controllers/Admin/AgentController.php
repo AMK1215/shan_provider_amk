@@ -146,7 +146,7 @@ class AgentController extends Controller
                     'from_user_id' => $owner->id,
                     'to_user_id' => $agent->id,
                     'amount' => $transfer_amount,
-                    'type' => 'credit_transfer',
+                    'type' => 'top_up',
                     'description' => 'Initial Top Up from Owner to new agent',
                     'meta' => [
                         'transaction_type' => TransactionName::CreditTransfer->value,
