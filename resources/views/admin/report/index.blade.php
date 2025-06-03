@@ -18,8 +18,6 @@
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col-12">
-        <div id="digitalClock" class="digital-clock bg-dark text-white rounded px-3 py-2 d-inline-block shadow-sm" style="font-size:1.5rem; letter-spacing:2px;"></div>
-
             <h4 class="mb-3">Player Report Summary</h4>
             
     </div>
@@ -50,7 +48,7 @@
         <div class="col-12 col-lg-11 col-xl-10">
             <div class="card shadow rounded">
                 <div class="card-header bg-light border-bottom-0">
-
+                    <h5 class="mb-0">Player Summary Table</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
