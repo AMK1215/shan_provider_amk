@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@push('style')
+@section('style')
 <style>
 .digital-clock {
     font-family: 'Courier New', Courier, monospace;
@@ -11,7 +11,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 </style>
-@endpush
+@endsection
 
 
 @section('content')
@@ -112,7 +112,7 @@
 </div>
 @endsection 
 
-@push('script')
+@section('script')
 <script>
 function updateClock() {
     const now = new Date();
@@ -124,4 +124,4 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 </script>
-@endpush
+@endsection
