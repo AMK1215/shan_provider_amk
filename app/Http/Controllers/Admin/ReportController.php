@@ -96,7 +96,7 @@ class ReportController extends Controller
             $query->where('member_account', $request->member_account);
         }
 
-        return $query->groupBy('place_bets.member_account', 'users.name')->get();
+        return $query->groupBy('place_bets.member_account', 'users.user_name')->get();
     }
 
     private function getPlayerDetails($member_account, $request)
