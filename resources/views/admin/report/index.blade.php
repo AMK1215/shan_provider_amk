@@ -1,10 +1,29 @@
 @extends('layouts.master')
 
+@push('style')
+<style>
+.digital-clock {
+    font-family: 'Courier New', Courier, monospace;
+    min-width: 160px;
+    text-align: center;
+    background: #222;
+    border: 2px solid #007bff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+</style>
+@endpush
+
+
 @section('content')
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col-12">
             <h4 class="mb-3">Player Report Summary</h4>
+            <div class="row mb-3">
+    <div class="col-12">
+        <div id="digitalClock" class="digital-clock bg-dark text-white rounded px-3 py-2 d-inline-block shadow-sm" style="font-size:1.5rem; letter-spacing:2px;"></div>
+    </div>
+</div>
         </div>
     </div>
     <div class="row mb-3">
@@ -92,3 +111,17 @@
     </div>
 </div>
 @endsection 
+
+@push('script')
+<script>
+function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('digitalClock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+@endpush
