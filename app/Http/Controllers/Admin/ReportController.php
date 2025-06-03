@@ -58,19 +58,15 @@ class ReportController extends Controller
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $query = PlaceBet::query()
-            // ->select(
-            //     'member_account',
-            //     DB::raw('COUNT(*) as stake_count'),
-            //     DB::raw('SUM(COALESCE(bet_amount, amount, 0)) as total_bet'),
-            //     DB::raw('SUM(CASE WHEN prize_amount > 0 THEN prize_amount ELSE 0 END) as total_win')
-            // )
             ->select(
-                'member_account',
+                'place_bets.member_account',
+                'users.user_name as agent_name',
                 DB::raw("COUNT(CASE WHEN action = 'BET' THEN 1 END) as stake_count"),
                 DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) ELSE 0 END) as total_bet"),
                 DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount ELSE 0 END) as total_win")
             )
-            ->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+            ->leftJoin('users', 'place_bets.player_agent_id', '=', 'users.id')
+            ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
         // Apply agent/user hierarchy filtering based on role
         if ($agent->type === UserType::Owner->value) {
@@ -100,7 +96,7 @@ class ReportController extends Controller
             $query->where('member_account', $request->member_account);
         }
 
-        return $query->groupBy('member_account')->get();
+        return $query->groupBy('place_bets.member_account', 'users.name')->get();
     }
 
     private function getPlayerDetails($member_account, $request)

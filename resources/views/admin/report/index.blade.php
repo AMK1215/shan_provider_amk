@@ -42,10 +42,11 @@
 
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Player</th>
-                                    <th>Stake Count</th>
+                                    <th>PlayerID</th>
+                                    <th>AgentID</th>
                                     <th>Total Bet</th>
                                     <th>TotalPayoutAmount</th>
+                                    <th>Win/Lose</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -53,9 +54,11 @@
                                 @forelse($report as $row)
                                     <tr>
                                         <td>{{ $row->member_account }}</td>
-                                        <td><span class="badge badge-info">{{ $row->stake_count }}</span></td>
+                                        <td>{{ $row->agent_name }}</td>
+                                        <!-- <td><span class="badge badge-info">{{ $row->stake_count }}</span></td> -->
                                         <td class="text-right text-success">{{ number_format($row->total_bet, 2) }}</td>
                                         <td class="text-right text-info">{{ number_format($row->total_win, 2) }}</td>
+                                        <td class="text-right text-success">{{ number_format($row->total_win - $row->total_bet, 2) }}</td>
                                         <td>
                                             <a href="{{ route('admin.report.detail', ['member_account' => $row->member_account]) }}" class="btn btn-sm btn-outline-primary">View Details</a>
                                         </td>
@@ -78,9 +81,10 @@
                 <div class="card-body text-center">
                     <h5 class="mb-3">Totals</h5>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Total Stake Count: <strong>{{ $total['totalstake'] }}</strong></li>
+                        <!-- <li class="list-group-item">Total Stake Count: <strong>{{ $total['totalstake'] }}</strong></li> -->
                         <li class="list-group-item">Total Bet Amount: <strong class="text-success">{{ number_format($total['totalBetAmt'], 2) }}</strong></li>
                         <li class="list-group-item">Total Payout Amount: <strong class="text-info">{{ number_format($total['totalWinAmt'], 2) }}</strong></li>
+                        <li class="list-group-item">Total Win/Lose: <strong class="text-success">{{ number_format($total['totalWinAmt'] - $total['totalBetAmt'], 2) }}</strong></li>
                     </ul>
                 </div>
             </div>
