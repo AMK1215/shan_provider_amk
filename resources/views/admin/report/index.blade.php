@@ -19,7 +19,9 @@
     <div class="row mb-3">
         <div class="col-12">
             <h4 class="mb-3">Player Report Summary</h4>
-            
+            <div class="row mb-3">
+                <div id="digitalClock" class="digital-clock bg-dark text-white rounded px-3 py-2 d-inline-block shadow-sm" style="font-size:1.5rem; letter-spacing:2px;"></div>
+            </div>
     </div>
     <div class="row mb-3">
         <div class="col-12">
