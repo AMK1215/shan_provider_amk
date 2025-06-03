@@ -32,6 +32,15 @@ class LoginController extends Controller
             return back()->with('error', 'The credentials does not match our records.');
         }
 
+        $user = Auth::user();
+        if ($user->is_changed_password == 0) {
+            return redirect()->route('change-password', $user->id);
+        }
+
+        if ($user->status == 0) {
+            return redirect()->back()->with('error', 'Your account is not activated!');
+        }
+
         return redirect()->route('home');
     }
 
