@@ -257,7 +257,7 @@
                                     </p>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.subacc.tran.logs') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.tran.logs' ? 'active' : '' }}">
                                     <i class="fas fa-exchange-alt"></i>
@@ -265,7 +265,7 @@
                                         Transfer Log
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                         
                         @endcan
 
