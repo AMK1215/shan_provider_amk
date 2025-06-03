@@ -439,7 +439,7 @@ class SubAccountController extends Controller
                 'sub_agent_name' => $subAgent->user_name,
                 'amount' => $request->amount,
                 'type' => 'withdraw',
-                'description' => 'Credit transfer from player to '.$agent->user_name,
+                'description' => 'Transfer from player to '.$agent->user_name,
                 'meta' => [
                     'transaction_type' => TransactionName::Withdraw->value,
                     'note' => $request->note,
