@@ -319,3 +319,15 @@ public function index()
     }
                                                     <!-- <td class="{{$user->win_lose >= 0 ? 'text-success text-bold' : 'text-danger text-bold'}}">{{ number_format($user->win_lose)}}</td> -->
     ---------------- 
+
+     /* Default styles (desktop view) */
+        /* .login-page {
+            background-image: url(assets/img/logo/default-logo.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 100vh;
+             Full viewport height 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        } */

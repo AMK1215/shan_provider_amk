@@ -9,17 +9,7 @@
     <link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/adminlte.min.css') }}">
     <style>
-        /* Default styles (desktop view) */
-        /* .login-page {
-            background-image: url(assets/img/logo/default-logo.png);
-            background-repeat: no-repeat;
-            background-size: cover;
-            height: 100vh;
-             Full viewport height 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        } */
+       
 
         /* Mobile view adjustments */
         @media (max-width: 768px) {
