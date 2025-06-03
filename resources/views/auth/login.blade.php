@@ -31,10 +31,31 @@
             }
 
         }
+
+        body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#rainbow-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.login-box {
+    position: relative;
+    z-index: 2;
+}
+
     </style>
 </head>
 
 <body class="hold-transition login-page">
+<canvas id="rainbow-bg"></canvas>
     <div class="login-box">
         <div class="login-logo">
             <h2 class="text-white">Login</h2>
@@ -167,6 +188,66 @@
 </script>
 
     <!-- chat box -->
+
+    <script>
+        // rainbow-waves.js
+const canvas = document.getElementById('rainbow-bg');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const colors = [
+    '#FF3CAC', // pink
+    '#784BA0', // purple
+    '#2B86C5', // blue
+    '#2FFFAF', // teal
+    '#FFF720', // yellow
+    '#FF3CAC'  // repeat for loop
+];
+
+let t = 0;
+
+function drawWaves() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let amplitude = 60;
+    let waveCount = 5;
+    let heightUnit = canvas.height / (waveCount + 1);
+
+    for (let i = 0; i < waveCount; i++) {
+        ctx.beginPath();
+        for (let x = 0; x <= canvas.width; x += 2) {
+            let angle = (x / 220) + t * (0.7 + 0.2 * i);
+            let y = Math.sin(angle + i) * amplitude + (i + 1) * heightUnit;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.closePath();
+
+        // Create gradient for each wave
+        let grad = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        grad.addColorStop(0, colors[i]);
+        grad.addColorStop(1, colors[i + 1]);
+        ctx.fillStyle = grad;
+        ctx.globalAlpha = 0.28 + 0.15 * Math.sin(t + i);
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+    t += 0.012;
+    requestAnimationFrame(drawWaves);
+}
+
+drawWaves();
+
+    </script>
 
 </body>
 
