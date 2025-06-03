@@ -133,9 +133,8 @@
                                                         </a>
                                                     </td>
                                                     <td>
-                                                            @foreach ($user->logs as $log)
-                                                                <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}">TransferLog</a><br>
-                                                            @endforeach
+                                                           
+                                                                <a href="{{ route('admin.transfer-logs.index) }}">TransferLog</a><br>
                                                         </td>
                                                     @endcan
                                                 </tr>
