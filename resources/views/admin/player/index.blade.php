@@ -133,9 +133,8 @@
                                                         </a>
                                                     </td>
                                                     <td>
-                                                           
-                                                                <a href="{{ route('admin.transfer-logs.index') }}">TransferLog</a><br>
-                                                        </td>
+                                                        <a href="{{ route('admin.transfer-logs.index') }}">TransferLog</a><br>
+                                                    </td>
                                                     @endcan
                                                 </tr>
                                             @endforeach
