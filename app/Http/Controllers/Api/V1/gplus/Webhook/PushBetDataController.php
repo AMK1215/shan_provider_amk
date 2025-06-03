@@ -16,7 +16,7 @@ class PushBetDataController extends Controller
 {
     public function pushBetData(Request $request)
     {
-        //Log::info('Push Bet Data API Request', ['request' => $request->all()]);
+        // Log::info('Push Bet Data API Request', ['request' => $request->all()]);
 
         try {
             $request->validate([
@@ -102,7 +102,7 @@ class PushBetDataController extends Controller
                     'game_code' => $tx['game_code'] ?? $placeBet->game_code,
                     // No need to update operator_code here as it's typically set on creation
                 ]);
-                //Log::info('Updated place_bets record via PushBetData', ['transaction_id' => $transactionId]);
+                // Log::info('Updated place_bets record via PushBetData', ['transaction_id' => $transactionId]);
             } else {
                 // Insert new record
                 PushBet::create([
@@ -128,7 +128,7 @@ class PushBetDataController extends Controller
                     'game_code' => $tx['game_code'] ?? '',
                     'sign' => $request->sign, // Also store the sign
                 ]);
-                //Log::info('Inserted new place_bets record via PushBetData', ['transaction_id' => $transactionId]);
+                // Log::info('Inserted new place_bets record via PushBetData', ['transaction_id' => $transactionId]);
             }
         }
 

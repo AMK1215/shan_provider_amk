@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\GameType;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Models\GameType;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -87,42 +87,41 @@ class ProductController extends Controller
     // }
 
     public function update(Request $request, $gameTypeId, $productId)
-{
-    // Validate the file (optional, but good practice)
-    $request->validate([
-        'image' => 'nullable|image|max:2048',
-    ]);
+    {
+        // Validate the file (optional, but good practice)
+        $request->validate([
+            'image' => 'nullable|image|max:2048',
+        ]);
 
-    $data = [];
+        $data = [];
 
-    if ($request->hasFile('image')) {
-        $image = $request->file('image');
-        $ext = $image->getClientOriginalExtension();
-        $filename = uniqid('game_type').'.'.$ext;
-        $image->move(public_path('assets/img/game_logo/'), $filename);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $ext = $image->getClientOriginalExtension();
+            $filename = uniqid('game_type').'.'.$ext;
+            $image->move(public_path('assets/img/game_logo/'), $filename);
 
-        // Optionally: delete old image (if you want)
-        $oldImage = DB::table('game_type_product')
-            ->where('game_type_id', $gameTypeId)
-            ->where('product_id', $productId)
-            ->value('image');
-        if ($oldImage && file_exists(public_path('assets/img/game_logo/'.$oldImage))) {
-            @unlink(public_path('assets/img/game_logo/'.$oldImage));
+            // Optionally: delete old image (if you want)
+            $oldImage = DB::table('game_type_product')
+                ->where('game_type_id', $gameTypeId)
+                ->where('product_id', $productId)
+                ->value('image');
+            if ($oldImage && file_exists(public_path('assets/img/game_logo/'.$oldImage))) {
+                @unlink(public_path('assets/img/game_logo/'.$oldImage));
+            }
+
+            $data['image'] = $filename;
         }
 
-        $data['image'] = $filename;
+        if (! empty($data)) {
+            DB::table('game_type_product')
+                ->where('game_type_id', $gameTypeId)
+                ->where('product_id', $productId)
+                ->update($data);
+        }
+
+        return redirect()->route('admin.gametypes.index')->with('success', 'Image updated!');
     }
-
-    if (!empty($data)) {
-        DB::table('game_type_product')
-            ->where('game_type_id', $gameTypeId)
-            ->where('product_id', $productId)
-            ->update($data);
-    }
-
-    return redirect()->route('admin.gametypes.index')->with('success', 'Image updated!');
-}
-
 
     public function GameListFetch(Request $request)
     {
@@ -130,20 +129,20 @@ class ProductController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('provider', 'like', "%$search%")
-                  ->orWhere('product_name', 'like', "%$search%")
-                  ->orWhere('product_code', 'like', "%$search%")
-                  ->orWhere('status', 'like', "%$search%")
-                  ->orWhere('currency', 'like', "%$search%")
-                  ->orWhere('product_title', 'like', "%$search%")
-                  ->orWhere('game_type', 'like', "%$search%")
-                  ->orWhere('short_name', 'like', "%$search%")
-                  ->orWhere('provider_id', 'like', "%$search%")
-                  ->orWhere('provider_product_id', 'like', "%$search%")
-                  ->orWhere('order', 'like', "%$search%")
-                  ;
+                    ->orWhere('product_name', 'like', "%$search%")
+                    ->orWhere('product_code', 'like', "%$search%")
+                    ->orWhere('status', 'like', "%$search%")
+                    ->orWhere('currency', 'like', "%$search%")
+                    ->orWhere('product_title', 'like', "%$search%")
+                    ->orWhere('game_type', 'like', "%$search%")
+                    ->orWhere('short_name', 'like', "%$search%")
+                    ->orWhere('provider_id', 'like', "%$search%")
+                    ->orWhere('provider_product_id', 'like', "%$search%")
+                    ->orWhere('order', 'like', "%$search%");
             });
         }
         $products = $query->orderBy('id', 'asc')->paginate(20);
+
         return view('admin.product.game_list', compact('products'));
     }
 
@@ -278,4 +277,4 @@ class ProductController extends Controller
     //     $product->delete();
     //     return redirect()->route('admin.product.index')->with('success', 'Product deleted successfully!');
     // }
-} 
+}

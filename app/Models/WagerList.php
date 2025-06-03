@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class WagerList extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'member_account',
         'round_id',
@@ -20,7 +21,7 @@ class WagerList extends Model
         'bet_amount',
         'prize_amount',
         'status',
-        'settled_at'
+        'settled_at',
     ];
 
     protected $casts = [

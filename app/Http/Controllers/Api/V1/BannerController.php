@@ -78,7 +78,7 @@ class BannerController extends Controller
         // Determine the admin whose banners to fetch
         if ($user->parent) {
             // If the user has a parent (Agent or Player), go up the hierarchy
-            //$admin = $user->parent->parent ?? $user->parent;
+            // $admin = $user->parent->parent ?? $user->parent;
             $admin = $user->parent;
 
         } else {

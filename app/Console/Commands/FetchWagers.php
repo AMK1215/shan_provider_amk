@@ -2,15 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Models\WagerList;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\WagerList;
-use Carbon\Carbon;
 
 class FetchWagers extends Command
 {
     protected $signature = 'wagers:fetch';
+
     protected $description = 'Fetch wagers from Seamless API and store them in the database';
 
     public function handle()
@@ -28,6 +29,7 @@ class FetchWagers extends Command
 
         if (empty($operator_code) || empty($secret_key) || empty($api_url)) {
             Log::error('Seamless API configuration is missing');
+
             return;
         }
 
@@ -36,15 +38,15 @@ class FetchWagers extends Command
 
         $startTimestamp = $start->timestamp * 1000;
         $endTimestamp = $end->timestamp * 1000;
-       // $requestTime = Carbon::now()->timestamp * 1000;
-       $request_time = now()->timestamp;
+        // $requestTime = Carbon::now()->timestamp * 1000;
+        $request_time = now()->timestamp;
         $sign = md5($request_time.$secret_key.'getwagers'.$operator_code);
 
         Log::debug('Request Parameters', [
             'start' => $startTimestamp,
             'end' => $endTimestamp,
             'request_time' => $request_time,
-            'sign' => $sign
+            'sign' => $sign,
         ]);
 
         $url = "{$api_url}/api/operators/wagers";
@@ -56,29 +58,29 @@ class FetchWagers extends Command
             'end' => $endTimestamp,
             'request_time' => $request_time,
             'sign' => $sign,
-            'size' => 100
+            'size' => 100,
         ]);
 
         Log::debug('API Response Status', [
             'status' => $response->status(),
-            'successful' => $response->successful()
+            'successful' => $response->successful(),
         ]);
 
         if ($response->successful()) {
             $data = $response->json();
             Log::debug('API Response Data', [
-                'data' => $data
+                'data' => $data,
             ]);
 
             if (isset($data['wagers'])) {
                 Log::info('Processing wagers...', [
-                    'count' => count($data['wagers'])
+                    'count' => count($data['wagers']),
                 ]);
 
                 foreach ($data['wagers'] as $wager) {
                     Log::debug('Processing wager', [
                         'wager_id' => $wager['id'] ?? 'N/A',
-                        'member_account' => $wager['member_account'] ?? 'N/A'
+                        'member_account' => $wager['member_account'] ?? 'N/A',
                     ]);
 
                     WagerList::updateOrCreate(

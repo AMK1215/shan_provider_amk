@@ -22,10 +22,10 @@ use App\Models\Admin\TopTenWithdraw;
 use App\Models\Contact;
 use App\Models\GameList;
 use App\Models\GameType;
+use App\Models\PaymentType;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\PaymentType;
 
 class GSCPlusProviderController extends Controller
 {

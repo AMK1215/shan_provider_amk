@@ -31,7 +31,7 @@ class WithdrawController extends Controller
 
     public function withdraw(Request $request)
     {
-        //Log::info('Withdraw API Request', ['request' => $request->all()]);
+        // Log::info('Withdraw API Request', ['request' => $request->all()]);
 
         try {
             $request->validate([

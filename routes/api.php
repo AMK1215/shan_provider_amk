@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\BankController;
+use App\Http\Controllers\Api\V1\BannerController;
+use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\DepositRequestController;
 use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
@@ -9,14 +13,10 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
+use App\Http\Controllers\Api\V1\PromotionController;
+use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\DepositRequestController;
-use App\Http\Controllers\Api\V1\WithDrawRequestController;
-use App\Http\Controllers\Api\V1\BankController;
-use App\Http\Controllers\Api\V1\ContactController;
-use App\Http\Controllers\Api\V1\PromotionController;
-use App\Http\Controllers\Api\V1\BannerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,9 +61,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('depositfinicial', [DepositRequestController::class, 'FinicialDeposit']);
     Route::get('depositlogfinicial', [DepositRequestController::class, 'log']);
     Route::get('paymentTypefinicial', [GSCPlusProviderController::class, 'paymentType']);
-    Route::post('withdrawfinicial', [WithDrawRequestController::class, 'FinicalWithdraw']); 
+    Route::post('withdrawfinicial', [WithDrawRequestController::class, 'FinicalWithdraw']);
     Route::get('withdrawlogfinicial', [WithDrawRequestController::class, 'log']);
-
 
     Route::get('contact', [ContactController::class, 'get']);
     Route::get('promotion', [PromotionController::class, 'index']);
@@ -73,6 +72,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('banner', [BannerController::class, 'index']);
     Route::get('videoads', [BannerController::class, 'ApiVideoads']);
     Route::get('toptenwithdraw', [BannerController::class, 'TopTen']);
-
 
 });

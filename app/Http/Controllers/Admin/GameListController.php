@@ -13,8 +13,9 @@ class GameListController extends Controller
     // get game list with pagination 20
     public function GetGameList()
     {
-        //$game_lists = GameList::paginate(20);
+        // $game_lists = GameList::paginate(20);
         $game_lists = GameList::orderBy('id', 'asc')->paginate(20);
+
         return view('admin.game_list.paginate_index', compact('game_lists'));
     }
 

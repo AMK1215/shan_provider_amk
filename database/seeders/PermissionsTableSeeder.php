@@ -240,7 +240,7 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            
+
             [
                 'title' => 'subagent_deposit',
                 'group' => 'subagent',
@@ -253,7 +253,7 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            
+
             [
                 'title' => 'player_view',
                 'group' => 'subagent',

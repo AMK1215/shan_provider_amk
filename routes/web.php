@@ -75,5 +75,3 @@ Route::post('/web-chat/send', [TelegramBotController::class, 'send'])->name('web
 // });
 
 Route::get('admin/product/game-list', [\App\Http\Controllers\Admin\ProductController::class, 'GameListFetch'])->name('admin.product.game-list');
-
-

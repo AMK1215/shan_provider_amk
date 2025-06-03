@@ -52,11 +52,11 @@ class DepositRequestController extends Controller
         try {
             $user = Auth::user();
             $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-            //$agent = $isSubAgent ? $user->agent : $user;
+            // $agent = $isSubAgent ? $user->agent : $user;
             $agent = $user->agent;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id || 
+            if ($deposit->agent_id !== $agent->id ||
                 ($isSubAgent && $deposit->agent_id !== $agent->id)) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
@@ -67,7 +67,7 @@ class DepositRequestController extends Controller
                 return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
             }
 
-            $note = 'Deposit request approved by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+            $note = 'Deposit request approved by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
 
             $deposit->update([
                 'status' => $request->status,
@@ -100,17 +100,17 @@ class DepositRequestController extends Controller
         try {
             $user = Auth::user();
             $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-           // $agent = $isSubAgent ? $user->agent : $user;
+            // $agent = $isSubAgent ? $user->agent : $user;
 
             $agent = $user->agent;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id || 
+            if ($deposit->agent_id !== $agent->id ||
                 ($isSubAgent && $deposit->agent_id !== $agent->id)) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
-            $note = 'Deposit request rejected by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+            $note = 'Deposit request rejected by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
 
             $deposit->update([
                 'status' => $request->status,
@@ -129,29 +129,31 @@ class DepositRequestController extends Controller
     {
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-       // $agent = $isSubAgent ? $user->agent : $user;
+        // $agent = $isSubAgent ? $user->agent : $user;
 
-       $agent = $user->agent;
+        $agent = $user->agent;
 
-       // Check if user has permission to handle this deposit
-       if ($deposit->agent_id !== $agent->id || 
-           ($isSubAgent && $deposit->agent_id !== $agent->id)) {
-           return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
-       }
+        // Check if user has permission to handle this deposit
+        if ($deposit->agent_id !== $agent->id ||
+            ($isSubAgent && $deposit->agent_id !== $agent->id)) {
+            return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
+        }
 
         return view('admin.deposit_request.view', compact('deposit', 'isSubAgent'));
     }
 
-    // log deposit request 
+    // log deposit request
     public function DepositShowLog(DepositRequest $deposit)
     {
         $logs = $deposit->logs;
+
         return view('admin.deposit_request.log', compact('logs'));
     }
 
     private function isExistingAgent($userId)
     {
         $user = User::find($userId);
+
         return $user && $user->hasRole(self::SUB_AGENT_ROLE) ? $user->parent : null;
     }
 

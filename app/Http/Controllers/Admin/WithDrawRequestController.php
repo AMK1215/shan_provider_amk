@@ -46,18 +46,18 @@ class WithDrawRequestController extends Controller
 
     public function statusChangeIndex(Request $request, WithDrawRequest $withdraw)
     {
-        //$agent = $this->getAgent() ?? Auth::user();
+        // $agent = $this->getAgent() ?? Auth::user();
         $user = Auth::user();
-            $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-            //$agent = $isSubAgent ? $user->agent : $user;
-            $agent = $user->agent;
+        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
+        // $agent = $isSubAgent ? $user->agent : $user;
+        $agent = $user->agent;
         $player = User::find($request->player);
 
         if ($request->status == 1 && $player->balanceFloat < $request->amount) {
             return redirect()->back()->with('error', 'Insufficient Balance!');
         }
 
-        $note = 'Withdraw request approved by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+        $note = 'Withdraw request approved by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
 
         $withdraw->update([
             'status' => $request->status,
@@ -85,11 +85,11 @@ class WithDrawRequestController extends Controller
 
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        //$agent = $isSubAgent ? $user->agent : $user;
+        // $agent = $isSubAgent ? $user->agent : $user;
         $agent = $user->agent;
 
         try {
-            $note = 'Withdraw request rejected by ' . $user->user_name . ' on ' . Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+            $note = 'Withdraw request rejected by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
 
             $withdraw->update([
                 'status' => $request->status,
@@ -116,7 +116,7 @@ class WithDrawRequestController extends Controller
         return $this->isExistingAgent(Auth::id());
     }
 
-    // log withdraw request 
+    // log withdraw request
     public function WithdrawShowLog(WithDrawRequest $withdraw)
     {
         return view('admin.withdraw_request.view', ['withdraw' => $withdraw]);

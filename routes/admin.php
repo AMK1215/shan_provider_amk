@@ -7,10 +7,13 @@ use App\Http\Controllers\Admin\BannerAdsController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BannerTextController;
 use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\DepositRequestController;
+use App\Http\Controllers\Admin\GameListController;
 use App\Http\Controllers\Admin\LocalWagerController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PaymentTypeController;
 use App\Http\Controllers\Admin\PlayerController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SubAccountController;
@@ -18,12 +21,10 @@ use App\Http\Controllers\Admin\TopTenWithdrawController;
 use App\Http\Controllers\Admin\TransferLogController;
 use App\Http\Controllers\Admin\WagerListController;
 use App\Http\Controllers\Admin\WinnerTextController;
+use App\Http\Controllers\Admin\WithDrawRequestController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DepositRequestController;
-use App\Http\Controllers\Admin\WithDrawRequestController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\GameListController;
+
 Route::group([
     'prefix' => 'admin',
     'as' => 'admin.',
@@ -56,7 +57,7 @@ Route::group([
     Route::resource('contact', ContactController::class);
     Route::resource('paymentTypes', PaymentTypeController::class);
     Route::resource('bank', BankController::class);
-    //Route::resource('product', ProductController::class);
+    // Route::resource('product', ProductController::class);
 
     // banner etc end
     // deposit request start
@@ -145,13 +146,13 @@ Route::group([
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.detail');
     // Route::get('report/detail/{member_account}', [\App\Http\Controllers\Admin\ReportController::class, 'getReportDetails'])->name('admin.report.detail');
-    // provider start 
+    // provider start
     Route::get('gametypes', [ProductController::class, 'index'])->name('gametypes.index');
     Route::post('/game-types/{productId}/toggle-status', [ProductController::class, 'toggleStatus'])->name('gametypes.toggle-status');
     Route::get('gametypes/{game_type_id}/product/{product_id}', [ProductController::class, 'edit'])->name('gametypes.edit');
     Route::post('gametypes/{game_type_id}/product/{product_id}', [ProductController::class, 'update'])->name('gametypes.update');
     Route::post('admin/gametypes/{gameTypeId}/{productId}/update', [ProductController::class, 'update'])
-    ->name('gametypesproduct.update');
+        ->name('gametypesproduct.update');
 
     // game list start
     Route::get('all-game-lists', [GameListController::class, 'GetGameList'])->name('gameLists.index');

@@ -258,7 +258,7 @@ class AgentController extends Controller
                 'to_user_id' => $agent->id,
                 'amount' => $request->amount,
                 'type' => 'top_up',
-                'description' => $request->note ?? 'TopUp from owner to ' . $agent->user_name,
+                'description' => $request->note ?? 'TopUp from owner to '.$agent->user_name,
                 'meta' => [
                     'transaction_type' => TransactionName::CreditTransfer->value,
                     'old_balance' => $agent->balanceFloat,
@@ -306,7 +306,7 @@ class AgentController extends Controller
                 'to_user_id' => $admin->id,
                 'amount' => $request->amount,
                 'type' => 'withdraw',
-                'description' => $request->note ?? 'Withdraw from ' . $agent->user_name . ' to owner',
+                'description' => $request->note ?? 'Withdraw from '.$agent->user_name.' to owner',
                 'meta' => [
                     'transaction_type' => TransactionName::DebitTransfer->value,
                     'old_balance' => $agent->balanceFloat,

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 
 class PushBet extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'member_account', 'player_id', 'player_agent_id', 'product_code', 'provider_name', 'game_type', 'operator_code', 'request_time',
         'sign', 'currency', 'transaction_id', 'action', 'amount', 'valid_bet_amount',

@@ -33,8 +33,6 @@ class Product extends Model
         return $this->belongsToMany(GameType::class)->withPivot('image');
     }
 
-    
-
     public function getImgUrlAttribute()
     {
         if (isset($this->pivot) && ! empty($this->pivot->image)) {
@@ -52,7 +50,7 @@ class Product extends Model
      */
     public function toggleStatus()
     {
-        $this->status = $this->status == "ACTIVATED" ? "UNACTIVATED" : "ACTIVATED";
+        $this->status = $this->status == 'ACTIVATED' ? 'UNACTIVATED' : 'ACTIVATED';
 
         return $this->save();
     }

@@ -6,6 +6,7 @@ use Amp\Parallel\Worker\Execution;
 use App\Enums\TransactionName;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PlayerRequest;
 use App\Http\Requests\TransferLogRequest;
 use App\Models\Admin\Permission;
 use App\Models\Admin\Role;
@@ -20,7 +21,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Requests\PlayerRequest;
 
 // use App\Models\PlaceBet;
 
@@ -30,8 +30,8 @@ class SubAccountController extends Controller
      * Display a listing of the resource.
      */
     protected const SUB_AGENT_ROLE = 3;
-    private const PLAYER_ROLE = 4;
 
+    private const PLAYER_ROLE = 4;
 
     // protected const SUB_AGENT_PROFILE = 'subagent_permission';
     protected const SUB_AGENT_PERMISSIONS = [
@@ -39,7 +39,7 @@ class SubAccountController extends Controller
         'player_view',
         'subagent_player_create',
         'subagent_withdraw',
-        'subagent_deposit'
+        'subagent_deposit',
     ];
 
     public function index()
@@ -68,7 +68,6 @@ class SubAccountController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
     public function store(Request $request)
     {
         try {
@@ -177,8 +176,6 @@ class SubAccountController extends Controller
         return 'SUBAG'.$randomNumber;
     }
 
-    
-
     public function permission($id)
     {
         $subAgent = User::findOrFail($id);
@@ -217,8 +214,6 @@ class SubAccountController extends Controller
 
         return view('admin.sub_acc.sub_acc_profile', compact('subAgent'));
     }
-
-    
 
     public function agentPlayers(Request $request)
     {
@@ -298,7 +293,7 @@ class SubAccountController extends Controller
         // Totals
         $total_stake = $bets->where('action', 'BET')->count();
         $total_bet = $bets->where('action', 'BET')->sum('bet_amount');
-        //$total_bet = $bets->sum('bet_amount');
+        // $total_bet = $bets->sum('bet_amount');
         $total_win = $bets->where('wager_status', 'SETTLED')->sum('prize_amount');
         $total_lost = $total_bet - $total_win;
         $net_win = $total_win - $total_bet; // Positive if won, negative if lost
@@ -499,7 +494,6 @@ class SubAccountController extends Controller
         return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
     }
 
-
     public function PlayerCreate()
     {
         abort_if(
@@ -508,9 +502,9 @@ class SubAccountController extends Controller
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
         $player_name = $this->PlayergenerateRandomString();
-        //$agent = $this->getAgent() ?? Auth::user();
+        // $agent = $this->getAgent() ?? Auth::user();
         $subAgent = Auth::user();      // The subagent making the request
-        $agent = $subAgent->agent; 
+        $agent = $subAgent->agent;
         // $owner_id = User::where('agent_id', $agent->agent_id)->first();
         // Get the related owner of the agent
         $owner = User::where('id', $agent->agent_id)->first(); // Assuming `agent_id` refers to the owner's ID
@@ -527,7 +521,7 @@ class SubAccountController extends Controller
     {
         Gate::allows('subagent_access');
 
-        //$agent = $this->getAgent() ?? Auth::user();
+        // $agent = $this->getAgent() ?? Auth::user();
         $subAgent = Auth::user();      // The subagent making the request
         $agent = $subAgent->agent;     // The parent agent (who owns the balance)
 
@@ -596,5 +590,4 @@ class SubAccountController extends Controller
 
         return 'P'.$randomNumber;
     }
-
 }
