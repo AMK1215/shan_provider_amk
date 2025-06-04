@@ -42,6 +42,12 @@ class SubAccountController extends Controller
         'subagent_deposit',
     ];
 
+    private const PERMISSION_GROUPS = [
+        'view_only' => 'View Only',
+        'player_creation' => 'Player Creation',
+        'deposit_withdraw' => 'Deposit/Withdraw',
+    ];
+
     public function index()
     {
         $users = User::with('roles')
@@ -61,8 +67,9 @@ class SubAccountController extends Controller
     public function create()
     {
         $agent_name = $this->generateRandomString();
+        $permission_groups = self::PERMISSION_GROUPS;
 
-        return view('admin.sub_acc.create', compact('agent_name'));
+        return view('admin.sub_acc.create', compact('agent_name', 'permission_groups'));
     }
 
     /**
@@ -71,6 +78,14 @@ class SubAccountController extends Controller
     public function store(Request $request)
     {
         try {
+            $request->validate([
+                'user_name' => 'required|unique:users,user_name',
+                'name' => 'required|string|max:255',
+                'phone' => 'required|string|max:20',
+                'password' => 'required|string|min:6',
+                'permission_group' => 'required|in:' . implode(',', array_keys(self::PERMISSION_GROUPS)),
+            ]);
+
             $agent = User::create([
                 'user_name' => $request->user_name,
                 'name' => $request->name,
@@ -79,18 +94,22 @@ class SubAccountController extends Controller
                 'type' => UserType::SubAgent,
                 'agent_id' => Auth::id(),
             ]);
+
             $agent->roles()->sync(self::SUB_AGENT_ROLE);
 
-            // Assign multiple permissions by title
-            $permissionIds = \App\Models\Admin\Permission::whereIn('title', self::SUB_AGENT_PERMISSIONS)->pluck('id')->toArray();
-            $agent->permissions()->sync($permissionIds);
+            // Get permissions based on selected group
+            $permissions = Permission::where('group', $request->permission_group)->get();
+            $agent->permissions()->sync($permissions->pluck('id'));
+
+            return redirect()->route('admin.subacc.index')
+                ->with('success', 'Sub-agent created successfully with ' . self::PERMISSION_GROUPS[$request->permission_group] . ' permissions');
+
         } catch (Exception $e) {
-            Log::error('Error creating sub-agent: '.$e->getMessage());
-
-            return redirect()->back()->with('error', 'Failed to create sub-agent. Please try again.');
+            Log::error('Error creating sub-agent: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Failed to create sub-agent. Please try again.')
+                ->withInput();
         }
-
-        return redirect()->route('admin.subacc.index')->with('success', 'Sub-agent created successfully');
     }
 
     /**
@@ -169,11 +188,15 @@ class SubAccountController extends Controller
             ->with('username', $agent->user_name);
     }
 
-    private function generateRandomString()
+    private function generateRandomString($length = 8)
     {
-        $randomNumber = mt_rand(10000000, 99999999);
-
-        return 'SUBAG'.$randomNumber;
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
     }
 
     public function permission($id)
@@ -589,5 +612,45 @@ class SubAccountController extends Controller
         $randomNumber = mt_rand(10000000, 99999999);
 
         return 'P'.$randomNumber;
+    }
+
+    public function viewPermissions($id)
+    {
+        $subAgent = User::findOrFail($id);
+
+        // Ensure the current user is the parent agent
+        if ($subAgent->agent_id !== Auth::id()) {
+            abort(403, 'You do not have permission to view this sub-agent.');
+        }
+
+        $permissions = Permission::all();
+        $subAgentPermissions = $subAgent->permissions->pluck('id')->toArray();
+        $permission_groups = self::PERMISSION_GROUPS;
+
+        return view('admin.sub_acc.view_permissions', compact('subAgent', 'permissions', 'subAgentPermissions', 'permission_groups'));
+    }
+
+    public function updatePermissions(Request $request, $id)
+    {
+        try {
+            $subAgent = User::findOrFail($id);
+            
+            // Validate the request
+            $request->validate([
+                'permissions' => 'array',
+                'permissions.*' => 'exists:permissions,id'
+            ]);
+
+            // Sync the permissions
+            $subAgent->permissions()->sync($request->permissions ?? []);
+
+            return redirect()
+                ->route('admin.subacc.permissions.view', $id)
+                ->with('success', 'Permissions updated successfully');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to update permissions: ' . $e->getMessage());
+        }
     }
 }

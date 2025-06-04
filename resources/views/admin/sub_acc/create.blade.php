@@ -64,6 +64,59 @@
                                 <div class="text-danger">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="form-group">
+                                <label>Permission Group<span class="text-danger">*</span></label>
+                                <select name="permission_group" class="form-control">
+                                    <option value="">Select Permission Group</option>
+                                    @foreach($permission_groups as $key => $value)
+                                        <option value="{{ $key }}" {{ old('permission_group') == $key ? 'selected' : '' }}>
+                                            {{ $value }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('permission_group')
+                                <div class="text-danger">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">Permission Group Details</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="permission-details">
+                                            <h5>View Only Group</h5>
+                                            <ul>
+                                                <li>View player list</li>
+                                                <li>View player report</li>
+                                                <li>View transaction log</li>
+                                            </ul>
+
+                                            <h5>Player Creation Group</h5>
+                                            <ul>
+                                                <li>View player list</li>
+                                                <li>Create/Edit players</li>
+                                                <li>Change player passwords</li>
+                                                <li>View player reports</li>
+                                                <li>View transaction logs</li>
+                                            </ul>
+
+                                            <h5>Deposit/Withdraw Group</h5>
+                                            <ul>
+                                                <li>View player list</li>
+                                                <li>View player reports</li>
+                                                <li>View transaction logs</li>
+                                                <li>View withdraw requests</li>
+                                                <li>View deposit requests</li>
+                                                <li>Process withdrawals</li>
+                                                <li>Process deposits</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

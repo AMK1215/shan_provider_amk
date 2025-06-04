@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             PermissionsTableSeeder::class,
             RolesTableSeeder::class,
             PermissionRoleTableSeeder::class,
+            SubAgentPermissionSeeder::class,
             UsersTableSeeder::class,
             RoleUserTableSeeder::class,
             BannerSeeder::class,
@@ -82,7 +83,8 @@ class DatabaseSeeder extends Seeder
             AIPokerGameSeeder::class,
             SmartSoftGameSeeder::class,
             WorldEntertainmentSlotGameSeeder::class,
-
+            //RoleSeeder::class,
+            //PermissionSeeder::class,
         ]);
     }
 }

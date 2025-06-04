@@ -107,19 +107,19 @@
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            {{-- <a href="{{ route('home') }}" class="brand-link">
-            <img src="{{ asset('assets/img/logo/slot_maker.png') }}" alt="AdminLTE Logo"
+             <a href="{{ route('home') }}" class="brand-link">
+            <img src="{{ asset('img/city_slot_logo.jpg') }}" alt="AdminLTE Logo"
                 class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">GoldenJack</span>
-            </a> --}}
+            <span class="brand-text font-weight-light">CitySlot</span>
+            </a> 
             <!-- Brand Logo -->
 
-            <a href="{{ route('home') }}" class="brand-link">
+            <!-- <a href="{{ route('home') }}" class="brand-link">
                 <img src="{{ $adminLogo }}" alt="Admin Logo" class="brand-image img-circle elevation-3"
                     style="opacity: .8">
                 {{-- <span class="brand-text font-weight-light">GoldenJack</span> --}}
                 <span class="brand-text font-weight-light">{{ $siteName }}</span>
-            </a>
+            </a> -->
 
 
             <!-- Sidebar -->
@@ -137,18 +137,7 @@
                             </a>
                         </li>
 
-                        @can('owner_index')
-                            <li class="nav-item">
-                                <a href="#"
-                                    class="nav-link">
-                                    <i class="fas fa-users"></i>
-                                    <p>
-                                        Owner List
-                                    </p>
-                                </a>
-                            </li>
-                        @endcan
-                        
+                       
                        
                     
                         @can('agent_index')
@@ -195,7 +184,7 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('withdraw')
+                        @if(Auth::user()->hasPermission('process_withdraw'))
                             <li class="nav-item">
                                 <a href="{{ route('admin.agent.withdraw') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.agent.withdraw' ? 'active' : '' }}">
@@ -205,8 +194,8 @@
                                     </p>
                                 </a>
                             </li>
-                        @endcan
-                        @can('deposit')
+                        @endif
+                        @if(Auth::user()->hasPermission('view_deposit_requests'))
                             <li class="nav-item">
                                 <a href="{{ route('admin.agent.deposit') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.agent.deposit' ? 'active' : '' }}">
@@ -216,7 +205,7 @@
                                     </p>
                                 </a>
                             </li>
-                        @endcan
+                        @endif
                         <li class="nav-item">
                             <a href="{{ route('admin.transfer-logs.index') }}"
                                 class="nav-link {{ Route::current()->getName() == 'admin.transfer-logs.index' ? 'active' : '' }}">

@@ -61,15 +61,7 @@ Route::group([
 
     // banner etc end
     // deposit request start
-    Route::get('finicialwithdraw', [WithDrawRequestController::class, 'index'])->name('agent.withdraw');
-    Route::post('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'statusChangeIndex'])->name('agent.withdrawStatusUpdate');
-    Route::post('finicialwithdraw/reject/{withdraw}', [WithDrawRequestController::class, 'statusChangeReject'])->name('agent.withdrawStatusreject');
-    Route::get('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'WithdrawShowLog'])->name('agent.withdrawLog');
-    Route::get('finicialdeposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
-    Route::get('finicialdeposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
-    Route::post('finicialdeposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');
-    Route::post('finicialdeposit/reject/{deposit}', [DepositRequestController::class, 'statusChangeReject'])->name('agent.depositStatusreject');
-
+    
     // deposit request end
 
     // master, agent, sub-agent
@@ -94,6 +86,10 @@ Route::group([
     Route::post('subacc-changepassword/{id}', [SubAccountController::class, 'makeChangePassword'])->name('subacc.makeChangePassword');
     Route::get('subacc-permission/{id}', [SubAccountController::class, 'permission'])->name('subacc.permission');
     Route::post('subacc-permission/update/{id}', [SubAccountController::class, 'updatePermission'])->name('subacc.permission.update');
+    Route::get('subacc/{id}/permissions', [SubAccountController::class, 'viewPermissions'])->name('subacc.permissions.view');
+    Route::put('subacc/{id}/permissions', [SubAccountController::class, 'updatePermissions'])->name('subacc.permissions.update');
+
+
     Route::get('subacc-profile/{id}', [SubAccountController::class, 'subAgentProfile'])
         ->name('subacc.profile');
     Route::get('subacc-agent-players', [SubAccountController::class, 'agentPlayers'])
@@ -109,15 +105,65 @@ Route::group([
     Route::post('/subagentacc/player/store', [SubAccountController::class, 'PlayerStore'])->name('subacc.player.store');
     // sub-agent end
     // agent create player start
-    Route::resource('player', PlayerController::class);
+    //Route::resource('player', PlayerController::class);
+    // sub-agent permission start
+     // Player management routes
+     Route::middleware(['permission:player_view'])->group(function () {
+        Route::get('players', [PlayerController::class, 'index'])->name('player.index');
+        Route::get('players/{player}', [PlayerController::class, 'show'])->name('player.show');
+    });
+
+    Route::middleware(['permission:player_edit'])->group(function () {
+        Route::get('players/{player}/edit', [PlayerController::class, 'edit'])->name('player.edit');
+        Route::put('players/{player}', [PlayerController::class, 'update'])->name('player.update');
+    });
+
+
+    // Player creation routes
+    Route::middleware(['permission:player_create'])->group(function () {
+        Route::get('players/create', [PlayerController::class, 'create'])->name('player.create');
+        Route::post('players', [PlayerController::class, 'store'])->name('player.store');
+    });
+
+    // Withdraw routes (for process_withdraw permission)
+    Route::middleware(['permission:process_withdraw'])->group(function () {
+        Route::get('finicialwithdraw', [WithDrawRequestController::class, 'index'])->name('agent.withdraw');
+        Route::post('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'statusChangeIndex'])->name('agent.withdrawStatusUpdate');
+        Route::post('finicialwithdraw/reject/{withdraw}', [WithDrawRequestController::class, 'statusChangeReject'])->name('agent.withdrawStatusreject');
+        Route::get('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'WithdrawShowLog'])->name('agent.withdrawLog');
+    });
+
+    // Deposit routes (for view_deposit_requests permission)
+    Route::middleware(['permission:view_deposit_requests'])->group(function () {
+        Route::get('finicialdeposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
+        Route::get('finicialdeposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
+        Route::post('finicialdeposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');
+        Route::post('finicialdeposit/reject/{deposit}', [DepositRequestController::class, 'statusChangeReject'])->name('agent.depositStatusreject');
+    });
+
+    // Cash-in/cash-out routes (still using deposit_withdraw permission)
+    Route::middleware(['permission:deposit_withdraw'])->group(function () {
+        Route::get('player-cash-in/{player}', [PlayerController::class, 'getCashIn'])->name('player.getCashIn');
+        Route::post('player-cash-in/{player}', [PlayerController::class, 'makeCashIn'])->name('player.makeCashIn');
+        Route::get('player/cash-out/{player}', [PlayerController::class, 'getCashOut'])->name('player.getCashOut');
+        Route::post('player/cash-out/update/{player}', [PlayerController::class, 'makeCashOut'])->name('player.makeCashOut');
+    });
+
+    // Player ban route
+Route::middleware(['permission:ban_player'])->group(function () {
     Route::put('player/{id}/ban', [PlayerController::class, 'banUser'])->name('player.ban');
-    Route::get('player-cash-in/{player}', [PlayerController::class, 'getCashIn'])->name('player.getCashIn');
-    Route::post('player-cash-in/{player}', [PlayerController::class, 'makeCashIn'])->name('player.makeCashIn');
-    Route::get('player/cash-out/{player}', [PlayerController::class, 'getCashOut'])->name('player.getCashOut');
-    Route::post('player/cash-out/update/{player}', [PlayerController::class, 'makeCashOut'])
-        ->name('player.makeCashOut');
+});
+
+// Player change password routes
+Route::middleware(['permission:change_player_password'])->group(function () {
     Route::get('player-changepassword/{id}', [PlayerController::class, 'getChangePassword'])->name('player.getChangePassword');
     Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
+});
+
+    // sub-agent permission end
+    // Route::put('player/{id}/ban', [PlayerController::class, 'banUser'])->name('player.ban');
+    // Route::get('player-changepassword/{id}', [PlayerController::class, 'getChangePassword'])->name('player.getChangePassword');
+    //Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
     Route::get('/players-list', [PlayerController::class, 'player_with_agent'])->name('playerListForAdmin');
     // agent create player end
     // report log

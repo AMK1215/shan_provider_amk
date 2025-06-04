@@ -86,7 +86,7 @@ class User extends Authenticatable implements Wallet
 
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->belongsToMany(Permission::class, 'permission_user');
     }
 
     public function hasRole($role)
@@ -220,26 +220,18 @@ class User extends Authenticatable implements Wallet
         return $this->hasMany(PlaceBet::class, 'member_account', 'user_name');
     }
 
-    //     public function hasPermission($permissionTitle)
-    // {
-    //     foreach ($this->roles as $role) {
-    //         if ($role->permissions->contains('title', $permissionTitle)) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
-    public function hasPermission($permissionTitle)
+    public function hasPermission($permission)
     {
-        // 1. Check direct user permissions
-        if ($this->permissions->contains('title', $permissionTitle)) {
+        // If user is a parent agent, they have all permissions
+        if ($this->hasRole('Agent')) {
             return true;
         }
-        // 2. Check via roles
-        foreach ($this->roles as $role) {
-            if ($role->permissions->contains('title', $permissionTitle)) {
-                return true;
-            }
+
+        // For sub-agents, check their specific permissions
+        if ($this->hasRole('SubAgent')) {
+            return $this->permissions()
+                ->where('title', $permission)
+                ->exists();
         }
 
         return false;

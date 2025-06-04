@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\TransferLogController;
+use App\Http\Controllers\SubAccountController;
+use App\Http\Controllers\PlayerController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -75,3 +77,36 @@ Route::post('/web-chat/send', [TelegramBotController::class, 'send'])->name('web
 // });
 
 Route::get('admin/product/game-list', [\App\Http\Controllers\Admin\ProductController::class, 'GameListFetch'])->name('admin.product.game-list');
+
+// Sub-Agent Permission Routes
+// Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+//     // Player management routes
+//     Route::middleware(['permission:player_view'])->group(function () {
+//         Route::get('players', [PlayerController::class, 'index'])->name('player.index');
+//         Route::get('players/{player}', [PlayerController::class, 'show'])->name('player.show');
+//     });
+
+//     // Player creation routes
+//     Route::middleware(['permission:player_create'])->group(function () {
+//         Route::get('players/create', [PlayerController::class, 'create'])->name('player.create');
+//         Route::post('players', [PlayerController::class, 'store'])->name('player.store');
+//     });
+
+//     // Player edit routes
+//     Route::middleware(['permission:player_edit'])->group(function () {
+//         Route::get('players/{player}/edit', [PlayerController::class, 'edit'])->name('player.edit');
+//         Route::put('players/{player}', [PlayerController::class, 'update'])->name('player.update');
+//     });
+
+//     // Deposit/Withdraw routes
+//     Route::middleware(['permission:deposit_withdraw'])->group(function () {
+//         Route::get('players/{player}/deposit', [PlayerController::class, 'deposit'])->name('player.deposit');
+//         Route::post('players/{player}/deposit', [PlayerController::class, 'processDeposit'])->name('player.process-deposit');
+//         Route::get('players/{player}/withdraw', [PlayerController::class, 'withdraw'])->name('player.withdraw');
+//         Route::post('players/{player}/withdraw', [PlayerController::class, 'processWithdraw'])->name('player.process-withdraw');
+//     });
+
+//     // Sub-agent management routes
+//     Route::get('subacc/{id}/permissions', [SubAccountController::class, 'viewPermissions'])->name('subacc.permissions.view');
+//     Route::put('subacc/{id}/permissions', [SubAccountController::class, 'updatePermissions'])->name('subacc.permissions.update');
+// });
