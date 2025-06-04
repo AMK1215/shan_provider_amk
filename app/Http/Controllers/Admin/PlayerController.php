@@ -126,8 +126,6 @@ class PlayerController extends Controller
         return view('admin.player.index', compact('users'));
     }
 
-   
-
     /**
      * Display a listing of the users with their agents.
      *

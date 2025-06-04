@@ -83,7 +83,7 @@ class SubAccountController extends Controller
                 'name' => 'required|string|max:255',
                 'phone' => 'required|string|max:20',
                 'password' => 'required|string|min:6',
-                'permission_group' => 'required|in:' . implode(',', array_keys(self::PERMISSION_GROUPS)),
+                'permission_group' => 'required|in:'.implode(',', array_keys(self::PERMISSION_GROUPS)),
             ]);
 
             $agent = User::create([
@@ -102,10 +102,11 @@ class SubAccountController extends Controller
             $agent->permissions()->sync($permissions->pluck('id'));
 
             return redirect()->route('admin.subacc.index')
-                ->with('success', 'Sub-agent created successfully with ' . self::PERMISSION_GROUPS[$request->permission_group] . ' permissions');
+                ->with('success', 'Sub-agent created successfully with '.self::PERMISSION_GROUPS[$request->permission_group].' permissions');
 
         } catch (Exception $e) {
-            Log::error('Error creating sub-agent: ' . $e->getMessage());
+            Log::error('Error creating sub-agent: '.$e->getMessage());
+
             return redirect()->back()
                 ->with('error', 'Failed to create sub-agent. Please try again.')
                 ->withInput();
@@ -196,6 +197,7 @@ class SubAccountController extends Controller
         for ($i = 0; $i < $length; $i++) {
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
+
         return $randomString;
     }
 
@@ -634,11 +636,11 @@ class SubAccountController extends Controller
     {
         try {
             $subAgent = User::findOrFail($id);
-            
+
             // Validate the request
             $request->validate([
                 'permissions' => 'array',
-                'permissions.*' => 'exists:permissions,id'
+                'permissions.*' => 'exists:permissions,id',
             ]);
 
             // Sync the permissions
@@ -650,7 +652,7 @@ class SubAccountController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Failed to update permissions: ' . $e->getMessage());
+                ->with('error', 'Failed to update permissions: '.$e->getMessage());
         }
     }
 }

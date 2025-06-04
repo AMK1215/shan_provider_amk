@@ -83,8 +83,8 @@ class DatabaseSeeder extends Seeder
             AIPokerGameSeeder::class,
             SmartSoftGameSeeder::class,
             WorldEntertainmentSlotGameSeeder::class,
-            //RoleSeeder::class,
-            //PermissionSeeder::class,
+            // RoleSeeder::class,
+            // PermissionSeeder::class,
         ]);
     }
 }

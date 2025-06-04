@@ -16,7 +16,7 @@ class SubAgentPermissionSeeder extends Seeder
                 'view_player_report',
                 'view_transaction_log',
             ],
-            
+
             // Player Creation Group
             'player_creation' => [
                 'view_player_list',
@@ -26,7 +26,7 @@ class SubAgentPermissionSeeder extends Seeder
                 'view_player_report',
                 'view_transaction_log',
             ],
-            
+
             // Deposit/Withdraw Group
             'deposit_withdraw' => [
                 'view_player_list',
@@ -48,4 +48,4 @@ class SubAgentPermissionSeeder extends Seeder
             }
         }
     }
-} 
+}

@@ -61,7 +61,7 @@ Route::group([
 
     // banner etc end
     // deposit request start
-    
+
     // deposit request end
 
     // master, agent, sub-agent
@@ -89,7 +89,6 @@ Route::group([
     Route::get('subacc/{id}/permissions', [SubAccountController::class, 'viewPermissions'])->name('subacc.permissions.view');
     Route::put('subacc/{id}/permissions', [SubAccountController::class, 'updatePermissions'])->name('subacc.permissions.update');
 
-
     Route::get('subacc-profile/{id}', [SubAccountController::class, 'subAgentProfile'])
         ->name('subacc.profile');
     Route::get('subacc-agent-players', [SubAccountController::class, 'agentPlayers'])
@@ -105,10 +104,10 @@ Route::group([
     Route::post('/subagentacc/player/store', [SubAccountController::class, 'PlayerStore'])->name('subacc.player.store');
     // sub-agent end
     // agent create player start
-    //Route::resource('player', PlayerController::class);
+    // Route::resource('player', PlayerController::class);
     // sub-agent permission start
-     // Player management routes
-     Route::middleware(['permission:player_view'])->group(function () {
+    // Player management routes
+    Route::middleware(['permission:player_view'])->group(function () {
         Route::get('players', [PlayerController::class, 'index'])->name('player.index');
         Route::get('players/{player}', [PlayerController::class, 'show'])->name('player.show');
     });
@@ -117,7 +116,6 @@ Route::group([
         Route::get('players/{player}/edit', [PlayerController::class, 'edit'])->name('player.edit');
         Route::put('players/{player}', [PlayerController::class, 'update'])->name('player.update');
     });
-
 
     // Player creation routes
     Route::middleware(['permission:player_create'])->group(function () {
@@ -150,20 +148,20 @@ Route::group([
     });
 
     // Player ban route
-Route::middleware(['permission:ban_player'])->group(function () {
-    Route::put('player/{id}/ban', [PlayerController::class, 'banUser'])->name('player.ban');
-});
+    Route::middleware(['permission:ban_player'])->group(function () {
+        Route::put('player/{id}/ban', [PlayerController::class, 'banUser'])->name('player.ban');
+    });
 
-// Player change password routes
-Route::middleware(['permission:change_player_password'])->group(function () {
-    Route::get('player-changepassword/{id}', [PlayerController::class, 'getChangePassword'])->name('player.getChangePassword');
-    Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
-});
+    // Player change password routes
+    Route::middleware(['permission:change_player_password'])->group(function () {
+        Route::get('player-changepassword/{id}', [PlayerController::class, 'getChangePassword'])->name('player.getChangePassword');
+        Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
+    });
 
     // sub-agent permission end
     // Route::put('player/{id}/ban', [PlayerController::class, 'banUser'])->name('player.ban');
     // Route::get('player-changepassword/{id}', [PlayerController::class, 'getChangePassword'])->name('player.getChangePassword');
-    //Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
+    // Route::post('player-changepassword/{id}', [PlayerController::class, 'makeChangePassword'])->name('player.makeChangePassword');
     Route::get('/players-list', [PlayerController::class, 'player_with_agent'])->name('playerListForAdmin');
     // agent create player end
     // report log
