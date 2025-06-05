@@ -40,7 +40,7 @@ class LaunchGameController extends Controller
      */
     public function launchGame(Request $request)
     {
-        // Log::info('Launch Game API Request', ['request' => $request->all()]);
+        Log::info('Launch Game API Request', ['request' => $request->all()]);
 
         $user = Auth::user();
         if (! $user) {
@@ -113,7 +113,7 @@ class LaunchGameController extends Controller
             'operator_lobby_url' => $operatorLobbyUrl,
         ];
 
-        // Log::info('Sending Launch Game Request to Provider', ['url' => $apiUrl, 'payload' => $payload]);
+        Log::info('Sending Launch Game Request to Provider', ['url' => $apiUrl, 'payload' => $payload]);
 
         try {
             $response = Http::withHeaders([
