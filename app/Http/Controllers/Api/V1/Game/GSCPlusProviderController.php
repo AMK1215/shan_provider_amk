@@ -62,7 +62,7 @@ class GSCPlusProviderController extends Controller
             ->where('is_active', 1)
             ->OrderBy('order', 'asc')
             ->where('game_name', 'like', '%'.$request->game_name.'%')
-            ->get();
+            ->paginate(20);
 
         return $this->success(GameListResource::collection($gameLists));
     }
