@@ -77,7 +77,13 @@
                                         <!-- <td><span class="badge badge-info">{{ $row->stake_count }}</span></td> -->
                                         <td class="text-right text-success">{{ number_format($row->total_bet, 2) }}</td>
                                         <td class="text-right text-info">{{ number_format($row->total_win, 2) }}</td>
-                                        <td class="text-right text-success">{{ number_format($row->total_win - $row->total_bet, 2) }}</td>
+                                            <td >
+                                                @if($row->total_win > $row->total_bet)
+                                                <span class="text-success">+ {{ number_format($row->total_win - $row->total_bet, 2) }}</span>
+                                            @else
+                                                <span class="text-danger">- {{ number_format($row->total_bet - $row->total_win, 2) }}</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <a href="{{ route('admin.report.detail', ['member_account' => $row->member_account]) }}" class="btn btn-sm btn-outline-primary">View Details</a>
                                         </td>
@@ -103,7 +109,17 @@
                         <!-- <li class="list-group-item">Total Stake Count: <strong>{{ $total['totalstake'] }}</strong></li> -->
                         <li class="list-group-item">Total Bet Amount: <strong class="text-success">{{ number_format($total['totalBetAmt'], 2) }}</strong></li>
                         <li class="list-group-item">Total Payout Amount: <strong class="text-info">{{ number_format($total['totalWinAmt'], 2) }}</strong></li>
-                        <li class="list-group-item">Total Win/Lose: <strong class="text-success">{{ number_format($total['totalWinAmt'] - $total['totalBetAmt'], 2) }}</strong></li>
+                        <li class="list-group-item">
+                            @if($total['totalWinAmt'] > $total['totalBetAmt'])
+                                Total Win/Lose: <strong class="text-success">
+                                   + {{ number_format($total['totalWinAmt'] - $total['totalBetAmt'], 2) }}
+                            </strong>
+                            @else
+                                Total Win/Lose: <strong class="text-danger">
+                                    - {{ number_format($total['totalBetAmt'] - $total['totalWinAmt'], 2) }}
+                                </strong>
+                            @endif
+                    </li>
                     </ul>
                 </div>
             </div>
