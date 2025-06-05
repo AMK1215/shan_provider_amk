@@ -50,11 +50,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
 
-    // games
-    Route::get('/game_types', [GSCPlusProviderController::class, 'gameTypes']);
-    Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers']);
-    Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
-    Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
+    
 
     // fanicial api
     Route::get('agentfinicialPaymentType', [BankController::class, 'all']);
@@ -74,3 +70,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('toptenwithdraw', [BannerController::class, 'TopTen']);
 
 });
+
+// games
+Route::get('/game_types', [GSCPlusProviderController::class, 'gameTypes']);
+Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers']);
+Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
+Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
