@@ -111,7 +111,7 @@ Route::group([
         Route::get('players/{player}', [PlayerController::class, 'show'])->name('player.show');
     });
 
-    Route::middleware(['permission:player_edit'])->group(function () {
+    Route::middleware(['permission:edit_player'])->group(function () {
         Route::get('players/{player}/edit', [PlayerController::class, 'edit'])->name('player.edit');
         Route::put('players/{player}', [PlayerController::class, 'update'])->name('player.update');
     });
