@@ -217,7 +217,7 @@ class User extends Authenticatable implements Wallet
 
     public function placeBets()
     {
-        return $this->hasMany(PlaceBet::class, 'member_account', 'user_name');
+        return $this->hasMany(PlaceBet::class, 'member_account', 'user_name', 'player_id');
     }
 
     public function hasPermission($permission)
