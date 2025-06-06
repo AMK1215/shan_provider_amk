@@ -11,6 +11,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+
 
 class LoginController extends Controller
 {
@@ -40,6 +42,12 @@ class LoginController extends Controller
         if ($user->status == 0) {
             return redirect()->back()->with('error', 'Your account is not activated!');
         }
+
+        UserLog::create([
+            'ip_address' => $request->ip(),
+            'user_id' => $user->id,
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return redirect()->route('home');
     }

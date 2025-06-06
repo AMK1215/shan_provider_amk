@@ -32,8 +32,8 @@ Route::group([
 ], function () {
 
     Route::post('balance-up', [HomeController::class, 'balanceUp'])->name('balanceUp');
-    Route::get('logs/{id}', [HomeController::class, 'logs'])
-        ->name('logs');
+    
+    Route::get('logs/{id}', [HomeController::class, 'logs'])->name('logs');
 
     // to do
     Route::get('/changePassword/{user}', [HomeController::class, 'changePassword'])->name('changePassword');
