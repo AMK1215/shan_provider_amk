@@ -28,6 +28,6 @@ class CheckPermission
             }
         }
 
-        abort(403, 'Unauthorized action.');
+        abort(403, 'Unauthorized action. || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ');
     }
 }
