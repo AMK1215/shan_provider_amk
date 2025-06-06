@@ -40,7 +40,7 @@ class AgentController extends Controller
             abort(403);
         }
 
-        $agents = User::with(['roles', 'children.children.poneWinePlayer'])->whereHas('roles', fn ($q) => $q->where('role_id', self::AGENT_ROLE))
+        $agents = User::with(['roles', 'children.poneWinePlayer'])->whereHas('roles', fn ($q) => $q->where('role_id', self::AGENT_ROLE))
             ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
             ->where('agent_id', auth()->id())
             ->orderBy('created_at', 'desc')
