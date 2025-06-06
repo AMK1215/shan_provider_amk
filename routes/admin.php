@@ -100,8 +100,7 @@ Route::group([
     Route::post('/subacc/player/cash-out/update/{player}', [SubAccountController::class, 'makeCashOut'])
         ->name('subacc.player.makeCashOut');
     Route::get('/subagentacc/tran-logs', [SubAccountController::class, 'SubAgentTransferLog'])->name('subacc.tran.logs');
-    Route::get('/subagentacc/player/create', [SubAccountController::class, 'PlayerCreate'])->name('subacc.player.create');
-    Route::post('/subagentacc/player/store', [SubAccountController::class, 'PlayerStore'])->name('subacc.player.store');
+    
     // sub-agent end
     // agent create player start
     // Route::resource('player', PlayerController::class);
@@ -121,6 +120,8 @@ Route::group([
     Route::middleware(['permission:player_create'])->group(function () {
         Route::get('players/create', [PlayerController::class, 'create'])->name('player.create');
         Route::post('players', [PlayerController::class, 'store'])->name('player.store');
+        Route::get('/subagentacc/player/create', [SubAccountController::class, 'PlayerCreate'])->name('subacc.player.create');
+    Route::post('/subagentacc/player/store', [SubAccountController::class, 'PlayerStore'])->name('subacc.player.store');
     });
 
     // Withdraw routes (for process_withdraw permission)
