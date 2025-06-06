@@ -179,7 +179,7 @@ class User extends Authenticatable implements Wallet
 
     public function poneWinePlayer()
     {
-        return $this->hasMany(PlaceBet::class);
+        return $this->hasMany(PlaceBet::class, 'player_id', 'id');
     }
 
     public static function adminUser()
