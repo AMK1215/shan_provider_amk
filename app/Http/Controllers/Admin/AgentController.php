@@ -48,7 +48,7 @@ class AgentController extends Controller
 
         $reportData = DB::table('users as a')
             ->join('users as p', 'p.agent_id', '=', 'a.id')          // player
-            ->join('place_bets', 'place_bets.member_name', '=', 'p.user_name')
+            ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
             ->groupBy('a.id')
             ->selectRaw('a.id as agent_id,SUM(place_bets.bet_amount) as total_bet_amount,SUM(place_bets.prize_amount) as total_payout_amount')
             ->get()
