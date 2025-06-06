@@ -67,7 +67,7 @@
                 <td>{{ $log->fromUser->user_name ?? '-' }}</td>
                 <td>{{ $log->toUser->user_name ?? '-' }}</td>
                 <td>
-                @if($log->type === 'deposit')
+                @if($log->type === 'top_up')
                     <span class="badge badge-success">
                         + {{ number_format($log->amount, 2) }}
                     </span>
@@ -78,7 +78,7 @@
                 @endif
                 </td>
                 <td>
-                <span class="badge {{ $log->type === 'deposit' ? 'badge-success' : 'badge-danger' }}">
+                <span class="badge {{ $log->type === 'top_up' ? 'badge-success' : 'badge-danger' }}">
                     {{ ucfirst(str_replace('_', ' ', $log->type)) }}
                 </span>
                 </td>
