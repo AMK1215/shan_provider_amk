@@ -248,7 +248,7 @@ class PlayerController extends Controller
     public function edit(User $player)
     {
         abort_if(
-            Gate::denies('player_edit'),
+            Gate::denies('edit_player'),
             Response::HTTP_FORBIDDEN,
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
