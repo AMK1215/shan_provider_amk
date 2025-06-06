@@ -75,8 +75,8 @@
                                         <td>{{ $row->member_account }}</td>
                                         <td>{{ $row->agent_name }}</td>
                                         <!-- <td><span class="badge badge-info">{{ $row->stake_count }}</span></td> -->
-                                        <td class="text-right text-success">{{ number_format($row->total_bet, 2) }}</td>
-                                        <td class="text-right text-info">{{ number_format($row->total_win, 2) }}</td>
+                                        <td class="text-right">{{ number_format($row->total_bet, 2) }}</td>
+                                        <td class="text-right">{{ number_format($row->total_win, 2) }}</td>
                                             <td >
                                                 @if($row->total_win > $row->total_bet)
                                                 <span class="text-success">+ {{ number_format($row->total_win - $row->total_bet, 2) }}</span>
