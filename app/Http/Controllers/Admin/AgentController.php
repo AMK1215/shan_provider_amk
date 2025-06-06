@@ -563,35 +563,72 @@ class AgentController extends Controller
     }
 
     // KS Upgrade RPIndex
+    // public function agentReportIndex($id)
+    // {
+    //     $agent = User::with([
+    //         'roles',
+    //         'children.poneWinePlayer',
+    //     ])->find($id);
+
+    //     $poneWineTotalAmt = $agent->children->flatMap->poneWinePlayer->sum('win_lose_amt');
+
+    //     $reportData = DB::table('users as a')
+    //         ->join('users as p', 'p.agent_id', '=', 'a.id')          // player
+    //         ->join('place_bets', 'place_bets.member_name', '=', 'p.user_name')
+    //         ->groupBy('a.id')
+    //         ->selectRaw('
+    //             a.id as agent_id,
+    //             SUM(place_bets.bet_amount) as total_bet_amount,
+    //             SUM(place_bets.prize_amount) as total_payout_amount
+    //         ')
+    //         ->get()
+    //         ->keyBy('agent_id');
+
+    //     $report = $reportData->get($agent->id);
+    //     $report = (object) [
+    //         'win_lose' => ($report->total_bet_amount ?? 0) - ($report->total_payout_amount ?? 0),
+    //         'total_win_lose_pone_wine' => $poneWineTotalAmt ?? 0,
+    //     ];
+
+    //     return view('admin.agent.report_index', compact('report'));
+    // }
+
     public function agentReportIndex($id)
-    {
-        $agent = User::with([
-            'roles',
-            'children.poneWinePlayer',
-        ])->find($id);
+{
+    // Eager-load the agent's roles and children (downlines) with their poneWinePlayer relationship
+    $agent = User::with([
+        'roles',
+        'children.poneWinePlayer',
+    ])->findOrFail($id);
 
-        $poneWineTotalAmt = $agent->children->flatMap->poneWinePlayer->sum('win_lose_amt');
+    // Sum all win_lose_amt for all poneWinePlayer of all children
+    $poneWineTotalAmt = $agent->children
+        ->flatMap(function ($child) {
+            return $child->poneWinePlayer;
+        })
+        ->sum('win_lose_amt');
 
-        $reportData = DB::table('users as a')
-            ->join('users as p', 'p.agent_id', '=', 'a.id')          // player
-            ->join('reports', 'reports.member_name', '=', 'p.user_name')
-            ->groupBy('a.id')
-            ->selectRaw('
-                a.id as agent_id,
-                SUM(reports.bet_amount) as total_bet_amount,
-                SUM(reports.payout_amount) as total_payout_amount
-            ')
-            ->get()
-            ->keyBy('agent_id');
+    // Query total bet and payout for the agent's downline players
+    $reportData = DB::table('users as a')
+        ->join('users as p', 'p.agent_id', '=', 'a.id') // p = player
+        ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name') // fixed field name for join
+        ->where('a.id', $id)
+        ->groupBy('a.id')
+        ->selectRaw('
+            a.id as agent_id,
+            SUM(place_bets.bet_amount) as total_bet_amount,
+            SUM(place_bets.prize_amount) as total_payout_amount
+        ')
+        ->first();
 
-        $report = $reportData->get($agent->id);
-        $report = (object) [
-            'win_lose' => ($report->total_bet_amount ?? 0) - ($report->total_payout_amount ?? 0),
-            'total_win_lose_pone_wine' => $poneWineTotalAmt ?? 0,
-        ];
+    $report = [
+        'win_lose' => ($reportData->total_bet_amount ?? 0) - ($reportData->total_payout_amount ?? 0),
+        'total_win_lose_pone_wine' => $poneWineTotalAmt ?? 0,
+    ];
 
-        return view('admin.agent.report_index', compact('report'));
-    }
+    return view('admin.agent.report_index', compact('report'));
+}
+
 
     private function generateReferralCode($length = 8)
     {
