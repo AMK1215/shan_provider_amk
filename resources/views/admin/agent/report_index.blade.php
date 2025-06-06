@@ -27,7 +27,7 @@
                                 <thead>
                                     <tr class="text-center">
                                         <th>Slots</th>
-                                        <th>PoneWine</th>
+                                        <!-- <th>PoneWine</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -35,9 +35,9 @@
                                     <td class="{{ $report['win_lose'] >= 0 ? 'text-success' : 'text-danger' }}">
                                         {{ number_format($report['win_lose']) }}
                                     </td>
-                                    <td class="{{ $report['total_win_lose_pone_wine'] >= 0 ? 'text-success' : 'text-danger' }}">
+                                    <!-- <td class="{{ $report['total_win_lose_pone_wine'] >= 0 ? 'text-success' : 'text-danger' }}">
                                         {{ number_format($report['total_win_lose_pone_wine']) }}
-                                    </td>
+                                    </td> -->
 
                                     </tr>
                                 </tbody>
