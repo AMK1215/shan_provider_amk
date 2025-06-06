@@ -32,7 +32,7 @@
                                     <tr class="text-center">
                                         <th>Agent Name</th>
                                         <th>Agent ID</th>
-                                        <th>Slots</th>
+                                        <th>Win/Lose</th>
                                         <!-- <th>PoneWine</th> -->
                                     </tr>
                                 </thead>
