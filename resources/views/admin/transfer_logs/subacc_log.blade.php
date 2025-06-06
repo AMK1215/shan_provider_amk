@@ -29,8 +29,16 @@
         <div class="card-body">
             <!-- Filter Form -->
             <form method="GET" class="row g-3 mb-3">
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <input type="text" name="type" class="form-control" placeholder="Type (deposit/withdraw)" value="{{ request('type') }}">
+                </div> -->
+                <div class="col-md-3">
+                <label for="type">Transfer Type</label>
+                <select name="type" id="type" class="form-control">
+                    <option value="">ChooseTypes</option>
+                    <option value="top_up" {{ request('type') == 'top_up' ? 'selected' : '' }}>TopUp</option>
+                    <option value="withdraw" {{ request('type') == 'withdraw' ? 'selected' : '' }}>Withdraw</option>
+                </select>
                 </div>
                 <div class="col-md-3">
                     <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
