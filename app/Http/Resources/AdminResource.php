@@ -22,6 +22,8 @@ class AdminResource extends JsonResource
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at,
             'profile' => $this->profile,
+            'role' => $this->roles->pluck('name'),
+            'balance' => $this->balanceFloat,
             'max_score' => $this->max_score,
             'status' => $this->status,
             'is_changed_password' => $this->is_changed_password,
