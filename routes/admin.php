@@ -117,7 +117,7 @@ Route::group([
     });
 
     // Player creation routes
-    Route::middleware(['permission:player_create'])->group(function () {
+    Route::middleware(['permission:create_player'])->group(function () {
         Route::get('players/create', [PlayerController::class, 'create'])->name('player.create');
         Route::post('players', [PlayerController::class, 'store'])->name('player.store');
         Route::get('/subagentacc/player/create', [SubAccountController::class, 'PlayerCreate'])->name('subacc.player.create');
