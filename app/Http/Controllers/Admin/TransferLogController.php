@@ -29,9 +29,9 @@ class TransferLogController extends Controller
             });
 
         // Apply filters if provided
-        if ($request->has('type')) {
-            $query->where('type', $request->type);
-        }
+        // if ($request->has('type')) {
+        //     $query->where('type', $request->type);
+        // }
         if ($request->has('date_from') && $request->has('date_to')) {
             $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
         }

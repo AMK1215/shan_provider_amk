@@ -13,14 +13,14 @@
                     <form action="{{ route('admin.transfer-logs.index') }}" method="GET" class="mb-4">
                         <div class="row">
                             <div class="col-md-3">
-                                <div class="form-group">
+                                <!-- <div class="form-group">
                                     <label for="type">Transfer Type</label>
                                     <select name="type" id="type" class="form-control">
                                         <option value="">All Types</option>
                                         <option value="top_up" {{ request('type') == 'top_up' ? 'selected' : '' }}>TopUp</option>
                                         <option value="withdraw" {{ request('type') == 'withdraw' ? 'selected' : '' }}>Withdraw</option>
                                     </select>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
