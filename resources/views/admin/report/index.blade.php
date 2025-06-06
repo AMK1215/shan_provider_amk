@@ -107,8 +107,8 @@
                     <h5 class="mb-3">Totals</h5>
                     <ul class="list-group list-group-flush">
                         <!-- <li class="list-group-item">Total Stake Count: <strong>{{ $total['totalstake'] }}</strong></li> -->
-                        <li class="list-group-item">Total Bet Amount: <strong class="text-success">{{ number_format($total['totalBetAmt'], 2) }}</strong></li>
-                        <li class="list-group-item">Total Payout Amount: <strong class="text-info">{{ number_format($total['totalWinAmt'], 2) }}</strong></li>
+                        <li class="list-group-item">Total Bet Amount: <strong class="text-dark">{{ number_format($total['totalBetAmt'], 2) }}</strong></li>
+                        <li class="list-group-item">Total Payout Amount: <strong class="text-dark">{{ number_format($total['totalWinAmt'], 2) }}</strong></li>
                         <li class="list-group-item">
                             @if($total['totalWinAmt'] > $total['totalBetAmt'])
                                 Total Win/Lose: <strong class="text-success">
