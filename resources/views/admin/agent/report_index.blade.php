@@ -21,17 +21,25 @@
                     <div class="card " style="border-radius: 20px;">
                         <div class="card-header">
                             <h3 class="text-center">Win/Lose Reports</h3>
+                            <div>
+                                <strong>Agent Name:</strong> {{ $report['agent_name'] }}<br>
+                                <strong>Agent ID:</strong> {{ $report['agent_user_name'] }}
+                            </div>
                         </div>
                         <div class="card-body">
                             <table id="ponewineTable" class="table table-bordered table-hover">
                                 <thead>
                                     <tr class="text-center">
+                                        <th>Agent Name</th>
+                                        <th>Agent ID</th>
                                         <th>Slots</th>
                                         <!-- <th>PoneWine</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="text-center text-bold">
+                                        <td>{{ $report['agent_name'] }}</td>
+                                        <td>{{ $report['agent_user_name'] }}</td>
                                     <td class="{{ $report['win_lose'] >= 0 ? 'text-success' : 'text-danger' }}">
                                         {{ number_format($report['win_lose']) }}
                                     </td>
