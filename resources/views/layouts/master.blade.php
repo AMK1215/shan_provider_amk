@@ -206,6 +206,7 @@
                                 </a>
                             </li>
                         @endif
+                        @can('transfer_log')
                         <li class="nav-item">
                             <a href="{{ route('admin.transfer-logs.index') }}"
                                 class="nav-link {{ Route::current()->getName() == 'admin.transfer-logs.index' ? 'active' : '' }}">
@@ -215,6 +216,7 @@
                                 </p>
                             </a>
                         </li>
+                        @endcan
                         @can('agent_access')
                             <li class="nav-item">
                                 <a href="{{ route('admin.subacc.index') }}"
