@@ -33,7 +33,7 @@
                     <input type="text" name="type" class="form-control" placeholder="Type (deposit/withdraw)" value="{{ request('type') }}">
                 </div> -->
                 <div class="col-md-3">
-                <label for="type">Transfer Type</label>
+                <!-- <label for="type">Transfer Type</label> -->
                 <select name="type" id="type" class="form-control">
                     <option value="">ChooseTypes</option>
                     <option value="top_up" {{ request('type') == 'top_up' ? 'selected' : '' }}>TopUp</option>
