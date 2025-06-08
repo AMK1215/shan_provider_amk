@@ -16,7 +16,7 @@
                                 <div class="form-group">
                                     <label for="type">Transfer Type</label>
                                     <select name="type" id="type" class="form-control">
-                                        <option value="">All Types</option>
+                                        <option value="">ChooseTypes</option>
                                         <option value="top_up" {{ request('type') == 'top_up' ? 'selected' : '' }}>TopUp</option>
                                         <option value="withdraw" {{ request('type') == 'withdraw' ? 'selected' : '' }}>Withdraw</option>
                                     </select>

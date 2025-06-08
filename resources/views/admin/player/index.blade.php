@@ -43,7 +43,7 @@
                                     @can('subagent_access')
                                     <th>Action</th>
                                     <th>Transaction</th>
-                                    <th>TransferLog</th>
+                                    <!-- <th>TransferLog</th> -->
                                     @endcan
                                 </thead>
                                 <tbody>
@@ -132,9 +132,9 @@
                                                             Reports
                                                         </a>
                                                     </td>
-                                                    <td>
+                                                    <!-- <td>
                                                         <a href="{{ route('admin.transfer-logs.index') }}">TransferLog</a><br>
-                                                    </td>
+                                                    </td> -->
                                                     @endcan
                                                 </tr>
                                             @endforeach
