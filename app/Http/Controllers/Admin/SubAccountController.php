@@ -530,11 +530,11 @@ class SubAccountController extends Controller
 
     public function PlayerCreate()
     {
-        abort_if(
-            Gate::denies('create_player'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('create_player'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
         $player_name = $this->PlayergenerateRandomString();
         // $agent = $this->getAgent() ?? Auth::user();
         $subAgent = Auth::user();      // The subagent making the request
@@ -553,7 +553,7 @@ class SubAccountController extends Controller
      */
     public function PlayerStore(PlayerRequest $request)
     {
-        Gate::allows('create_player');
+       // Gate::allows('create_player');
 
         // $agent = $this->getAgent() ?? Auth::user();
         $subAgent = Auth::user();      // The subagent making the request
