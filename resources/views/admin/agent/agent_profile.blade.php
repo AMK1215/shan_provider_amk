@@ -95,9 +95,7 @@
                         @can('subagent_edit')
                             <a href="{{ route('admin.subacc.edit', $subAgent->id) }}" class="btn btn-warning me-2">Edit Profile</a>
                         @endcan
-                        @can('subagent_edit')
-                            <a href="{{ route('admin.subacc.resetPassword', $subAgent->id) }}" class="btn btn-danger me-2">Reset Password</a>
-                        @endcan
+                       
                         <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">Back</a>
                     </div>
                 </div>
