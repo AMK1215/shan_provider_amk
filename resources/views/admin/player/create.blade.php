@@ -28,7 +28,7 @@
                         </a>
                     </div>
                 </div>
-                <form action="{{ route('admin.player.store') }}" method="POST">
+                <form action="{{ route('admin.agent.player.store') }}" method="POST">
                     @csrf
                     <div class="card-body mt-2">
                         <div class="row">
