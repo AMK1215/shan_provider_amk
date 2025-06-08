@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
-use App\Http\Controllers\Api\V1\Dashboard\AdminLoginController;
 use App\Http\Controllers\Api\V1\BankController;
 use App\Http\Controllers\Api\V1\BannerController;
 use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\Dashboard\AdminLoginController;
 use App\Http\Controllers\Api\V1\DepositRequestController;
 use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
@@ -33,7 +33,6 @@ use Illuminate\Support\Facades\Route;
 // admin login
 Route::post('/admin/login', [AdminLoginController::class, 'login']);
 
-
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/player-change-password', [AuthController::class, 'playerChangePassword']);
@@ -54,8 +53,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
-
-    
 
     // fanicial api
     Route::get('agentfinicialPaymentType', [BankController::class, 'all']);

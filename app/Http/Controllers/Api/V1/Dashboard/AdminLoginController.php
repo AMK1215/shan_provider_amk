@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\LoginRequest;
+use App\Http\Resources\AdminResource;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\Api\LoginRequest;
-use App\Http\Resources\AdminResource;
 
 class AdminLoginController extends Controller
 {
@@ -20,7 +20,7 @@ class AdminLoginController extends Controller
             'password' => $request->password,
         ];
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return $this->error(null, 'The credentials do not match our records.', 401);
         }
 

@@ -42,4 +42,4 @@ class AdminResource extends JsonResource
             'updated_at' => $this->updated_at,
         ];
     }
-} 
+}

@@ -37,11 +37,10 @@ class TransferLogController extends Controller
         // }
 
         if ($request->filled('date_from') && $request->filled('date_to')) {
-            $from = $request->date_from . ' 00:00:00';
-            $to = $request->date_to . ' 23:59:59';
+            $from = $request->date_from.' 00:00:00';
+            $to = $request->date_to.' 23:59:59';
             $query->whereBetween('created_at', [$from, $to]);
         }
-        
 
         $transferLogs = $query->latest()->paginate(20);
 
