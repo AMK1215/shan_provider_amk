@@ -683,4 +683,11 @@ class AgentController extends Controller
 
         return $randomString;
     }
+
+    // agent profile
+    public function agentProfile($id)
+    {
+        $subAgent = User::findOrFail($id);
+        return view('admin.agent.agent_profile', compact('subAgent'));
+    }
 }

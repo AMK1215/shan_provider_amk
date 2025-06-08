@@ -227,6 +227,15 @@
                                     </p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.agent.profile', auth()->user()->id) }}"
+                                    class="nav-link {{ Route::current()->getName() == 'admin.agent.profile' ? 'active' : '' }}">
+                                    <i class="fas fa-user-plus"></i>
+                                    <p>
+                                        Agent Profile
+                                    </p>
+                                </a>
+                            </li>
                         @endcan
                         @can('player_view')
                             <li class="nav-item">

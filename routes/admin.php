@@ -77,6 +77,7 @@ Route::group([
     Route::put('agent/{id}/ban', [AgentController::class, 'banAgent'])->name('agent.ban');
     Route::get('agent-changepassword/{id}', [AgentController::class, 'getChangePassword'])->name('agent.getChangePassword');
     Route::post('agent-changepassword/{id}', [AgentController::class, 'makeChangePassword'])->name('agent.makeChangePassword');
+    Route::get('agent-profile/{id}', [AgentController::class, 'agentProfile'])->name('agent.profile');
     // agent end
 
     // sub-agent start
