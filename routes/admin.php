@@ -143,7 +143,7 @@ Route::group([
     });
 
     // Cash-in/cash-out routes (still using deposit_withdraw permission)
-    Route::middleware(['permission:deposit_withdraw'])->group(function () {
+    Route::middleware(['permission:process_withdraw'])->group(function () {
         Route::get('player-cash-in/{player}', [PlayerController::class, 'getCashIn'])->name('player.getCashIn');
         Route::post('player-cash-in/{player}', [PlayerController::class, 'makeCashIn'])->name('player.makeCashIn');
         Route::get('player/cash-out/{player}', [PlayerController::class, 'getCashOut'])->name('player.getCashOut');
