@@ -95,11 +95,14 @@ Route::group([
     Route::get('subacc-agent-players', [SubAccountController::class, 'agentPlayers'])
         ->name('subacc.agent_players');
     Route::get('subacc/player/{id}/report', [SubAccountController::class, 'playerReport'])->name('subacc.player.report_detail');
+    Route::middleware(['permission:deposit_withdraw'])->group(function () {
     Route::get('subacc/player-cash-in/{player}', [SubAccountController::class, 'getCashIn'])->name('subacc.player.getCashIn');
     Route::post('subacc/player-cash-in/{player}', [SubAccountController::class, 'makeCashIn'])->name('subacc.player.makeCashIn');
     Route::get('/subacc/player/cash-out/{player}', [SubAccountController::class, 'getCashOut'])->name('subacc.player.getCashOut');
     Route::post('/subacc/player/cash-out/update/{player}', [SubAccountController::class, 'makeCashOut'])
         ->name('subacc.player.makeCashOut');
+    });
+    
     Route::get('/subagentacc/tran-logs', [SubAccountController::class, 'SubAgentTransferLog'])->name('subacc.tran.logs');
 
     // sub-agent end
@@ -143,7 +146,7 @@ Route::group([
     });
 
     // Cash-in/cash-out routes (still using deposit_withdraw permission)
-    Route::middleware(['permission:process_withdraw'])->group(function () {
+    Route::middleware(['permission:deposit_withdraw'])->group(function () {
         Route::get('player-cash-in/{player}', [PlayerController::class, 'getCashIn'])->name('player.getCashIn');
         Route::post('player-cash-in/{player}', [PlayerController::class, 'makeCashIn'])->name('player.makeCashIn');
         Route::get('player/cash-out/{player}', [PlayerController::class, 'getCashOut'])->name('player.getCashOut');
