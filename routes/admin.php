@@ -95,7 +95,7 @@ Route::group([
     Route::get('subacc-agent-players', [SubAccountController::class, 'agentPlayers'])
         ->name('subacc.agent_players');
     Route::get('subacc/player/{id}/report', [SubAccountController::class, 'playerReport'])->name('subacc.player.report_detail');
-    Route::middleware(['permission:deposit_withdraw'])->group(function () {
+    Route::middleware(['permission:process_deposit'])->group(function () {
     Route::get('subacc/player-cash-in/{player}', [SubAccountController::class, 'getCashIn'])->name('subacc.player.getCashIn');
     Route::post('subacc/player-cash-in/{player}', [SubAccountController::class, 'makeCashIn'])->name('subacc.player.makeCashIn');
     Route::get('/subacc/player/cash-out/{player}', [SubAccountController::class, 'getCashOut'])->name('subacc.player.getCashOut');
