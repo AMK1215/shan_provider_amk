@@ -35,9 +35,9 @@
                                     <th>Phone</th>
                                     <th>Status</th>
                                     <th>Balance</th>
-                                    <th>Total Winlose Amt</th>
+                                    <!-- <th>Total Winlose Amt</th> -->
                                     <th>Action</th>
-                                    <th>Transfer</th>
+                                    <!-- <th>Transfer</th> -->
                                 </thead>
                                 <tbody >
                                    
@@ -67,7 +67,7 @@
 
                                                     $totalAmt = $poneWintAmt + $result + $betNResults; --}}
 
-                                                    <td class="{{$user->win_lose >= 0 ? 'text-success text-bold' : 'text-danger text-bold'}}">{{ number_format($user->win_lose) }}</td>
+                                                    <!-- <td class="{{$user->win_lose >= 0 ? 'text-success text-bold' : 'text-danger text-bold'}}">{{ number_format($user->win_lose) }}</td> -->
 
                                                     <td>
                                                         @if ($user->status == 1)
@@ -123,7 +123,7 @@
                                                             <i class="fas fa-right-left text-white mr-1"></i>
                                                             Logs
                                                         </a>
-                                                        <a href="{{ route('admin.PlayertransferLogDetail', $user->id) }}"
+                                                        <!-- <a href="{{ route('admin.PlayertransferLogDetail', $user->id) }}"
                                                             data-bs-toggle="tooltip" data-bs-original-title="Reports"
                                                             class="btn btn-info btn-sm">
                                                             <i class="fa-solid fa-money-bill-transfer"></i>
@@ -134,7 +134,7 @@
                                                             class="btn btn-info btn-sm">
                                                             <i class="fa-solid fa-money-bill-transfer"></i>
                                                             Reports
-                                                        </a>
+                                                        </a> -->
                                                         {{-- <a href="{{ route('admin.reports.agent.index', $user->id) }}"
                                             data-bs-toggle="tooltip" data-bs-original-title="Reports"
                                             class="btn btn-info btn-sm mt-2">

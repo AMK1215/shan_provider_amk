@@ -143,11 +143,11 @@ class PlayerController extends Controller
      */
     public function create()
     {
-        abort_if(
-            Gate::denies('subagent_access'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('subagent_access'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
         $player_name = $this->generateRandomString();
         $agent = $this->getAgent() ?? Auth::user();
         // $owner_id = User::where('agent_id', $agent->agent_id)->first();
@@ -164,7 +164,7 @@ class PlayerController extends Controller
      */
     public function store(PlayerRequest $request)
     {
-        Gate::allows('subagent_access');
+        // Gate::allows('subagent_access');
 
         $agent = $this->getAgent() ?? Auth::user();
         $siteLink = $agent->parent->site_link ?? 'null';
