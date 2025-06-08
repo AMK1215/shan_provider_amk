@@ -343,11 +343,11 @@ class SubAccountController extends Controller
     // ----------------- Transaction method -------------
     public function getCashIn(User $player)
     {
-        abort_if(
-            Gate::denies('process_deposit'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
-        );
+        // abort_if(
+        //     Gate::denies('process_deposit'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
+        // );
 
         $subAgent = Auth::user();
         $agent = $subAgent->agent;
@@ -357,11 +357,11 @@ class SubAccountController extends Controller
 
     public function makeCashIn(TransferLogRequest $request, User $player)
     {
-        abort_if(
-            Gate::denies('process_deposit'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
-        );
+        // abort_if(
+        //     Gate::denies('process_deposit'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
+        // );
 
         try {
             DB::beginTransaction();
@@ -414,11 +414,11 @@ class SubAccountController extends Controller
 
     public function getCashOut(User $player)
     {
-        abort_if(
-            Gate::denies('process_withdraw'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
-        );
+        // abort_if(
+        //     Gate::denies('process_withdraw'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
+        // );
         $subAgent = Auth::user();
         $agent = $subAgent->agent;
 
@@ -427,11 +427,11 @@ class SubAccountController extends Controller
 
     public function makeCashOut(TransferLogRequest $request, User $player)
     {
-        abort_if(
-            Gate::denies('process_withdraw'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
-        );
+        // abort_if(
+        //     Gate::denies('process_withdraw'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ'
+        // );
 
         try {
             DB::beginTransaction();
@@ -553,7 +553,7 @@ class SubAccountController extends Controller
      */
     public function PlayerStore(PlayerRequest $request)
     {
-       // Gate::allows('create_player');
+        // Gate::allows('create_player');
 
         // $agent = $this->getAgent() ?? Auth::user();
         $subAgent = Auth::user();      // The subagent making the request
@@ -562,6 +562,7 @@ class SubAccountController extends Controller
         $siteLink = $agent->parent->site_link ?? 'null';
 
         $inputs = $request->validated();
+        $inputs['amount'] = $inputs['amount'] ?? 0;
 
         try {
             DB::beginTransaction();

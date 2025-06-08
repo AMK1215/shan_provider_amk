@@ -96,13 +96,17 @@ Route::group([
         ->name('subacc.agent_players');
     Route::get('subacc/player/{id}/report', [SubAccountController::class, 'playerReport'])->name('subacc.player.report_detail');
     Route::middleware(['permission:process_deposit'])->group(function () {
-    Route::get('subacc/player-cash-in/{player}', [SubAccountController::class, 'getCashIn'])->name('subacc.player.getCashIn');
-    Route::post('subacc/player-cash-in/{player}', [SubAccountController::class, 'makeCashIn'])->name('subacc.player.makeCashIn');
-    Route::get('/subacc/player/cash-out/{player}', [SubAccountController::class, 'getCashOut'])->name('subacc.player.getCashOut');
-    Route::post('/subacc/player/cash-out/update/{player}', [SubAccountController::class, 'makeCashOut'])
-        ->name('subacc.player.makeCashOut');
+        Route::get('subacc/player-cash-in/{player}', [SubAccountController::class, 'getCashIn'])->name('subacc.player.getCashIn');
+        Route::post('subacc/player-cash-in/{player}', [SubAccountController::class, 'makeCashIn'])->name('subacc.player.makeCashIn');
+
     });
-    
+
+    Route::middleware(['permission:process_withdraw'])->group(function () {
+        Route::get('/subacc/player/cash-out/{player}', [SubAccountController::class, 'getCashOut'])->name('subacc.player.getCashOut');
+        Route::post('/subacc/player/cash-out/update/{player}', [SubAccountController::class, 'makeCashOut'])
+            ->name('subacc.player.makeCashOut');
+    });
+
     Route::get('/subagentacc/tran-logs', [SubAccountController::class, 'SubAgentTransferLog'])->name('subacc.tran.logs');
 
     // sub-agent end
@@ -124,7 +128,7 @@ Route::group([
     Route::get('agent/players/create', [PlayerController::class, 'create'])->name('agent.player.create');
     Route::post('agent/players', [PlayerController::class, 'store'])->name('agent.player.store');
     Route::middleware(['permission:create_player'])->group(function () {
-        
+
         Route::get('/subagentacc/player/create', [SubAccountController::class, 'PlayerCreate'])->name('subacc.player.create');
         Route::post('/subagentacc/player/store', [SubAccountController::class, 'PlayerStore'])->name('subacc.player.store');
     });

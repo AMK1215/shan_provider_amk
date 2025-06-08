@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AgentRequest;
 use App\Http\Requests\TransferLogRequest;
 // use App\Models\Admin\TransferLog;
+use App\Models\Admin\Permission;
 use App\Models\PaymentType;
 use App\Models\TransferLog;
 use App\Models\User;
@@ -24,7 +25,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Admin\Permission;
 
 class AgentController extends Controller
 {
@@ -61,7 +61,7 @@ class AgentController extends Controller
             'view_deposit_requests',
             'process_withdraw',
             'process_deposit',
-        ], 
+        ],
         'agent' => [
             'subagent_access',
             'subagent_index',
@@ -81,9 +81,9 @@ class AgentController extends Controller
 
     public function index(): View
     {
-        if (! Gate::allows('agent_index')) {
-            abort(403);
-        }
+        // if (! Gate::allows('agent_index')) {
+        //     abort(403);
+        // }
 
         $agents = User::with(['roles', 'children.poneWinePlayer'])->whereHas('roles', fn ($q) => $q->where('role_id', self::AGENT_ROLE))
             ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
@@ -224,9 +224,9 @@ class AgentController extends Controller
      */
     public function edit(string $id): View
     {
-        if (! Gate::allows('agent_edit')) {
-            abort(403);
-        }
+        // if (! Gate::allows('agent_edit')) {
+        //     abort(403);
+        // }
 
         $agent = User::find($id);
         $paymentTypes = PaymentType::all();
@@ -239,9 +239,9 @@ class AgentController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
-        if (! Gate::allows('agent_edit')) {
-            abort(403);
-        }
+        // if (! Gate::allows('agent_edit')) {
+        //     abort(403);
+        // }
 
         $user = User::find($id);
 
@@ -256,9 +256,9 @@ class AgentController extends Controller
      */
     public function getCashIn(string $id): View
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+        // if (! Gate::allows('make_transfer')) {
+        //     abort(403);
+        // }
         $agent = User::find($id);
 
         return view('admin.agent.cash_in', compact('agent'));
@@ -266,9 +266,9 @@ class AgentController extends Controller
 
     public function getCashOut(string $id): View
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+        // if (! Gate::allows('make_transfer')) {
+        //     abort(403);
+        // }
         // Assuming $id is the user ID
         $agent = User::findOrFail($id);
 
@@ -277,9 +277,9 @@ class AgentController extends Controller
 
     public function makeCashIn(Request $request, $id): RedirectResponse
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+        // if (! Gate::allows('make_transfer')) {
+        //     abort(403);
+        // }
 
         try {
             $agent = User::findOrFail($id);
@@ -322,9 +322,9 @@ class AgentController extends Controller
 
     public function makeCashOut(TransferLogRequest $request, string $id): RedirectResponse
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+        // if (! Gate::allows('make_transfer')) {
+        //     abort(403);
+        // }
 
         try {
             $agent = User::findOrFail($id);
@@ -372,11 +372,11 @@ class AgentController extends Controller
 
     public function getTransferDetail($id)
     {
-        abort_if(
-            Gate::denies('make_transfer') || ! $this->ifChildOfParent(request()->user()->id, $id),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('make_transfer') || ! $this->ifChildOfParent(request()->user()->id, $id),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
         $transfer_detail = TransferLog::where('from_user_id', $id)
             ->orWhere('to_user_id', $id)
             ->get();
@@ -404,11 +404,11 @@ class AgentController extends Controller
 
     public function getChangePassword($id)
     {
-        abort_if(
-            Gate::denies('owner_access') || ! $this->ifChildOfParent(request()->user()->id, $id),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('owner_access') || ! $this->ifChildOfParent(request()->user()->id, $id),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         $agent = User::find($id);
 
@@ -417,11 +417,11 @@ class AgentController extends Controller
 
     public function makeChangePassword($id, Request $request)
     {
-        abort_if(
-            Gate::denies('owner_access') || ! $this->ifChildOfParent(request()->user()->id, $id),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('owner_access') || ! $this->ifChildOfParent(request()->user()->id, $id),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         $request->validate([
             'password' => 'required|min:6|confirmed',
@@ -648,8 +648,6 @@ class AgentController extends Controller
 
         return view('admin.agent.report_index', compact('report'));
     }
-
-    
 
     private function generateReferralCode($length = 8)
     {

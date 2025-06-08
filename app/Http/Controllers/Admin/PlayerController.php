@@ -43,11 +43,11 @@ class PlayerController extends Controller
      */
     public function index()
     {
-        abort_if(
-            Gate::denies('make_transfer'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden | You cannot access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('make_transfer'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden | You cannot access this page because you do not have permission'
+        // );
 
         // Step 1: Get all descendant player IDs under this owner/agent/subagent using recursive CTE
         $startId = auth()->id();
@@ -272,11 +272,11 @@ class PlayerController extends Controller
      */
     public function destroy(User $player)
     {
-        abort_if(
-            Gate::denies('player_delete') || ! $this->ifChildOfParent(request()->user()->id, $player->id),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('player_delete') || ! $this->ifChildOfParent(request()->user()->id, $player->id),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
         $player->delete();
 
         return redirect()->route('admin.player.index')->with('success', 'User deleted successfully');
@@ -291,11 +291,11 @@ class PlayerController extends Controller
 
     public function banUser($id)
     {
-        abort_if(
-            ! $this->ifChildOfParent(request()->user()->id, $id),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     ! $this->ifChildOfParent(request()->user()->id, $id),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         $user = User::find($id);
         $user->update(['status' => $user->status == 1 ? 0 : 1]);
@@ -308,22 +308,22 @@ class PlayerController extends Controller
 
     public function getCashIn(User $player)
     {
-        abort_if(
-            Gate::denies('make_transfer'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('make_transfer'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         return view('admin.player.cash_in', compact('player'));
     }
 
     public function makeCashIn(TransferLogRequest $request, User $player)
     {
-        abort_if(
-            Gate::denies('make_transfer'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('make_transfer'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         try {
             DB::beginTransaction();
@@ -373,22 +373,22 @@ class PlayerController extends Controller
 
     public function getCashOut(User $player)
     {
-        abort_if(
-            Gate::denies('make_transfer'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('make_transfer'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         return view('admin.player.cash_out', compact('player'));
     }
 
     public function makeCashOut(TransferLogRequest $request, User $player)
     {
-        abort_if(
-            Gate::denies('make_transfer'),
-            Response::HTTP_FORBIDDEN,
-            '403 Forbidden |You cannot  Access this page because you do not have permission'
-        );
+        // abort_if(
+        //     Gate::denies('make_transfer'),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
 
         try {
             DB::beginTransaction();
