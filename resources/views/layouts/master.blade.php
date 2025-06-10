@@ -424,7 +424,7 @@
             </a>
         </li>
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="{{ route('admin.winner_text.index') }}"
                class="nav-link {{ Route::current()->getName() == 'admin.winner_text.index' ? 'active' : '' }}">
                 <i class="fas fa-trophy nav-icon"></i>
@@ -438,7 +438,7 @@
                 <i class="fas fa-list-ol nav-icon"></i>
                 <p>WithdrawTopTen</p>
             </a>
-        </li>
+        </li> -->
 
         <li class="nav-item">
             <a href="{{ route('admin.text.index') }}"
