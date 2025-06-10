@@ -69,7 +69,7 @@ class GSCPlusProviderController extends Controller
 
     public function hotGameLists()
     {
-        $hot_games = GameList::hotGame()->get();
+        $hot_games = GameList::where('hot_status', '1')->get();
 
         return $this->success(GameListResource::collection($hot_games));
     }
