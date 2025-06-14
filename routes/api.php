@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\PromotionController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\ShanGetBalanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,3 +79,7 @@ Route::get('/game_types', [GSCPlusProviderController::class, 'gameTypes']);
 Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers']);
 Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
 Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
+
+Route::group(['prefix' => 'shan'], function () {
+    Route::post('balance', [ShanGetBalanceController::class, 'getBalance']);
+});
