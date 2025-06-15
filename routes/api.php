@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
+use App\Http\Controllers\Api\V1\Game\GameTransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,4 +87,11 @@ Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']
 Route::group(['prefix' => 'shan'], function () {
     Route::post('balance', [ShanGetBalanceController::class, 'getBalance']);
     Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
+});
+
+Route::prefix('v1')->group(function () {
+    Route::prefix('game')->group(function () {
+        Route::post('transactions', [GameTransactionController::class, 'processGameTransaction'])
+            ->middleware(['auth:sanctum', 'transaction']);
+    });
 });
