@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Game;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class ShanLaunchGameController extends Controller
 {
@@ -16,15 +16,15 @@ class ShanLaunchGameController extends Controller
         // 1. Validate input (including sign and operator_code)
         $validator = Validator::make($request->all(), [
             'member_account' => 'required|string|max:50',
-            'operator_code'  => 'required|string',
-            'sign'           => 'required|string',
+            'operator_code' => 'required|string',
+            'sign' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status'  => 'fail',
+                'status' => 'fail',
                 'message' => 'Validation error',
-                'errors'  => $validator->errors(),
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -33,9 +33,9 @@ class ShanLaunchGameController extends Controller
         $sign = $request->sign;
 
         // 2. Signature check
-       // $secret_key = config('shan.services.shan_key'); // or fetch from DB as needed
+        // $secret_key = config('shan.services.shan_key'); // or fetch from DB as needed
         $secret_key = Config::get('shan_key.secret_key');
-        $expected_sign = md5($operator_code . $member_account . $secret_key);
+        $expected_sign = md5($operator_code.$member_account.$secret_key);
 
         if ($sign !== $expected_sign) {
             return response()->json([
@@ -46,7 +46,7 @@ class ShanLaunchGameController extends Controller
 
         // 3. Member must exist
         $user = User::where('user_name', $member_account)->first();
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Member not found',
@@ -57,10 +57,10 @@ class ShanLaunchGameController extends Controller
         $providerUrl = 'https://ponewine20x.xyz/api/shan/launch-game'; // e.g. 'https://provider-site.com/api/shan/launch-game'
         $response = Http::post($providerUrl, [
             'member_account' => $member_account,
-            'operator_code'  => $operator_code,
-            'sign'           => $sign,
+            'operator_code' => $operator_code,
+            'sign' => $sign,
         ]);
-        
+
         // 5. Pass back provider's response (or parse/modify as needed)
         if ($response->successful()) {
             return response()->json($response->json(), $response->status());
@@ -68,15 +68,8 @@ class ShanLaunchGameController extends Controller
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Provider API error',
-                'error_detail' => $response->body()
+                'error_detail' => $response->body(),
             ], $response->status());
         }
     }
 }
-
-
-
-
-
-
-

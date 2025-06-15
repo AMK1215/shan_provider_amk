@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
+use App\Enums\TransactionName;
 use App\Models\Admin\ReportTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use App\Enums\TransactionName;
+use Illuminate\Support\Facades\Log;
 
 class ShanTransactionService
 {
     private const PROVIDER_URL = 'https://ponewine20x.xyz/api/transactions';
+
     private const TRANSACTION_KEY = 'yYpfrVcWmkwxWx7um0TErYHj4YcHOOWr';
 
     public function __construct(
@@ -22,11 +23,11 @@ class ShanTransactionService
     {
         Log::info('Starting Shan transaction process', [
             'validated_data' => $validated,
-            'players' => $players
+            'players' => $players,
         ]);
 
         $admin = User::adminUser();
-        if (!$admin) {
+        if (! $admin) {
             Log::error('Admin user not found');
             throw new \RuntimeException('Admin (system wallet) not found');
         }
@@ -39,11 +40,11 @@ class ShanTransactionService
             foreach ($players as $index => $playerData) {
                 Log::info('Processing player transaction', [
                     'player_index' => $index,
-                    'player_data' => $playerData
+                    'player_data' => $playerData,
                 ]);
 
                 $user = User::where('user_name', $playerData['player_id'])->first();
-                if (!$user) {
+                if (! $user) {
                     Log::error('Player not found', ['player_id' => $playerData['player_id']]);
                     throw new \RuntimeException("Player not found: {$playerData['player_id']}");
                 }
@@ -51,32 +52,32 @@ class ShanTransactionService
                 Log::info('Player found', [
                     'player_id' => $user->id,
                     'username' => $user->user_name,
-                    'current_balance' => $user->balanceFloat
+                    'current_balance' => $user->balanceFloat,
                 ]);
 
                 $this->handleWalletTransaction($playerData, $user, $admin, $validated['game_type_id']);
                 $this->storeTransactionHistory($playerData, $user, $validated['game_type_id']);
-                
+
                 // Refresh user balance
                 $user->refresh();
-                
+
                 Log::info('Player transaction completed', [
                     'player_id' => $user->id,
                     'new_balance' => $user->balanceFloat,
-                    'transaction_amount' => $playerData['amount_changed']
+                    'transaction_amount' => $playerData['amount_changed'],
                 ]);
-                
+
                 // Add processed player with updated balance
                 $processedPlayers[] = array_merge($playerData, [
-                    'current_balance' => $user->balanceFloat
+                    'current_balance' => $user->balanceFloat,
                 ]);
             }
-            
+
             DB::commit();
             Log::info('All transactions committed successfully', [
-                'processed_players' => $processedPlayers
+                'processed_players' => $processedPlayers,
             ]);
-            
+
             return $this->notifyProvider($validated, $processedPlayers);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -84,7 +85,7 @@ class ShanTransactionService
                 'error' => $e->getMessage(),
                 'error_trace' => $e->getTraceAsString(),
                 'players' => $players,
-                'data' => $validated
+                'data' => $validated,
             ]);
             throw $e;
         }
@@ -97,40 +98,40 @@ class ShanTransactionService
             'admin_id' => $admin->id,
             'game_type_id' => $gameTypeId,
             'amount' => $playerData['amount_changed'],
-            'win_lose_status' => $playerData['win_lose_status']
+            'win_lose_status' => $playerData['win_lose_status'],
         ]);
 
         try {
             if ($playerData['win_lose_status'] == 1) {
                 $this->walletService->forceTransfer(
-                    $admin, 
-                    $user, 
-                    $playerData['amount_changed'], 
-                    TransactionName::Win, 
+                    $admin,
+                    $user,
+                    $playerData['amount_changed'],
+                    TransactionName::Win,
                     ['reason' => 'player_win', 'game_type_id' => $gameTypeId]
                 );
                 Log::info('Win transaction completed', [
                     'player_id' => $user->id,
-                    'amount' => $playerData['amount_changed']
+                    'amount' => $playerData['amount_changed'],
                 ]);
             } else {
                 $this->walletService->forceTransfer(
-                    $user, 
-                    $admin, 
-                    $playerData['amount_changed'], 
-                    TransactionName::Loss, 
+                    $user,
+                    $admin,
+                    $playerData['amount_changed'],
+                    TransactionName::Loss,
                     ['reason' => 'player_lose', 'game_type_id' => $gameTypeId]
                 );
                 Log::info('Loss transaction completed', [
                     'player_id' => $user->id,
-                    'amount' => $playerData['amount_changed']
+                    'amount' => $playerData['amount_changed'],
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('Wallet transaction failed', [
                 'error' => $e->getMessage(),
                 'player_id' => $user->id,
-                'amount' => $playerData['amount_changed']
+                'amount' => $playerData['amount_changed'],
             ]);
             throw $e;
         }
@@ -141,7 +142,7 @@ class ShanTransactionService
         Log::info('Storing transaction history', [
             'player_id' => $user->id,
             'game_type_id' => $gameTypeId,
-            'transaction_data' => $playerData
+            'transaction_data' => $playerData,
         ]);
 
         try {
@@ -156,13 +157,13 @@ class ShanTransactionService
 
             Log::info('Transaction history stored', [
                 'transaction_id' => $transaction->id,
-                'player_id' => $user->id
+                'player_id' => $user->id,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to store transaction history', [
                 'error' => $e->getMessage(),
                 'player_id' => $user->id,
-                'data' => $playerData
+                'data' => $playerData,
             ]);
             throw $e;
         }
@@ -172,11 +173,11 @@ class ShanTransactionService
     {
         $payload = [
             'game_type_id' => $validated['game_type_id'],
-            'players' => $players
+            'players' => $players,
         ];
 
         Log::info('Notifying provider', [
-            'payload' => $payload
+            'payload' => $payload,
         ]);
 
         try {
@@ -185,30 +186,30 @@ class ShanTransactionService
                 'Accept' => 'application/json',
             ])->post(self::PROVIDER_URL, $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('Provider transaction failed', [
                     'payload' => $payload,
                     'response' => $response->body(),
-                    'status_code' => $response->status()
+                    'status_code' => $response->status(),
                 ]);
                 throw new \RuntimeException('Failed to report to provider');
             }
 
             Log::info('Provider notification successful', [
-                'response' => $response->json()
+                'response' => $response->json(),
             ]);
 
             return [
                 'status' => 'success',
                 'provider_result' => $response->json(),
-                'players' => $players
+                'players' => $players,
             ];
         } catch (\Exception $e) {
             Log::error('Provider notification failed', [
                 'error' => $e->getMessage(),
-                'payload' => $payload
+                'payload' => $payload,
             ]);
             throw $e;
         }
     }
-} 
+}

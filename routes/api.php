@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\V1\Dashboard\AdminLoginController;
 use App\Http\Controllers\Api\V1\DepositRequestController;
 use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
+use App\Http\Controllers\Api\V1\Game\ProviderTransactionCallbackController;
+use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
+use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
@@ -15,13 +18,10 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\PromotionController;
+use App\Http\Controllers\Api\V1\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\ShanGetBalanceController;
-use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
-use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
-use App\Http\Controllers\Api\V1\Game\ProviderTransactionCallbackController;
 
 /*
 |--------------------------------------------------------------------------
