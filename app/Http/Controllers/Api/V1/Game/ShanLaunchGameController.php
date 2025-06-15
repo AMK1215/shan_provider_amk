@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Config;
 
 class ShanLaunchGameController extends Controller
 {
@@ -32,7 +33,8 @@ class ShanLaunchGameController extends Controller
         $sign = $request->sign;
 
         // 2. Signature check
-        $secret_key = config('shan.services.shan_key'); // or fetch from DB as needed
+       // $secret_key = config('shan.services.shan_key'); // or fetch from DB as needed
+        $secret_key = Config::get('shan_key.secret_key');
         $expected_sign = md5($operator_code . $member_account . $secret_key);
 
         if ($sign !== $expected_sign) {
