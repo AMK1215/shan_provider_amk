@@ -33,7 +33,9 @@ class GetBalanceController extends Controller
         $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
 
         // Allowed currencies
-        $allowedCurrencies = ['MMK','IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
+        $allowedCurrencies = ['MMK', 'VND', 'INR', 'MYR', 'AOA', 'EUR', 'IDR', 'PHP', 'THB', 'JPY', 'COP', 'IRR', 'CHF', 'USD', 'MXN', 'ETB', 'CAD', 'BRL', 'NGN', 'KES', 'KRW', 'TND', 'LBP', 'BDT', 'CZK'];
+
+        //$allowedCurrencies = ['MMK','IDR', 'IDR2', 'KRW2', 'MMK2', 'VND2', 'LAK2', 'KHR2'];
         $isValidCurrency = in_array($request->currency, $allowedCurrencies);
 
         $results = [];
