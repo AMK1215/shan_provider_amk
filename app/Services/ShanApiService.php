@@ -14,7 +14,7 @@ class ShanApiService
 
     public function __construct()
     {
-        $this->apiUrl = config('shan_key.api_url');
+        $this->apiUrl = config('shan_key.api_url/transactions');
         $this->transactionKey = config('shan_key.transaction_key');
         $this->agentCode = config('shan_key.agent_code');
         $this->currency = config('shan_key.api_currency');
