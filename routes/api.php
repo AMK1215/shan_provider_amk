@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
+use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
+    Route::post('/transactions', [ShanTransactionController::class, 'store']);
 
     // fanicial api
     Route::get('agentfinicialPaymentType', [BankController::class, 'all']);
