@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
-use App\Http\Controllers\Api\V1\Game\GameTransactionController;
+use App\Http\Controllers\Api\V1\Game\ProviderTransactionCallbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +91,6 @@ Route::group(['prefix' => 'shan'], function () {
 
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
-        Route::post('transactions', [GameTransactionController::class, 'processGameTransaction']);
+        Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
     });
 });
