@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ShanGetBalanceController;
+use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,4 +83,5 @@ Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']
 
 Route::group(['prefix' => 'shan'], function () {
     Route::post('balance', [ShanGetBalanceController::class, 'getBalance']);
+    Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
 });
