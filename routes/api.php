@@ -92,6 +92,6 @@ Route::group(['prefix' => 'shan'], function () {
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
         Route::post('transactions', [GameTransactionController::class, 'processGameTransaction'])
-            ->middleware(['auth:sanctum', 'transaction']);
+            ->middleware(['auth:sanctum']);
     });
 });
