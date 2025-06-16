@@ -15,7 +15,7 @@ class SpadeGamingFishingGameSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/json_data/sa_gaming.json');
+        $jsonPath = base_path('app/Console/Commands/data/spadegaming_fishing.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 
@@ -29,7 +29,7 @@ class SpadeGamingFishingGameSeeder extends Seeder
                         'image_url' => $game['image_url'],
                         'provider_product_id' => $game['product_id'],
                         'game_type_id' => 8,
-                        'product_id' => 10,
+                        'product_id' => 22,
                         'product_code' => $game['product_code'],
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],

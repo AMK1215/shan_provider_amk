@@ -15,7 +15,7 @@ class PragmaticPlayVirtualSportGameSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/json_data/pp_virtural_sport.json');
+        $jsonPath = base_path('app/Console/Commands/data/PP_VIRTUAL_SPORT.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 
@@ -29,7 +29,7 @@ class PragmaticPlayVirtualSportGameSeeder extends Seeder
                         'image_url' => $game['image_url'],
                         'provider_product_id' => $game['product_id'],
                         'game_type_id' => 4,
-                        'product_id' => 22,
+                        'product_id' => 3,
                         'product_code' => $game['product_code'],
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],

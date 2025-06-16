@@ -15,7 +15,7 @@ class PragmaticPlayLiveCasinoPremiumGameSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/json_data/pp_live_casino_premium.json');
+        $jsonPath = base_path('app/Console/Commands/data/PP_LIVE_CASINO_PREMIUM.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 
@@ -29,7 +29,7 @@ class PragmaticPlayLiveCasinoPremiumGameSeeder extends Seeder
                         'image_url' => $game['image_url'],
                         'provider_product_id' => $game['product_id'],
                         'game_type_id' => 14,
-                        'product_id' => 21,
+                        'product_id' => 2,
                         'product_code' => $game['product_code'],
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],

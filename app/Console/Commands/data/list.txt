@@ -1,3 +1,8 @@
+WBet - no game lists
+awc_LIVE_CASINO - no game list
+BigGaming - has no game list
+DIGITAIN - has no game list 
+
 Providers in product_list.json:
 SBO
 Yee Bet

@@ -15,7 +15,7 @@ class ImoonOtherGameSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/json_data/imoon_other.json');
+        $jsonPath = base_path('app/Console/Commands/data/imoon_other.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 

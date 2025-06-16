@@ -15,7 +15,7 @@ class Rich88SlotGameSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/json_data/r88_slot.json');
+        $jsonPath = base_path('app/Console/Commands/data/r88.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 

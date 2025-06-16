@@ -14,7 +14,7 @@ class SEOGameListSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/json_data/SBO.json');
+        $jsonPath = base_path('app/Console/Commands/data/sbo_sport_book.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 
@@ -28,7 +28,7 @@ class SEOGameListSeeder extends Seeder
                         'image_url' => $game['image_url'],
                         'provider_product_id' => $game['product_id'],
                         'game_type_id' => 3,
-                        'product_id' => 1,
+                        'product_id' => 96,
                         'product_code' => $game['product_code'],
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],
