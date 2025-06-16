@@ -15,7 +15,7 @@ class IBCOTHERSeeder extends Seeder
      */
     public function run()
     {
-        $jsonPath = base_path('app/Console/Commands/data/ibc_VIRibc_otherTUAL_SPORT.json');
+        $jsonPath = base_path('app/Console/Commands/data/ibc_other.json');
         $data = json_decode(File::get($jsonPath), true);
         $now = Carbon::now();
 
