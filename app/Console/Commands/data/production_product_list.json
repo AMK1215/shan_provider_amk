@@ -1,4 +1,5 @@
-[
+{ 
+    "ProviderGames":[
     {
         "provider": "SBO",
         "currency": "MMK",
@@ -1057,4 +1058,4 @@
         "game_type": "LIVE_CASINO",
         "product_title": "PrettyGaming"
     }
-]
+]}
