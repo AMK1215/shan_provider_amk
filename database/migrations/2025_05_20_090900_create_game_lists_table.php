@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('game_type_id');
             $table->unsignedBigInteger('product_id');
             $table->integer('product_code');
-            $table->string('support_currency');
+            $table->text('support_currency')->nullable();
             $table->string('status')->default('1');
             $table->boolean('is_active')->default(true);
             $table->string('provider')->nullable();
