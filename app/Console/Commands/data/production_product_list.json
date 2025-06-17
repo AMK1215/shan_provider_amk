@@ -373,7 +373,7 @@
         {
             "provider": "BigGaming",
             "currency": "MMK2",
-            "status": "ACTIVATED",
+            "status": "DEACTIVATED",
             "provider_id": 34,
             "product_id": 1233,
             "product_code": 1004,
