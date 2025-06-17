@@ -32,7 +32,8 @@ class SEOGameListSeeder extends Seeder
                         'product_code' => $game['product_code'],
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],
-                        'provider' => 'SEO', // Setting provider as SEO
+                        'provider' => 'SEO',
+                        'game_list_status' => 1,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);

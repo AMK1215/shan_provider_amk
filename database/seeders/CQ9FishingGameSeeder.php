@@ -34,6 +34,7 @@ class CQ9FishingGameSeeder extends Seeder
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],
                         'provider' => 'CQ9',
+                        'game_list_status' => 1,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);

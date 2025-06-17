@@ -34,6 +34,7 @@ class Rich88SlotGameSeeder extends Seeder
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],
                         'provider' => 'RICH88',
+                        'game_list_status' => 0,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);

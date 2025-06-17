@@ -2,6 +2,320 @@
     "code": 0,
     "message": "",
     "provider_games": [
+
+        {
+            "game_code": "vs20olympdice",
+            "game_name": "Gates of Olympus Dice",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympdice.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20olympgate",
+            "game_name": "Gates of Olympus",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympgate.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20olympgold",
+            "game_name": "Gates of Olympus Super Scatter",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympgold.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+
+        {
+            "game_code": "vs20dicegatex",
+            "game_name": "Gates of Olympus 1000 Dice",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20dicegatex.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "BRL,IDR",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20olympx",
+            "game_name": "Gates of Olympus 1000",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympx.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20olympxmas",
+            "game_name": "Gates of Olympus Xmas 1000",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympxmas.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vswaysolymp",
+            "game_name": "Gates of Olympus Pachi",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vswaysolymp.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "JPY",
+            "status": "ACTIVATED"
+        },
+
+        {
+            "game_code": "vs20gatotgates",
+            "game_name": "Gates of Gatot Kaca",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20gatotgates.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20gatotx",
+            "game_name": "Gates of Gatot Kaca 1000",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20gatotx.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+
+        {
+            "game_code": "vs10bbbbrnd",
+            "game_name": "Big Bass Boxing Bonus Round",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbbrnd.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbbnz",
+            "game_name": "Big Bass Day at the Races",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbnz.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbbnz1000",
+            "game_name": "Big Bass Bonanza 1000",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbnz1000.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbbonanza",
+            "game_name": "Big Bass Bonanza",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbonanza.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbbrlact",
+            "game_name": "Big Bass Bonanza - Reel Action",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbrlact.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbdice",
+            "game_name": "Big Bass Dice",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbdice.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "BRL,KRW,IDR",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbkir",
+            "game_name": "Big Bass Bonanza - Keeping it Reel",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbkir.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bblotgl",
+            "game_name": "Big Bass - Secrets of the Golden Lake",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bblotgl.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bblpop",
+            "game_name": "Bubble Pop",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bblpop.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbrttr",
+            "game_name": "Big Bass Return to the Races",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbrttr.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbsplxmas",
+            "game_name": "Big Bass Christmas Bash",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbsplxmas.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20schristmas",
+            "game_name": "Starlight Christmas",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20schristmas.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20starlight",
+            "game_name": "Starlight Princess",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20starlight.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20starlightx",
+            "game_name": "Starlight Princess 1000",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20starlightx.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vswaysjapan",
+            "game_name": "Starlight Princess Pachi",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vswaysjapan.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20sh",
+            "game_name": "Shining Hot 20",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20sh.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bburger",
+            "game_name": "Big Burger Load it up with Xtra Cheese",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bburger.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bbxext",
+            "game_name": "Big Bass Xmas Xtreme",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbxext.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bhallbnza",
+            "game_name": "Big Bass Halloween",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bhallbnza.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs10bhallbnza2",
+            "game_name": "Big Bass Halloween 2",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bhallbnza2.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20midas",
+            "game_name": "The Hand of Midas",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20midas.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
+        {
+            "game_code": "vs20midas2",
+            "game_name": "Hand of Midas 2",
+            "game_type": "SLOT",
+            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20midas2.png",
+            "product_id": 1185,
+            "product_code": 1006,
+            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
+            "status": "ACTIVATED"
+        },
         {
             "game_code": "bca",
             "game_name": "Baccarat",
@@ -352,66 +666,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs10bbbbrnd",
-            "game_name": "Big Bass Boxing Bonus Round",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbbrnd.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbbnz",
-            "game_name": "Big Bass Day at the Races",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbnz.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbbnz1000",
-            "game_name": "Big Bass Bonanza 1000",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbnz1000.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbbonanza",
-            "game_name": "Big Bass Bonanza",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbonanza.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbbrlact",
-            "game_name": "Big Bass Bonanza - Reel Action",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbbrlact.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbdice",
-            "game_name": "Big Bass Dice",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbdice.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "BRL,KRW,IDR",
-            "status": "ACTIVATED"
-        },
+        
         {
             "game_code": "vs10bbdoubled",
             "game_name": "Big Bass Vegas Double Down Deluxe",
@@ -462,96 +717,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs10bbkir",
-            "game_name": "Big Bass Bonanza - Keeping it Reel",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbkir.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bblotgl",
-            "game_name": "Big Bass - Secrets of the Golden Lake",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bblotgl.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bblpop",
-            "game_name": "Bubble Pop",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bblpop.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbrttr",
-            "game_name": "Big Bass Return to the Races",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbrttr.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbsplxmas",
-            "game_name": "Big Bass Christmas Bash",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbsplxmas.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bburger",
-            "game_name": "Big Burger Load it up with Xtra Cheese",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bburger.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bbxext",
-            "game_name": "Big Bass Xmas Xtreme",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bbxext.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bhallbnza",
-            "game_name": "Big Bass Halloween",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bhallbnza.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs10bhallbnza2",
-            "game_name": "Big Bass Halloween 2",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs10bhallbnza2.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+        
         {
             "game_code": "vs10bookazteck",
             "game_name": "Book of Aztec King",
@@ -1842,16 +2008,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20dicegatex",
-            "game_name": "Gates of Olympus 1000 Dice",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20dicegatex.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "BRL,IDR",
-            "status": "ACTIVATED"
-        },
+       
         {
             "game_code": "vs20doghouse",
             "game_name": "The Dog House",
@@ -2132,26 +2289,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20gatotgates",
-            "game_name": "Gates of Gatot Kaca",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20gatotgates.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20gatotx",
-            "game_name": "Gates of Gatot Kaca 1000",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20gatotx.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+        
         {
             "game_code": "vs20gembondx",
             "game_name": "Bow of Artemis",
@@ -2552,26 +2690,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20midas",
-            "game_name": "The Hand of Midas",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20midas.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20midas2",
-            "game_name": "Hand of Midas 2",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20midas2.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+       
         {
             "game_code": "vs20minerush",
             "game_name": "Mining Rush",
@@ -2722,36 +2841,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20olympdice",
-            "game_name": "Gates of Olympus Dice",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympdice.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20olympgate",
-            "game_name": "Gates of Olympus",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympgate.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20olympgold",
-            "game_name": "Gates of Olympus Super Scatter",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympgold.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+       
         {
             "game_code": "vs20olympgrace",
             "game_name": "Grace of Ebisu",
@@ -2762,26 +2852,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20olympx",
-            "game_name": "Gates of Olympus 1000",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympx.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20olympxmas",
-            "game_name": "Gates of Olympus Xmas 1000",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20olympxmas.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+       
         {
             "game_code": "vs20pbonanza",
             "game_name": "Pyramid Bonanza",
@@ -3002,26 +3073,7 @@
             "support_currency": "JPY",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20schristmas",
-            "game_name": "Starlight Christmas",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20schristmas.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20sh",
-            "game_name": "Shining Hot 20",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20sh.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+       
         {
             "game_code": "vs20shootstars",
             "game_name": "Heroic Spins",
@@ -3082,26 +3134,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vs20starlight",
-            "game_name": "Starlight Princess",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20starlight.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
-        {
-            "game_code": "vs20starlightx",
-            "game_name": "Starlight Princess 1000",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vs20starlightx.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+        
         {
             "game_code": "vs20stckwldsc",
             "game_name": "Pot of Fortune",
@@ -5672,16 +5705,7 @@
             "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vswaysjapan",
-            "game_name": "Starlight Princess Pachi",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vswaysjapan.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "PHP,VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
-            "status": "ACTIVATED"
-        },
+       
         {
             "game_code": "vswaysjkrdrop",
             "game_name": "Tropical Tiki",
@@ -5922,16 +5946,7 @@
             "support_currency": "VND,MMK,MXN,COP,KES,AOA,TND,ETB,LBP,BDT,BRL,THB,USD,CAD,CHF,MYR,NGN,JPY,KRW,IDR,INR,EUR,IRR,CZK",
             "status": "ACTIVATED"
         },
-        {
-            "game_code": "vswaysolymp",
-            "game_name": "Gates of Olympus Pachi",
-            "game_type": "SLOT",
-            "image_url": "https://images.gscplusmd.com/statics/production/images/games/1006/SLOT/vswaysolymp.png",
-            "product_id": 1185,
-            "product_code": 1006,
-            "support_currency": "JPY",
-            "status": "ACTIVATED"
-        },
+        
         {
             "game_code": "vswayspearls",
             "game_name": "Wild Wild Pearls",

@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('provider')->nullable();
             $table->integer('order')->default(0);
             $table->string('hot_status')->default('0');
+            $table->boolean('game_list_status')->default(true);
 
             $table->timestamps();
         });

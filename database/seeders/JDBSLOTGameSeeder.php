@@ -34,6 +34,7 @@ class JDBSLOTGameSeeder extends Seeder
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],
                         'provider' => 'JDB',
+                        'game_list_status' => 1,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);

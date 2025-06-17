@@ -33,7 +33,8 @@ class MRSlottySlotSeeder extends Seeder
                         'product_code' => $game['product_code'],
                         'support_currency' => $game['support_currency'],
                         'status' => $game['status'],
-                        'provider' => 'CT855',
+                        'provider' => 'MRSlotty',
+                        'game_list_status' => 1,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);

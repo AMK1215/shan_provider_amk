@@ -22,10 +22,10 @@ class GameTypeProductTableSeeder extends Seeder
             ['product_id' => 5, 'game_type_id' => 1, 'image' => 'PGSoft.png.png', 'rate' => 1.0000],
             ['product_id' => 6, 'game_type_id' => 1, 'image' => 'Live22.png', 'rate' => 1.0000],
 
-            ['product_id' => 7, 'game_type_id' => 1, 'image' => 'jili.png', 'rate' => 1.0000],
-            ['product_id' => 8, 'game_type_id' => 8, 'image' => 'jili.png', 'rate' => 1.0000],
-            ['product_id' => 9, 'game_type_id' => 2, 'image' => 'jili.png', 'rate' => 1.0000],
-            ['product_id' => 10, 'game_type_id' => 12, 'image' => 'jili.png', 'rate' => 1.0000],
+            ['product_id' => 7, 'game_type_id' => 1, 'image' => 'jili.png', 'rate' => 1.0000], // slot
+            ['product_id' => 8, 'game_type_id' => 8, 'image' => 'jili.png', 'rate' => 1.0000], // fishing
+            ['product_id' => 9, 'game_type_id' => 2, 'image' => 'jili.png', 'rate' => 1.0000], // casino
+            ['product_id' => 10, 'game_type_id' => 12, 'image' => 'jili.png', 'rate' => 1.0000], // poker
 
             ['product_id' => 11, 'game_type_id' => 1, 'image' => 'cq9.png', 'rate' => 1.0000],
             ['product_id' => 12, 'game_type_id' => 8, 'image' => 'cq9.png', 'rate' => 1.0000],
