@@ -20,7 +20,7 @@ class GameTypeProductTableSeeder extends Seeder
             ['product_id' => 4, 'game_type_id' => 2, 'image' => 'PragmaticPlay.png', 'rate' => 1.0000],
 
             ['product_id' => 5, 'game_type_id' => 1, 'image' => 'PG_Soft.png', 'rate' => 1.0000],
-            ['product_id' => 6, 'game_type_id' => 1, 'image' => 'Live22.png', 'rate' => 1.0000],
+            ['product_id' => 6, 'game_type_id' => 1, 'image' => 'live22.png', 'rate' => 1.0000],
 
             ['product_id' => 7, 'game_type_id' => 1, 'image' => 'jili.png', 'rate' => 1.0000], // slot
             ['product_id' => 8, 'game_type_id' => 8, 'image' => 'jili.png', 'rate' => 1.0000], // fishing
@@ -36,7 +36,7 @@ class GameTypeProductTableSeeder extends Seeder
             ['product_id' => 16, 'game_type_id' => 1, 'image' => 'PlayStar.png', 'rate' => 1.0000],
 
             ['product_id' => 17, 'game_type_id' => 1, 'image' => 'joker.png', 'rate' => 1.0000],
-            ['product_id' => 18, 'game_type_id' => 13, 'image' => 'Joker.png', 'rate' => 1.0000],
+            ['product_id' => 18, 'game_type_id' => 13, 'image' => 'joker.png', 'rate' => 1.0000],
             ['product_id' => 19, 'game_type_id' => 8, 'image' => 'joker_fishing.png', 'rate' => 1.0000],
             ['product_id' => 20, 'game_type_id' => 2, 'image' => 'SAGaming.jfif', 'rate' => 1.0000],
 
