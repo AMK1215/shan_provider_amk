@@ -202,9 +202,20 @@ class DepositController extends Controller
                         $convertedAmount = $this->toDecimalPlaces($amount * $this->getCurrencyValue($request->currency));
 
                         // Specific logic for deposit endpoint
+                        // if ($convertedAmount <= 0) {
+                        //     throw new \Exception('Deposit amount must be positive.');
+                        // }
                         if ($convertedAmount <= 0) {
-                            throw new \Exception('Deposit amount must be positive.');
+                            // Optionally log and skip instead of throwing
+                            Log::info('Skipping zero-amount transaction', [
+                                'transaction_id' => $transactionId,
+                                'member_account' => $memberAccount,
+                                'action' => $action
+                            ]);
+                        
+                            continue; // skip this transaction safely
                         }
+                        
                         $walletService->deposit($user, $convertedAmount, TransactionName::Deposit, [
                             'seamless_transaction_id' => $transactionId,
                             'action' => $action,
