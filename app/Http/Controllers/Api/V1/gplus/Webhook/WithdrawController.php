@@ -348,6 +348,18 @@ class WithdrawController extends Controller
         ];
     }
 
+     /**
+     * Converts a float to a specified number of decimal places.
+     *
+     * @param float $value
+     * @param int $precision
+     * @return float
+     */
+    private function toDecimalPlaces(float $value, int $precision = 4): float
+    {
+        return round($value, $precision);
+    }
+
     /**
      * Formats the balance based on the currency and its scaling.
      *
