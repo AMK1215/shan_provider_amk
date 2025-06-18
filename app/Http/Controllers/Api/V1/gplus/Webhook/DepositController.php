@@ -264,16 +264,7 @@ class DepositController extends Controller
                         // if ($convertedAmount <= 0) {
                         //     throw new \Exception('Deposit amount must be positive.');
                         // }
-                        // if ($convertedAmount <= 0) {
-                        //     // Optionally log and skip instead of throwing
-                        //     Log::info('Skipping zero-amount transaction', [
-                        //         'transaction_id' => $transactionId,
-                        //         'member_account' => $memberAccount,
-                        //         'action' => $action
-                        //     ]);
-                        
-                        //     continue; // skip this transaction safely
-                        // }
+                       
 
                         if ($convertedAmount <= 0) {
                             Log::info('Logging loss (zero-amount transaction)', [
@@ -311,17 +302,7 @@ class DepositController extends Controller
 
                         // Log success and add to results
                         // Log::info('Transaction successful', ['member_account' => $memberAccount, 'action' => $action, 'before' => $beforeTransactionBalance, 'after' => $afterTransactionBalance]);
-                        // $results[] = [
-                        //     'member_account' => $memberAccount,
-                        //     'product_code' => $productCode,
-                        //     // Apply number_format for consistency with GetBalanceController
-                        //     // 'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
-                        //     // 'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
-                        //     'before_balance' => round($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4),
-                        //     'balance' => round($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4),
-                        //     'code' => SeamlessWalletCode::Success->value,
-                        //     'message' => '',
-                        // ];
+                        
                         $results[] = [
                             'member_account' => $memberAccount,
                             'product_code' => (int) $productCode, // ✅ important fix
@@ -373,14 +354,6 @@ class DepositController extends Controller
         // $formattedBalance = number_format($balance / $this->getCurrencyValue($currency), 4, '.', '');
         $formattedBalance = round($balance / $this->getCurrencyValue($currency), 4);
 
-        // return [
-        //     'member_account' => $memberAccount,
-        //     'product_code' => $productCode,
-        //     'before_balance' => $formattedBalance,
-        //     'balance' => $formattedBalance, // In error cases, before and after balance are usually the same
-        //     'code' => $code->value,
-        //     'message' => $message,
-        // ];
 
         return [
             'member_account' => $memberAccount,
@@ -413,7 +386,7 @@ class DepositController extends Controller
         return match ($currency) {
             'IDR2' => 100, // Example multiplier
             'KRW2' => 10,
-            'MMK2' => 100,
+            'MMK2' => 1000,
             'VND2' => 1000,
             'LAK2' => 10,
             'KHR2' => 100,
