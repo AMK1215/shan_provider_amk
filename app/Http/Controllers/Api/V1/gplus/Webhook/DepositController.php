@@ -144,6 +144,37 @@ class DepositController extends Controller
                     // $amount = floatval($transactionRequest['amount'] ?? 0);
                     $amount = round(floatval($transactionRequest['amount'] ?? 0), 4);
 
+                    $gameCode = $transactionRequest['game_code'] ?? null;
+                        $transactionId = $transactionRequest['id'] ?? null;
+
+                        // Correctly get game_type from batchRequest
+                        $gameType = $batchRequest['game_type'] ?? null;
+
+                        // Fallback to DB lookup if needed
+                        if (empty($gameType) && $gameCode) {
+                            $gameType = GameList::where('game_code', $gameCode)->value('game_type');
+                        }
+
+                        if (empty($gameType)) {
+                            Log::warning('Missing game_type from batch_request and fallback lookup', [
+                                'member_account' => $memberAccount,
+                                'product_code' => $productCode,
+                                'game_code' => $gameCode,
+                                'transaction_id' => $transactionId,
+                            ]);
+
+                            $results[] = $this->buildErrorResponse(
+                                $memberAccount,
+                                $productCode,
+                                0.0,
+                                SeamlessWalletCode::InternalServerError,
+                                'Missing game_type',
+                                $request->currency
+                            );
+                            continue;
+                        }
+
+
                     // Duplicate check by transaction_id in PlaceBet table
                     $duplicateInPlaceBets = PlaceBet::where('transaction_id', $transactionId)->first();
                     // Also check if the transaction is already recorded in the wallet's internal transactions
