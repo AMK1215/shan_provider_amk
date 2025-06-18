@@ -98,7 +98,9 @@ class DepositController extends Controller
             $productCode = $batchRequest['product_code'] ?? null;
             //$gameType = $batchRequest['game_type'] ?? '';
 
-            $gameType = $batchRequest['game_type'] ?? null;
+            //$gameType = $batchRequest['game_type'] ?? null;
+            $gameType = $batchRequest['game_type'] ?? GameList::where('game_code', $batchRequest['game_code'] ?? null)->value('game_type') ?? 'UNKNOWN';
+
 
 if (empty($gameType)) {
     Log::warning('Missing game_type in deposit batch request', [
