@@ -242,26 +242,26 @@ class DepositController extends Controller
                         }
                         
                         // Handle other actions with zero/negative amount if they should be logged but not affect balance
-                        if ($convertedAmount <= 0) {
-                             Log::info('Logging zero/negative amount transaction without balance change', [
-                                'transaction_id' => $transactionId,
-                                'member_account' => $memberAccount,
-                                'action' => $action,
-                                'converted_amount' => $convertedAmount,
-                            ]);
-                            $this->logPlaceBet(
-                                $batchRequest,
-                                $request,
-                                $transactionRequest,
-                                'info', // Or a more specific status like 'zero_amount'
-                                $request->request_time,
-                                'Zero/negative amount transaction processed without balance change',
-                                $beforeTransactionBalance,
-                                $beforeTransactionBalance
-                            );
-                            DB::commit(); // Commit the transaction for this specific skip
-                            continue;
-                        }
+                        // if ($convertedAmount <= 0) {
+                        //      Log::info('Logging zero/negative amount transaction without balance change', [
+                        //         'transaction_id' => $transactionId,
+                        //         'member_account' => $memberAccount,
+                        //         'action' => $action,
+                        //         'converted_amount' => $convertedAmount,
+                        //     ]);
+                        //     $this->logPlaceBet(
+                        //         $batchRequest,
+                        //         $request,
+                        //         $transactionRequest,
+                        //         'info', // Or a more specific status like 'zero_amount'
+                        //         $request->request_time,
+                        //         'Zero/negative amount transaction processed without balance change',
+                        //         $beforeTransactionBalance,
+                        //         $beforeTransactionBalance
+                        //     );
+                        //     DB::commit(); // Commit the transaction for this specific skip
+                        //     continue;
+                        // }
 
 
                         $walletService->deposit($userWithWallet, $convertedAmount, TransactionName::Deposit, [
