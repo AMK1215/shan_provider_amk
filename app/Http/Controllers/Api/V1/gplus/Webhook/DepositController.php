@@ -205,16 +205,38 @@ class DepositController extends Controller
                         // if ($convertedAmount <= 0) {
                         //     throw new \Exception('Deposit amount must be positive.');
                         // }
+                        // if ($convertedAmount <= 0) {
+                        //     // Optionally log and skip instead of throwing
+                        //     Log::info('Skipping zero-amount transaction', [
+                        //         'transaction_id' => $transactionId,
+                        //         'member_account' => $memberAccount,
+                        //         'action' => $action
+                        //     ]);
+                        
+                        //     continue; // skip this transaction safely
+                        // }
+
                         if ($convertedAmount <= 0) {
-                            // Optionally log and skip instead of throwing
-                            Log::info('Skipping zero-amount transaction', [
+                            Log::info('Logging loss (zero-amount transaction)', [
                                 'transaction_id' => $transactionId,
                                 'member_account' => $memberAccount,
                                 'action' => $action
                             ]);
                         
-                            continue; // skip this transaction safely
+                            $this->logPlaceBet(
+                                $batchRequest,
+                                $request,
+                                $transactionRequest,
+                                'loss', // custom status for analytics
+                                $request->request_time,
+                                'No payout — losing round',
+                                $beforeTransactionBalance ?? null,
+                                $beforeTransactionBalance ?? null
+                            );
+                        
+                            continue; // skip deposit
                         }
+                        
                         
                         $walletService->deposit($user, $convertedAmount, TransactionName::Deposit, [
                             'seamless_transaction_id' => $transactionId,
