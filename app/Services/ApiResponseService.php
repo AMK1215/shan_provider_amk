@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enums\SeamlessWalletCode;
+use Illuminate\Http\JsonResponse; // ✅ correct
+
 
 class ApiResponseService
 {
@@ -79,5 +81,5 @@ class ApiResponseService
             'data' => $data
         ]);
     }
-    
+
 }
