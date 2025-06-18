@@ -311,17 +311,26 @@ class DepositController extends Controller
 
                         // Log success and add to results
                         // Log::info('Transaction successful', ['member_account' => $memberAccount, 'action' => $action, 'before' => $beforeTransactionBalance, 'after' => $afterTransactionBalance]);
+                        // $results[] = [
+                        //     'member_account' => $memberAccount,
+                        //     'product_code' => $productCode,
+                        //     // Apply number_format for consistency with GetBalanceController
+                        //     // 'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                        //     // 'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                        //     'before_balance' => round($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4),
+                        //     'balance' => round($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4),
+                        //     'code' => SeamlessWalletCode::Success->value,
+                        //     'message' => '',
+                        // ];
                         $results[] = [
                             'member_account' => $memberAccount,
-                            'product_code' => $productCode,
-                            // Apply number_format for consistency with GetBalanceController
-                            // 'before_balance' => number_format($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
-                            // 'balance' => number_format($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4, '.', ''),
+                            'product_code' => (int) $productCode, // ✅ important fix
                             'before_balance' => round($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'balance' => round($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'code' => SeamlessWalletCode::Success->value,
                             'message' => '',
                         ];
+                        
                         $currentBalance = $afterTransactionBalance; // Update current balance for next transaction in batch
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'completed', $request->request_time, null, $beforeTransactionBalance, $afterTransactionBalance);
 
@@ -364,14 +373,24 @@ class DepositController extends Controller
         // $formattedBalance = number_format($balance / $this->getCurrencyValue($currency), 4, '.', '');
         $formattedBalance = round($balance / $this->getCurrencyValue($currency), 4);
 
+        // return [
+        //     'member_account' => $memberAccount,
+        //     'product_code' => $productCode,
+        //     'before_balance' => $formattedBalance,
+        //     'balance' => $formattedBalance, // In error cases, before and after balance are usually the same
+        //     'code' => $code->value,
+        //     'message' => $message,
+        // ];
+
         return [
             'member_account' => $memberAccount,
-            'product_code' => $productCode,
+            'product_code' => (int) $productCode, // ✅ Force int
             'before_balance' => $formattedBalance,
-            'balance' => $formattedBalance, // In error cases, before and after balance are usually the same
+            'balance' => $formattedBalance,
             'code' => $code->value,
             'message' => $message,
         ];
+        
     }
 
     /**
