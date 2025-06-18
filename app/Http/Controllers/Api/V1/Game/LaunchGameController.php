@@ -58,6 +58,18 @@ class LaunchGameController extends Controller
                 'product_code' => 'required|integer',
                 'game_type' => 'required|string',
             ]);
+            // Define custom currency mapping for special providers
+            $currencyMap = [
+                1007 => 'MMK2',   // PG Soft
+                1221 => 'MMK2',
+                1040 => 'MMK2',
+                1046 => 'MMK2',
+                1004 => 'MMK2',
+            ];
+
+            // Use mapped currency or fall back to default config
+            $apiCurrency = $currencyMap[$validatedData['product_code']] ?? config('seamless_key.api_currency');
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Launch Game API Validation Failed', ['errors' => $e->errors()]);
 
@@ -84,7 +96,7 @@ class LaunchGameController extends Controller
         $agentCode = config('seamless_key.agent_code');
         $secretKey = config('seamless_key.secret_key');
         $apiUrl = config('seamless_key.api_url').'/api/operators/launch-game';
-        $apiCurrency = config('seamless_key.api_currency');
+        //$apiCurrency = config('seamless_key.api_currency');
         $operatorLobbyUrl = 'https://amk-movies-five.vercel.app';
 
         $nowGmt8 = now('Asia/Shanghai');
