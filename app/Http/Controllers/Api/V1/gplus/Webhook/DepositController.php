@@ -100,7 +100,7 @@ class DepositController extends Controller
             //$gameType = $batchRequest['game_type'] ?? '';
 
             //$gameType = $batchRequest['game_type'] ?? null;
-            $gameType = GameList::where('game_code', $gameCode)->value('game_type');
+            $gameType = GameList::where('game_code', $gameCode)->value('game_type'); // get game_type from game_code
 
 
         if (empty($gameType)) {
