@@ -237,6 +237,29 @@ class DepositController extends Controller
 
                         $convertedAmount = $this->toDecimalPlaces($amount * $this->getCurrencyValue($request->currency));
 
+                        if ($action === 'SETTLED' && $convertedAmount <= 0) {
+                            Log::info('Skipping SETTLED with zero amount — no credit needed', [
+                                'transaction_id' => $transactionId,
+                                'member_account' => $memberAccount,
+                                'converted_amount' => $convertedAmount,
+                                'action' => $action,
+                            ]);
+                        
+                            $this->logPlaceBet(
+                                $batchRequest,
+                                $request,
+                                $transactionRequest,
+                                'loss',
+                                $request->request_time,
+                                'SETTLED with 0 amount — skipping',
+                                $beforeTransactionBalance,
+                                $beforeTransactionBalance
+                            );
+                        
+                            continue;
+                        }
+                        
+                       
                         // Specific logic for deposit endpoint
                         // if ($convertedAmount <= 0) {
                         //     throw new \Exception('Deposit amount must be positive.');
