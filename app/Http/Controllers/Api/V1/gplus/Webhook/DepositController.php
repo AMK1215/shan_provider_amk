@@ -220,26 +220,26 @@ class DepositController extends Controller
                         $convertedAmount = $this->toDecimalPlaces($amount * $this->getCurrencyValue($request->currency));
 
                         // Skip SETTLED with zero or negative amount if it means no actual credit
-                        if ($action === 'SETTLED' && $convertedAmount <= 0) {
-                            Log::info('Skipping SETTLED with zero/negative amount – no credit needed', [
-                                'transaction_id' => $transactionId,
-                                'member_account' => $memberAccount,
-                                'converted_amount' => $convertedAmount,
-                                'action' => $action,
-                            ]);
-                            $this->logPlaceBet(
-                                $batchRequest,
-                                $request,
-                                $transactionRequest,
-                                'loss',
-                                $request->request_time,
-                                'SETTLED with 0 amount — skipping',
-                                $beforeTransactionBalance,
-                                $beforeTransactionBalance
-                            );
-                            DB::commit(); // Commit the transaction for this specific skip
-                            continue;
-                        }
+                        // if ($action === 'SETTLED' && $convertedAmount <= 0) {
+                        //     Log::info('Skipping SETTLED with zero/negative amount – no credit needed', [
+                        //         'transaction_id' => $transactionId,
+                        //         'member_account' => $memberAccount,
+                        //         'converted_amount' => $convertedAmount,
+                        //         'action' => $action,
+                        //     ]);
+                        //     $this->logPlaceBet(
+                        //         $batchRequest,
+                        //         $request,
+                        //         $transactionRequest,
+                        //         'loss',
+                        //         $request->request_time,
+                        //         'SETTLED with 0 amount — skipping',
+                        //         $beforeTransactionBalance,
+                        //         $beforeTransactionBalance
+                        //     );
+                        //     DB::commit(); // Commit the transaction for this specific skip
+                        //     continue;
+                        // }
                         
                         // Handle other actions with zero/negative amount if they should be logged but not affect balance
                         // if ($convertedAmount <= 0) {
