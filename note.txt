@@ -11,6 +11,11 @@ php -r "file_put_contents('/var/www/gsc_plus/storage/logs/laravel.log', '');"
 * * * * * cd /var/www/gsc_plus && php artisan schedule:run >> /dev/null 2>&1
 tail -f /var/log/mysql/error.log
 
+
+php artisan analytics:loss-summary --group=member_account
+php artisan analytics:loss-summary --group=player_id
+
+
 // create user and db 
 sudo -i -u postgres
 psql

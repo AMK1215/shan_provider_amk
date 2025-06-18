@@ -96,7 +96,27 @@ class DepositController extends Controller
         foreach ($request->batch_requests as $batchRequest) {
             $memberAccount = $batchRequest['member_account'] ?? null;
             $productCode = $batchRequest['product_code'] ?? null;
-            $gameType = $batchRequest['game_type'] ?? '';
+            //$gameType = $batchRequest['game_type'] ?? '';
+
+            $gameType = $batchRequest['game_type'] ?? null;
+
+if (empty($gameType)) {
+    Log::warning('Missing game_type in deposit batch request', [
+        'member_account' => $memberAccount,
+        'product_code' => $productCode,
+    ]);
+
+    $results[] = $this->buildErrorResponse(
+        $memberAccount,
+        $productCode,
+        0.0,
+        SeamlessWalletCode::InternalServerError,
+        'Missing game_type in batch request',
+        $request->currency
+    );
+    continue;
+}
+
 
             // Handle batch-level errors (if signature/currency are invalid for the whole request)
             if (! $isValidSign) {
