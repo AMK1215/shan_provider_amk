@@ -103,22 +103,22 @@ class DepositController extends Controller
             $gameType = GameList::where('game_code', $gameCode)->value('game_type'); // get game_type from game_code
 
 
-        if (empty($gameType)) {
-            Log::warning('Missing game_type in deposit batch request', [
-                'member_account' => $memberAccount,
-                'product_code' => $productCode,
-            ]);
+        // if (empty($gameType)) {
+        //     Log::warning('Missing game_type in deposit batch request', [
+        //         'member_account' => $memberAccount,
+        //         'product_code' => $productCode,
+        //     ]);
 
-            $results[] = $this->buildErrorResponse(
-                $memberAccount,
-                $productCode,
-                0.0,
-                SeamlessWalletCode::InternalServerError,
-                'Missing game_type in batch request',
-                $request->currency
-            );
-            continue;
-        }
+        //     $results[] = $this->buildErrorResponse(
+        //         $memberAccount,
+        //         $productCode,
+        //         0.0,
+        //         SeamlessWalletCode::InternalServerError,
+        //         'Missing game_type in batch request',
+        //         $request->currency
+        //     );
+        //     continue;
+        // }
 
 
             // Handle batch-level errors (if signature/currency are invalid for the whole request)
