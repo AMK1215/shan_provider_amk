@@ -96,30 +96,7 @@ class DepositController extends Controller
         foreach ($request->batch_requests as $batchRequest) {
             $memberAccount = $batchRequest['member_account'] ?? null;
             $productCode = $batchRequest['product_code'] ?? null;
-            $gameCode = $batchRequest['game_code'] ?? null;
-            //$gameType = $batchRequest['game_type'] ?? '';
-
-            //$gameType = $batchRequest['game_type'] ?? null;
-            $gameType = GameList::where('game_code', $gameCode)->value('game_type'); // get game_type from game_code
-
-
-        // if (empty($gameType)) {
-        //     Log::warning('Missing game_type in deposit batch request', [
-        //         'member_account' => $memberAccount,
-        //         'product_code' => $productCode,
-        //     ]);
-
-        //     $results[] = $this->buildErrorResponse(
-        //         $memberAccount,
-        //         $productCode,
-        //         0.0,
-        //         SeamlessWalletCode::InternalServerError,
-        //         'Missing game_type in batch request',
-        //         $request->currency
-        //     );
-        //     continue;
-        // }
-
+            $gameType = $batchRequest['game_type'] ?? '';
 
             // Handle batch-level errors (if signature/currency are invalid for the whole request)
             if (! $isValidSign) {
@@ -245,7 +222,7 @@ class DepositController extends Controller
                                 'member_account' => $memberAccount,
                                 'action' => $action
                             ]);
-                        
+
                             $this->logPlaceBet(
                                 $batchRequest,
                                 $request,
@@ -256,10 +233,10 @@ class DepositController extends Controller
                                 $beforeTransactionBalance ?? null,
                                 $beforeTransactionBalance ?? null
                             );
-                        
+
                             continue; // skip deposit
                         }
-                        
+
                         
                         $walletService->deposit($user, $convertedAmount, TransactionName::Deposit, [
                             'seamless_transaction_id' => $transactionId,
