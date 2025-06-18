@@ -94,9 +94,14 @@ class DepositController extends Controller
         }
 
         foreach ($request->batch_requests as $batchRequest) {
+
+            Log::info('Deposit Batch Request', ['batchRequest' => $batchRequest]);
+
             $memberAccount = $batchRequest['member_account'] ?? null;
             $productCode = $batchRequest['product_code'] ?? null;
             $gameType = $batchRequest['game_type'] ?? '';
+
+
 
             // Handle batch-level errors (if signature/currency are invalid for the whole request)
             if (! $isValidSign) {
