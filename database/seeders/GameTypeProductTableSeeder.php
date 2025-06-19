@@ -68,7 +68,7 @@ class GameTypeProductTableSeeder extends Seeder
             ['product_id' => 61, 'game_type_id' => 12, 'image' => 'Wow-gamming.png', 'rate' => 1.0000],
             ['product_id' => 62, 'game_type_id' => 1, 'image' => 'Wow-gamming.png', 'rate' => 1.0000],
             ['product_id' => 63, 'game_type_id' => 7, 'image' => 'Wow-gamming.png', 'rate' => 1.0000],
-            ['product_id' => 64, 'game_type_id' => 2, 'image' => 'Ai_Live_Casino', 'rate' => 1.0000],
+            ['product_id' => 64, 'game_type_id' => 2, 'image' => 'ai_livecasino.png', 'rate' => 1.0000],
             ['product_id' => 65, 'game_type_id' => 1, 'image' => 'Hacksaw.png', 'rate' => 1.0000],
             ['product_id' => 66, 'game_type_id' => 1, 'image' => 'Bigpot.png', 'rate' => 1.0000],
             ['product_id' => 67, 'game_type_id' => 13, 'image' => 'imoon.jfif', 'rate' => 1.0000],
