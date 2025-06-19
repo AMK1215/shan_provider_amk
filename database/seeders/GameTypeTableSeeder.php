@@ -27,7 +27,7 @@ class GameTypeTableSeeder extends Seeder
             ['code' => 'ESPORT', 'name' => 'ESport', 'name_mm' => 'ESport', 'img' => 'esport.png', 'status' => 0, 'order' => '11'],
             ['code' => 'POKER', 'name' => 'Poker', 'name_mm' => 'Poker', 'img' => 'poker.jpg', 'status' => 1, 'order' => '12'],
             ['code' => 'OTHERS', 'name' => 'Others', 'name_mm' => 'Others', 'img' => 'other.png', 'status' => 1, 'order' => '13'],
-            ['code' => 'LIVE_CASINO_PREMIUM', 'name' => 'Live Casino Premium', 'name_mm' => 'Live Casino Premium', 'img' => 'live_casino.png', 'status' => 1, 'order' => '14'],
+            ['code' => 'LIVE_CASINO_PREMIUM', 'name' => 'Live Casino Premium', 'name_mm' => 'Live Casino Premium', 'img' => 'live_casino.png', 'status' => 0, 'order' => '14'],
         ];
 
         foreach ($gameTypes as $gameTypeData) {
