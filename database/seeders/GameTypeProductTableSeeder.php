@@ -14,10 +14,10 @@ class GameTypeProductTableSeeder extends Seeder
     {
         $data = [
             // id, game_type, product_title from SQL dump
-            ['product_id' => 1, 'game_type_id' => 1, 'image' => 'pragmatic_play.png', 'rate' => 1.0000],
-            ['product_id' => 2, 'game_type_id' => 14, 'image' => 'pragmatic_play.png', 'rate' => 1.0000],
-            ['product_id' => 3, 'game_type_id' => 4, 'image' => 'pragmatic_play.png', 'rate' => 1.0000],
-            ['product_id' => 4, 'game_type_id' => 2, 'image' => 'pragmatic_play.png', 'rate' => 1.0000],
+            ['product_id' => 1, 'game_type_id' => 1, 'image' => 'pp_play.png', 'rate' => 1.0000],
+            ['product_id' => 2, 'game_type_id' => 14, 'image' => 'pp_play.png', 'rate' => 1.0000],
+            ['product_id' => 3, 'game_type_id' => 4, 'image' => 'pp_play.png', 'rate' => 1.0000],
+            ['product_id' => 4, 'game_type_id' => 2, 'image' => 'pp_play.png', 'rate' => 1.0000],
 
             ['product_id' => 5, 'game_type_id' => 1, 'image' => 'PG_Soft.png', 'rate' => 1.0000],
             ['product_id' => 6, 'game_type_id' => 1, 'image' => 'live_22.png', 'rate' => 1.0000],
@@ -37,12 +37,12 @@ class GameTypeProductTableSeeder extends Seeder
 
             ['product_id' => 17, 'game_type_id' => 1, 'image' => 'jo_ker.png', 'rate' => 1.0000],
             ['product_id' => 18, 'game_type_id' => 13, 'image' => 'jo_ker.png', 'rate' => 1.0000],
-            ['product_id' => 19, 'game_type_id' => 8, 'image' => 'joker_fishing.png', 'rate' => 1.0000],
+            ['product_id' => 19, 'game_type_id' => 8, 'image' => 'jo_ker_fishing.png', 'rate' => 1.0000],
             ['product_id' => 20, 'game_type_id' => 2, 'image' => 'SAGaming.jfif', 'rate' => 1.0000],
 
             ['product_id' => 21, 'game_type_id' => 1, 'image' => 'spadegaming.png', 'rate' => 1.0000],
             ['product_id' => 22, 'game_type_id' => 8, 'image' => 'spadegaming.png', 'rate' => 1.0000],
-            ['product_id' => 23, 'game_type_id' => 2, 'image' => 'WMCasino.png', 'rate' => 1.0000],
+            ['product_id' => 23, 'game_type_id' => 2, 'image' => 'wm_casino.png', 'rate' => 1.0000],
             ['product_id' => 24, 'game_type_id' => 1, 'image' => 'ha_banero.png', 'rate' => 1.0000],
             ['product_id' => 25, 'game_type_id' => 3, 'image' => 'WBet', 'rate' => 1.0000],
             ['product_id' => 26, 'game_type_id' => 1, 'image' => 'fastspin.png', 'rate' => 1.0000],
