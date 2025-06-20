@@ -85,7 +85,7 @@
                                     <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->description }}</td>
                                     @can('subagent_access')
-                                    <td>{{ $log->approved_by ?? 'N/A' }}</td>
+                                    <td>{{ $log->sub_agent_name ?? 'N/A' }}</td>
                                     @endcan
                                     <!-- <td>
                                         <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}" class="btn btn-primary">View</a>
