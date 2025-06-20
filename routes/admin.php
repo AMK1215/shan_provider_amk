@@ -141,8 +141,8 @@ Route::group([
         Route::get('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'WithdrawShowLog'])->name('agent.withdrawLog');
     });
 
-    // Deposit routes (for view_deposit_requests permission)
-    Route::middleware(['permission:process_deposit'])->group(function () {
+    // Deposit routes (for both parent agents and sub-agents)
+    Route::middleware(['permission:process_deposit|view_deposit_requests'])->group(function () {
         Route::get('finicialdeposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
         Route::get('finicialdeposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
         Route::post('finicialdeposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');

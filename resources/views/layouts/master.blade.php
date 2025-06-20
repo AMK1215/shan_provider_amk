@@ -195,7 +195,7 @@
                                 </a>
                             </li>
                         @endif
-                        @if(Auth::user()->hasPermission('view_deposit_requests'))
+                        @if(Auth::user()->hasPermission('process_deposit') || Auth::user()->hasPermission('view_deposit_requests'))
                             <li class="nav-item">
                                 <a href="{{ route('admin.agent.deposit') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.agent.deposit' ? 'active' : '' }}">

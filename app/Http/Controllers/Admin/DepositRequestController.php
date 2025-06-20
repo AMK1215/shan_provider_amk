@@ -21,20 +21,20 @@ class DepositRequestController extends Controller
 
     public function index(Request $request)
     {
+        // Check permissions
+        if (!Auth::user()->hasPermission('process_deposit') && !Auth::user()->hasPermission('view_deposit_requests')) {
+            abort(403, 'You do not have permission to access deposit requests.');
+        }
+
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
         $agent = $isSubAgent ? $user->agent : $user;
-
-        $sub_acc_id = $user->agent;
 
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $deposits = DepositRequest::with(['user', 'bank', 'agent'])
             ->where('agent_id', $agent->id)
-            ->when($isSubAgent, function ($query) use ($sub_acc_id) {
-                $query->where('agent_id', $sub_acc_id->id);
-            })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
             })
@@ -49,15 +49,18 @@ class DepositRequestController extends Controller
 
     public function statusChangeIndex(Request $request, DepositRequest $deposit)
     {
+        // Check permissions
+        if (!Auth::user()->hasPermission('process_deposit')) {
+            abort(403, 'You do not have permission to process deposits.');
+        }
+
         try {
             $user = Auth::user();
             $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-            // $agent = $isSubAgent ? $user->agent : $user;
-            $agent = $user->agent;
+            $agent = $isSubAgent ? $user->agent : $user;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id ||
-                ($isSubAgent && $deposit->agent_id !== $agent->id)) {
+            if ($deposit->agent_id !== $agent->id) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -93,6 +96,11 @@ class DepositRequestController extends Controller
 
     public function statusChangeReject(Request $request, DepositRequest $deposit)
     {
+        // Check permissions
+        if (!Auth::user()->hasPermission('process_deposit')) {
+            abort(403, 'You do not have permission to process deposits.');
+        }
+
         $request->validate([
             'status' => 'required|in:0,1,2',
         ]);
@@ -100,13 +108,10 @@ class DepositRequestController extends Controller
         try {
             $user = Auth::user();
             $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-            // $agent = $isSubAgent ? $user->agent : $user;
-
-            $agent = $user->agent;
+            $agent = $isSubAgent ? $user->agent : $user;
 
             // Check if user has permission to handle this deposit
-            if ($deposit->agent_id !== $agent->id ||
-                ($isSubAgent && $deposit->agent_id !== $agent->id)) {
+            if ($deposit->agent_id !== $agent->id) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -127,15 +132,17 @@ class DepositRequestController extends Controller
 
     public function view(DepositRequest $deposit)
     {
+        // Check permissions
+        if (!Auth::user()->hasPermission('process_deposit') && !Auth::user()->hasPermission('view_deposit_requests')) {
+            abort(403, 'You do not have permission to view deposit requests.');
+        }
+
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        // $agent = $isSubAgent ? $user->agent : $user;
-
-        $agent = $user->agent;
+        $agent = $isSubAgent ? $user->agent : $user;
 
         // Check if user has permission to handle this deposit
-        if ($deposit->agent_id !== $agent->id ||
-            ($isSubAgent && $deposit->agent_id !== $agent->id)) {
+        if ($deposit->agent_id !== $agent->id) {
             return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
         }
 
@@ -145,13 +152,17 @@ class DepositRequestController extends Controller
     // log deposit request
     public function DepositShowLog(DepositRequest $deposit)
     {
+        // Check permissions
+        if (!Auth::user()->hasPermission('process_deposit') && !Auth::user()->hasPermission('view_deposit_requests')) {
+            abort(403, 'You do not have permission to view deposit logs.');
+        }
+
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        $agent = $user->agent;
+        $agent = $isSubAgent ? $user->agent : $user;
 
         // Check if user has permission to handle this deposit
-        if ($deposit->agent_id !== $agent->id ||
-            ($isSubAgent && $deposit->agent_id !== $agent->id)) {
+        if ($deposit->agent_id !== $agent->id) {
             return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
         }
 
