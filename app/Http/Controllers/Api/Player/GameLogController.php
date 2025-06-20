@@ -21,7 +21,8 @@ class GameLogController extends Controller
             ->where('wager_status', 'SETTLED')
             ->select(
                 'game_name',
-                DB::raw('SUM(bet_amount) as total_stake'),
+                DB::raw('COUNT(*) as spin_count'),
+                DB::raw('SUM(bet_amount) as turnover'),
                 DB::raw('SUM(prize_amount) as total_payout'),
                 DB::raw('SUM(prize_amount) - SUM(bet_amount) as win_loss')
             )
