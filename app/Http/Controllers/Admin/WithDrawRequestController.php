@@ -67,11 +67,27 @@ class WithDrawRequestController extends Controller
         ]);
 
         if ($request->status == 1) {
+            $old_balance = $player->balanceFloat;
             app(WalletService::class)->transfer($player, $agent, $request->amount,
                 TransactionName::DebitTransfer, [
-                    'old_balance' => $player->balanceFloat,
-                    'new_balance' => $player->balanceFloat - $request->amount,
+                    'old_balance' => $old_balance,
+                    'new_balance' => $old_balance - $request->amount,
                 ]);
+            
+            \App\Models\TransferLog::create([
+                'from_user_id' => $player->id,
+                'to_user_id' => $agent->id,
+                'sub_agent_id' => $isSubAgent ? $user->id : null,
+                'sub_agent_name' => $isSubAgent ? $user->user_name : null,
+                'amount' => $request->amount,
+                'type' => 'withdraw-approve',
+                'description' => 'Withdraw request ' . $withdraw->id . ' approved by ' . $user->user_name,
+                'meta' => [
+                    'withdraw_request_id' => $withdraw->id,
+                    'player_old_balance' => $old_balance,
+                    'player_new_balance' => $old_balance - $request->amount,
+                ]
+            ]);
         }
 
         return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');
@@ -96,6 +112,20 @@ class WithDrawRequestController extends Controller
                 'sub_agent_id' => $user->id,
                 'sub_agent_name' => $user->user_name,
                 'note' => $note,
+            ]);
+
+            \App\Models\TransferLog::create([
+                'from_user_id' => $withdraw->user_id,
+                'to_user_id' => $agent->id,
+                'sub_agent_id' => $isSubAgent ? $user->id : null,
+                'sub_agent_name' => $isSubAgent ? $user->user_name : null,
+                'amount' => $withdraw->amount,
+                'type' => 'withdraw-reject',
+                'description' => 'Withdraw request ' . $withdraw->id . ' rejected by ' . $user->user_name,
+                'meta' => [
+                    'withdraw_request_id' => $withdraw->id,
+                    'status' => 'rejected',
+                ]
             ]);
 
             return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');

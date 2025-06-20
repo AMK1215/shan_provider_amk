@@ -80,12 +80,28 @@ class DepositRequestController extends Controller
             ]);
 
             if ($request->status == 1) {
+                $old_balance = $player->balanceFloat;
                 app(WalletService::class)->transfer($agent, $player, $request->amount,
                     TransactionName::DebitTransfer, [
-                        'old_balance' => $player->balanceFloat,
-                        'new_balance' => $player->balanceFloat + $request->amount,
+                        'old_balance' => $old_balance,
+                        'new_balance' => $old_balance + $request->amount,
                     ]
                 );
+                \App\Models\TransferLog::create([
+                    'from_user_id' => $agent->id,
+                    'to_user_id' => $player->id,
+                    'sub_agent_id' => $isSubAgent ? $user->id : null,
+                    'sub_agent_name' => $isSubAgent ? $user->user_name : null,
+                    'amount' => $request->amount,
+                    'type' => 'deposit-approve',
+                    'description' => 'Deposit request ' . $deposit->id . ' approved by ' . $user->user_name,
+                    'meta' => [
+                        'deposit_request_id' => $deposit->id,
+                        'player_old_balance' => $old_balance,
+                        'player_new_balance' => $old_balance + $request->amount,
+                        'refrence_no' => $deposit->refrence_no,
+                    ]
+                ]);
             }
 
             return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
@@ -122,6 +138,21 @@ class DepositRequestController extends Controller
                 'note' => $note,
                 'sub_agent_id' => $user->id,
                 'sub_agent_name' => $user->user_name,
+            ]);
+
+            \App\Models\TransferLog::create([
+                'from_user_id' => $agent->id,
+                'to_user_id' => $deposit->user_id,
+                'sub_agent_id' => $isSubAgent ? $user->id : null,
+                'sub_agent_name' => $isSubAgent ? $user->user_name : null,
+                'amount' => $deposit->amount,
+                'type' => 'deposit-reject',
+                'description' => 'Deposit request ' . $deposit->id . ' rejected by ' . $user->user_name,
+                'meta' => [
+                    'deposit_request_id' => $deposit->id,
+                    'status' => 'rejected',
+                    'refrence_no' => $deposit->refrence_no,
+                ]
             ]);
 
             return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
