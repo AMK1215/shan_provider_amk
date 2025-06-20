@@ -133,6 +133,7 @@ class ReportController extends Controller
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
         $dailyReports = PlaceBet::whereIn('player_id', $playerIds)
+            ->where('place_bets.wager_status', 'SETTLED')
             ->whereDate('place_bets.created_at', $date)
             ->join('users', 'place_bets.player_id', '=', 'users.id')
             ->select(
