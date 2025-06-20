@@ -286,7 +286,7 @@
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.tran.logs' ? 'active' : '' }}">
                                     <i class="fas fa-exchange-alt"></i>
                                     <p>
-                                       Sub Agent Transfer Log
+                                    Transaction Log
                                     </p>
                                 </a>
                             </li>
