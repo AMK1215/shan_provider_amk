@@ -217,15 +217,7 @@
                             </a>
                         </li>
                         @endcan
-                        <li class="nav-item">
-                            <a href="{{ route('admin.reports.daily_win_loss') }}"
-                                class="nav-link {{ Route::currentRouteName() == 'admin.reports.daily_win_loss' ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>
-                                    Daily Win/Loss
-                                </p>
-                            </a>
-                        </li>
+                       
                         @can('agent_access')
                             <li class="nav-item">
                                 <a href="{{ route('admin.subacc.index') }}"
@@ -245,6 +237,15 @@
                                     </p>
                                 </a>
                             </li> -->
+                            <li class="nav-item">
+                            <a href="{{ route('admin.reports.daily_win_loss') }}"
+                                class="nav-link {{ Route::currentRouteName() == 'admin.reports.daily_win_loss' ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>
+                                    Daily Win/Loss
+                                </p>
+                            </a>
+                        </li>
                         @endcan
                         @can('player_view')
                             <li class="nav-item">
@@ -278,7 +279,7 @@
                         
                         @endcan
 
-                        @can('subagent_access')
+                        @can('player_view')
 
                         <li class="nav-item">
                                 <a href="{{ route('admin.subacc.tran.logs') }}"
