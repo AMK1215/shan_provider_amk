@@ -30,8 +30,11 @@ class CheckPermission
 
         // If user is a sub-agent, check their specific permissions
         if ($user->hasRole('SubAgent')) {
-            if ($user->hasPermission($permission)) {
-                return $next($request);
+            $requiredPermissions = explode('|', $permission);
+            foreach ($requiredPermissions as $p) {
+                if ($user->hasPermission($p)) {
+                    return $next($request);
+                }
             }
         }
 
