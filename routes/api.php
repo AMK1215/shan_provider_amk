@@ -20,6 +20,12 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\PromotionController;
 use App\Http\Controllers\Api\V1\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
+use App\Http\Controllers\Api\V1\Auth\ProfileController;
+use App\Http\Controllers\Api\V1\Bank\BankController as BankControllerAlias;
+use App\Http\Controllers\Api\V1\Game\GameController;
+use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionControllerAlias;
+use App\Http\Controllers\Api\V1\Wallet\WalletController;
+use App\Http\Controllers\Api\Player\GameLogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -76,6 +82,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('videoads', [BannerController::class, 'ApiVideoads']);
     Route::get('toptenwithdraw', [BannerController::class, 'TopTen']);
 
+    // Player game logs
+    Route::get('/player/game-logs', [GameLogController::class, 'index']);
 });
 
 // games
@@ -93,4 +101,21 @@ Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
         Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
     });
+});
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+Route::post('/auth/login', [LoginController::class, 'login']);
+Route::post('/auth/logout', [LoginController::class, 'logout']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'profile']);
+    Route::post('/profile/change-password', [ProfileController::class, 'changePassword']);
+    Route::get('/banks', [BankControllerAlias::class, 'getBank']);
+    Route::get('/promotions', [PromotionControllerAlias::class, 'index']);
+    Route::get('/game-list', [GameController::class, 'gameList']);
+    Route::get('/launch-game', [LaunchGameController::class, 'launchGame']);
+    Route::get('/wallet-balance', [WalletController::class, 'balance']);
 });
