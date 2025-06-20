@@ -72,7 +72,7 @@
                                 <div class="form-group mb-2 mr-sm-2">
                                     <label for="type" class="sr-only">Type</label>
                                     <select class="form-control" id="type" name="type" style="min-width: 200px;">
-                                        <option value="">All Types</option>
+                                        <option value="">ChooseTypes</option>
                                         @foreach ($types as $type)
                                             <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>{{ ucfirst(str_replace('-', ' ', $type)) }}</option>
                                         @endforeach
