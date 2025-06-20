@@ -200,6 +200,7 @@ Route::group([
 
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.detail');
+    Route::get('reports/daily-win-loss', [ReportController::class, 'dailyWinLossReport'])->name('reports.daily_win_loss');
     // Route::get('report/detail/{member_account}', [\App\Http\Controllers\Admin\ReportController::class, 'getReportDetails'])->name('admin.report.detail');
     // provider start
     Route::get('gametypes', [ProductController::class, 'index'])->name('gametypes.index');

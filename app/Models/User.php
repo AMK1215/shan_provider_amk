@@ -236,4 +236,20 @@ class User extends Authenticatable implements Wallet
 
         return false;
     }
+
+    public function getAllDescendantPlayers()
+    {
+        $players = collect();
+        $children = $this->children()->with('roles')->get();
+
+        foreach ($children as $child) {
+            if ($child->hasRole('Player')) {
+                $players->push($child);
+            } elseif ($child->hasRole('SubAgent')) {
+                $players = $players->merge($child->getAllDescendantPlayers());
+            }
+        }
+
+        return $players;
+    }
 }
