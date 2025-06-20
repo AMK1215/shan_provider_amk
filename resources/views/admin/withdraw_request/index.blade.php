@@ -1,4 +1,39 @@
 @extends('layouts.master')
+@section('style')
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<style>
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .form-label {
+        font-weight: 600;
+    }
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653b4;
+    }
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #e3e6f0;
+        font-weight: 600;
+    }
+    .badge {
+        padding: 0.5em 0.9em;
+        font-size: 0.9em;
+    }
+    .action-buttons .btn {
+        margin-right: 5px;
+    }
+    .card-footer {
+        background-color: #f8f9fa;
+    }
+</style>
+@endsection
 @section('content')
     <section class="content-header">
         <div class="container-fluid">
@@ -18,160 +53,162 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <div class="d-flex justify-content-end mb-3">
-                        <a href="{{ route('admin.agent.withdraw') }}" class="btn btn-primary " style="width: 100px;"> <i
-                                class="fas fa-arrow-left mr-2"></i>Back</a>
-                    </div>
-                    <div class="card " style="border-radius: 20px;">
-                        <div class="card-header">
-                            <h3>Withdraw Request Lists</h3>
+                    <div class="card shadow-sm mb-4" style="border-radius: 15px;">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">Withdraw Request Filters</h5>
                         </div>
-
                         <div class="card-body">
-                            <form action="{{ route('admin.agent.withdraw') }}" method="GET">
-
-                                <div class="row mt-3">
-                                    <div class="col-md-3">
-                                        <label for="start_date" class="form-label">Start Date</label>
-                                        <input type="date" class="form-control" name="start_date"
-                                            value="{{ request()->start_date }}">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="end_date" class="form-label">End Date</label>
-                                        <input type="date" class="form-control" name="end_date"
-                                            value="{{ request()->end_date }}">
-                                    </div>
-
-
-                                    <div class="col-md-3">
-                                        {{-- <div class="input-group input-group-static mb-4"> --}}
-                                        <label for="exampleFormControlSelect1" class="ms-0">Select Status</label>
-                                        <select class="form-control" id="" name="status">
-                                            <option value="all"
-                                                {{ request()->get('status') == 'all' ? 'selected' : '' }}>All
-                                            </option>
-                                            <option value="0" {{ request()->get('status') == '0' ? 'selected' : '' }}>
-                                                Pending
-                                            </option>
-                                            <option value="1" {{ request()->get('status') == '1' ? 'selected' : '' }}>
-                                                Approved
-                                            </option>
-                                            <option value="2" {{ request()->get('status') == '2' ? 'selected' : '' }}>
-                                                Rejected
-                                            </option>
-                                        </select>
-                                        {{-- </div> --}}
-                                    </div>
-                                    <div class="col-md-3 mt-4 pt-2">
-                                        <button class="btn btn-sm btn-primary" id="search" type="submit">Search</button>
-                                        <a href="{{ route('admin.agent.withdraw') }}"
-                                            class="btn btn-link text-primary ms-auto border-0">
-                                            <i class="fas fa-refresh text-lg">refresh</i>
-                                        </a>
-                                    </div>
+                            <form action="{{ route('admin.agent.withdraw') }}" method="GET" class="form-inline">
+                                <div class="form-group mb-2 mr-sm-2">
+                                    <label for="daterange" class="sr-only">Date Range</label>
+                                    <input type="text" name="daterange" class="form-control" placeholder="Select Date Range" style="min-width: 240px;">
+                                    <input type="hidden" name="start_date" id="start_date" value="{{ request()->start_date }}">
+                                    <input type="hidden" name="end_date" id="end_date" value="{{ request()->end_date }}">
                                 </div>
+                                <div class="form-group mb-2 mr-sm-2">
+                                    <label for="status" class="sr-only">Status</label>
+                                    <select class="form-control" id="status" name="status">
+                                        <option value="all" {{ request()->get('status') == 'all' ? 'selected' : '' }}>All Statuses</option>
+                                        <option value="0" {{ request()->get('status') == '0' ? 'selected' : '' }}>Pending</option>
+                                        <option value="1" {{ request()->get('status') == '1' ? 'selected' : '' }}>Approved</option>
+                                        <option value="2" {{ request()->get('status') == '2' ? 'selected' : '' }}>Rejected</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary mb-2 mr-1" type="submit"><i class="fas fa-search"></i> Search</button>
+                                <a href="{{ route('admin.agent.withdraw') }}" class="btn btn-outline-secondary mb-2" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </a>
                             </form>
-                            <table id="mytable" class="table table-bordered table-hover">
-                                <thead>
-                                    <th>#</th>
-                                    <th>PlayerId</th>
-                                    <th>PlayerName</th>
-                                    <th>Requested Amount</th>
-                                    <th>Payment Method</th>
-                                    <th>Bank Account Name</th>
-                                    <th>Bank Account Number</th>
-                                    <th>Status</th>
-                                    <th>Created_at</th>
-                                    <th>Action</th>
-                                </thead>
-                                <tbody>
-                                    @foreach ($withdraws as $withdraw)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $withdraw->user->user_name }}</td>
-                                            <td>
-                                                <span class="d-block">{{ $withdraw->user->name }}</span>
-                                            </td>
-                                            <td>{{ number_format($withdraw->amount) }}</td>
-                                            {{-- <td>{{ $withdraw->bank->paymentType->name }}</td> --}}
-                                            <td>{{ $withdraw->paymentType->name ?? 'N/A' }}</td>
+                        </div>
+                    </div>
 
-                                            <td>{{ $withdraw->account_name }}</td>
-                                            <td>{{ $withdraw->account_number }}</td>
-                                            <td>
-                                                @if ($withdraw->status == 0)
-                                                    <span class="badge text-bg-warning text-warning mb-2">Pending</span>
-                                                @elseif ($withdraw->status == 1)
-                                                    <span class="badge text-bg-success text-success mb-2">Approved</span>
-                                                @elseif ($withdraw->status == 2)
-                                                    <span class="badge text-bg-danger text-danger mb-2">Rejected</span>
-                                                @endif
-                                            </td>
-
-                                            <td>{{ $withdraw->created_at->format('d-m-Y') }}</td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <form
-                                                        action="{{ route('admin.agent.withdrawStatusUpdate', $withdraw->id) }}"
-                                                        method="post">
-                                                        @csrf
-                                                        <input type="hidden" name="amount"
-                                                            value="{{ $withdraw->amount }}">
-                                                        <input type="hidden" name="status" value="1">
-                                                        <input type="hidden" name="player"
-                                                            value="{{ $withdraw->user_id }}">
-                                                        @if ($withdraw->status == 0)
-                                                            <button class="btn btn-success p-1 me-1" type="submit">
+                    <div class="card shadow-sm" style="border-radius: 15px;">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                             <h5 class="m-0 font-weight-bold text-primary">Withdraw Request Lists</h5>
+                             <a href="{{ url()->previous() }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="mytable" class="table table-bordered table-hover">
+                                    <thead>
+                                        <th>#</th>
+                                        <th>PlayerId</th>
+                                        <th>PlayerName</th>
+                                        <th>Requested Amount</th>
+                                        <th>Payment Method</th>
+                                        <th>Bank Account Name</th>
+                                        <th>Bank Account Number</th>
+                                        <th>Status</th>
+                                        <th>DateTime</th>
+                                        <th style="min-width:180px;">Action</th>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($withdraws as $withdraw)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $withdraw->user->user_name }}</td>
+                                                <td>{{ $withdraw->user->name }}</td>
+                                                <td>{{ number_format($withdraw->amount) }}</td>
+                                                <td>{{ $withdraw->paymentType->name ?? 'N/A' }}</td>
+                                                <td>{{ $withdraw->account_name }}</td>
+                                                <td>{{ $withdraw->account_number }}</td>
+                                                <td>
+                                                    @if ($withdraw->status == 0)
+                                                        <span class="badge badge-warning"><i class="fas fa-hourglass-half mr-1"></i>Pending</span>
+                                                    @elseif ($withdraw->status == 1)
+                                                        <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Approved</span>
+                                                    @elseif ($withdraw->status == 2)
+                                                        <span class="badge badge-danger"><i class="fas fa-times-circle mr-1"></i>Rejected</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $withdraw->created_at->setTimezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</td>
+                                                <td class="action-buttons">
+                                                    @if ($withdraw->status == 0)
+                                                        <form action="{{ route('admin.agent.withdrawStatusUpdate', $withdraw->id) }}" method="post" class="d-inline">
+                                                            @csrf
+                                                            <input type="hidden" name="amount" value="{{ $withdraw->amount }}">
+                                                            <input type="hidden" name="status" value="1">
+                                                            <input type="hidden" name="player" value="{{ $withdraw->user_id }}">
+                                                            <button class="btn btn-success btn-sm" type="submit" title="Approve">
                                                                 <i class="fas fa-check"></i>
-                                                            </button> &nbsp; &nbsp;
-                                                        @endif
-                                                    </form>
-                                                    <form
-                                                        action="{{ route('admin.agent.withdrawStatusreject', $withdraw->id) }}"
-                                                        method="post">
-                                                        @csrf
-                                                        <input type="hidden" name="status" value="2">
-                                                        @if ($withdraw->status == 0)
-                                                            <button class="btn btn-danger p-1 me-1" type="submit">
+                                                            </button>
+                                                        </form>
+                                                        <form action="{{ route('admin.agent.withdrawStatusreject', $withdraw->id) }}" method="post" class="d-inline">
+                                                            @csrf
+                                                            <input type="hidden" name="status" value="2">
+                                                            <button class="btn btn-danger btn-sm" type="submit" title="Reject">
                                                                 <i class="fas fa-times"></i>
                                                             </button>
-                                                        @endif
-                                                    </form>
-                                                </div>
-                                                <div class="d-flex align-items-center">
-                                                    <a href="{{ route('admin.agent.withdrawLog', $withdraw->id) }}"
-                                                        class="text-white btn btn-info">Log</a>
-                                                </div>
-                                            </td>
-                                           
+                                                        </form>
+                                                    @endif
+                                                    <a href="{{ route('admin.agent.withdrawLog', $withdraw->id) }}" class="btn btn-info btn-sm" title="View Details"><i class="fas fa-eye"></i></a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="10" class="text-center">No withdraw requests found.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                    @if($withdraws->count() > 0)
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-right">Total Amounts:</th>
+                                            <th>{{number_format($totalWithdraws)}}</th>
+                                            <th colspan="2" class="text-right">Total Withdraw Count:</th>
+                                            <th>{{$withdraws->count()}}</th>
+                                            <th colspan="3"></th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th>Total Amounts</th>
-                                    <th>
-                                        {{ number_format($totalWithdraws) }}
-                                    </th>
-                                    <th>Total Withdraw Count</th>
-                                    <th>
-                                        {{ $withdraws->count() }}
-                                    </th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-
-                                </tfoot>
-
-                            </table>
+                                    </tfoot>
+                                    @endif
+                                </table>
+                            </div>
                         </div>
-                        <!-- /.card-body -->
                     </div>
-                    <!-- /.card -->
                 </div>
             </div>
         </div>
     </section>
+@endsection
+@section('script')
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script>
+$(function() {
+    var startDate = '{{ request()->start_date }}';
+    var endDate = '{{ request()->end_date }}';
+
+    var initialRanges = {};
+    if (startDate && endDate) {
+        initialRanges.startDate = moment(startDate);
+        initialRanges.endDate = moment(endDate);
+    }
+
+    $('input[name="daterange"]').daterangepicker({
+        ...initialRanges,
+        opens: 'right',
+        locale: {
+          format: 'YYYY-MM-DD',
+          cancelLabel: 'Clear'
+        },
+        autoUpdateInput: false
+    });
+
+    $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+        $('#start_date').val(picker.startDate.format('YYYY-MM-DD'));
+        $('#end_date').val(picker.endDate.format('YYYY-MM-DD'));
+    });
+
+    $('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {
+        $(this).val('');
+        $('#start_date').val('');
+        $('#end_date').val('');
+    });
+    
+    if (startDate && endDate) {
+        $('input[name="daterange"]').val(moment(startDate).format('YYYY-MM-DD') + ' - ' + moment(endDate).format('YYYY-MM-DD'));
+    }
+});
+</script>
 @endsection
