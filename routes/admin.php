@@ -142,7 +142,7 @@ Route::group([
     });
 
     // Deposit routes (for view_deposit_requests permission)
-    Route::middleware(['permission:view_deposit_requests'])->group(function () {
+    Route::middleware(['permission:process_deposit'])->group(function () {
         Route::get('finicialdeposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
         Route::get('finicialdeposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
         Route::post('finicialdeposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');
