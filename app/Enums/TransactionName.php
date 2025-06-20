@@ -37,4 +37,6 @@ enum TransactionName: string
     case Leaderboard = 'leaderboard';
     case Freebet = 'freebet';
     case PreserveRefund = 'preserve_refund';
+    case TopUp = 'top_up';
+    case TopUpReject = 'top_up_reject';
 }

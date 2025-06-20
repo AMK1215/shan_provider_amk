@@ -524,8 +524,9 @@ class SubAccountController extends Controller
         }
 
         $transferLogs = $query->latest()->paginate(20);
+        $types = TransferLog::distinct()->pluck('type');
 
-        return view('admin.transfer_logs.subacc_log', compact('transferLogs'));
+        return view('admin.transfer_logs.subacc_log', compact('transferLogs', 'types'));
     }
 
     public function PlayerCreate()

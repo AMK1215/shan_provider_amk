@@ -82,7 +82,7 @@ class DepositRequestController extends Controller
             if ($request->status == 1) {
                 $old_balance = $player->balanceFloat;
                 app(WalletService::class)->transfer($agent, $player, $request->amount,
-                    TransactionName::DebitTransfer, [
+                    TransactionName::TopUp, [
                         'old_balance' => $old_balance,
                         'new_balance' => $old_balance + $request->amount,
                     ]

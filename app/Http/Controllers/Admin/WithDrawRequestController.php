@@ -69,7 +69,7 @@ class WithDrawRequestController extends Controller
         if ($request->status == 1) {
             $old_balance = $player->balanceFloat;
             app(WalletService::class)->transfer($player, $agent, $request->amount,
-                TransactionName::DebitTransfer, [
+                TransactionName::Withdraw, [
                     'old_balance' => $old_balance,
                     'new_balance' => $old_balance - $request->amount,
                 ]);
