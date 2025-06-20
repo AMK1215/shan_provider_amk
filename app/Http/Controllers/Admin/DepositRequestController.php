@@ -145,9 +145,17 @@ class DepositRequestController extends Controller
     // log deposit request
     public function DepositShowLog(DepositRequest $deposit)
     {
-        $logs = $deposit->logs;
+        $user = Auth::user();
+        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
+        $agent = $user->agent;
 
-        return view('admin.deposit_request.log', compact('logs'));
+        // Check if user has permission to handle this deposit
+        if ($deposit->agent_id !== $agent->id ||
+            ($isSubAgent && $deposit->agent_id !== $agent->id)) {
+            return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
+        }
+
+        return view('admin.deposit_request.log', compact('deposit'));
     }
 
     private function isExistingAgent($userId)

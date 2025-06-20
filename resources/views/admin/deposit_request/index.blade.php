@@ -103,15 +103,43 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
+                                                    <form
+                                                        action="{{ route('admin.agent.depositStatusUpdate', $deposit->id) }}"
+                                                        method="post">
+                                                        @csrf
+                                                        <input type="hidden" name="amount"
+                                                            value="{{ $deposit->amount }}">
+                                                        <input type="hidden" name="status" value="1">
+                                                        <input type="hidden" name="player"
+                                                            value="{{ $deposit->user->id }}">
+                                                        @if ($deposit->status == 0)
+                                                            <button class="btn btn-success p-1 me-1" type="submit" title="Approve">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        @endif
+                                                    </form>
+                                                    <form
+                                                        action="{{ route('admin.agent.depositStatusreject', $deposit->id) }}"
+                                                        method="post">
+                                                        @csrf
+                                                        <input type="hidden" name="status" value="2">
+                                                        @if ($deposit->status == 0)
+                                                            <button class="btn btn-danger p-1 me-1" type="submit" title="Reject">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        @endif
+                                                    </form>
+                                                </div>
+                                                <div class="d-flex align-items-center mt-1">
                                                     <a href="{{ route('admin.agent.depositView', $deposit->id) }}"
-                                                        class="text-white btn btn-info">Detail</a>
+                                                        class="text-white btn btn-info btn-sm">Detail</a>
                                                 </div>
                                                 
                                             </td>
                                             <td>
                                             <div class="d-flex align-items-center">
-                                                    <a href="{{ route('admin.agent.depositView', $deposit->id) }}"
-                                                        class="text-white btn btn-info">Log</a>
+                                                    <a href="{{ route('admin.agent.depositLog', $deposit->id) }}"
+                                                        class="text-white btn btn-info btn-sm">Log</a>
                                                 </div>
                                             </td>
                                         </tr>
