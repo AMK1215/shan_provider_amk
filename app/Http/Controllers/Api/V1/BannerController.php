@@ -75,15 +75,10 @@ class BannerController extends Controller
     {
         $user = Auth::user();
 
-        // Determine the admin whose banners to fetch
-        if ($user->parent) {
-            // If the user has a parent (Agent or Player), go up the hierarchy
-            // $admin = $user->parent->parent ?? $user->parent;
-            $admin = $user->parent;
-
-        } else {
-            // If the user is an Admin, they own the banners
-            $admin = $user;
+        // Traverse up the hierarchy to find the root admin
+        $admin = $user;
+        while ($admin->parent) {
+            $admin = $admin->parent;
         }
 
         // Fetch banners for the determined admin
