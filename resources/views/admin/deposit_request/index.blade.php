@@ -148,7 +148,7 @@
                                                         </form>
                                                     @endif
                                                      <a href="{{ route('admin.agent.depositView', $deposit->id) }}" class="btn btn-info btn-sm" title="View Details"><i class="fas fa-eye"></i></a>
-                                                    <a href="{{ route('admin.agent.depositLog', $deposit->id) }}" class="btn btn-secondary btn-sm" title="View Log"><i class="fas fa-history"></i></a>
+                                                    <!-- <a href="{{ route('admin.agent.depositLog', $deposit->id) }}" class="btn btn-secondary btn-sm" title="View Log"><i class="fas fa-history"></i></a> -->
                                                 </td>
                                             </tr>
                                         @empty
