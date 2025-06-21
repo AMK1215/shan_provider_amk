@@ -84,6 +84,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // Player game logs
     Route::get('/player/game-logs', [GameLogController::class, 'index']);
+    Route::get('user', [AuthController::class, 'getUser']);
+
 });
 
 // games
@@ -103,9 +105,9 @@ Route::prefix('v1')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 Route::post('/auth/login', [LoginController::class, 'login']);
 Route::post('/auth/logout', [LoginController::class, 'logout']);
