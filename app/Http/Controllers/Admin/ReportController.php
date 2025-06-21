@@ -151,4 +151,36 @@ class ReportController extends Controller
 
         return view('admin.reports.daily_win_loss', compact('dailyReports', 'date', 'totalTurnover', 'totalPayout', 'totalWinLoss'));
     }
+
+    public function gameLogReport(Request $request)
+    {
+        $agent = Auth::user();
+        $playerIds = $agent->getAllDescendantPlayers()->pluck('id');
+
+        $query = PlaceBet::whereIn('player_id', $playerIds)
+            ->where('wager_status', 'SETTLED')
+            ->select(
+                'game_name',
+                DB::raw('COUNT(*) as spin_count'),
+                DB::raw('SUM(bet_amount) as turnover'),
+                DB::raw('SUM(prize_amount) - SUM(bet_amount) as win_loss')
+            )
+            ->groupBy('game_name')
+            ->orderBy('game_name');
+
+        if ($request->has('from') && $request->has('to')) {
+            $from = Carbon::parse($request->from)->startOfDay();
+            $to = Carbon::parse($request->to)->endOfDay();
+            $query->whereBetween('created_at', [$from, $to]);
+        } else {
+            // Default to today
+            $query->whereDate('created_at', Carbon::today());
+        }
+
+        $gameLogs = $query->get();
+        $from = $request->from ?? Carbon::today()->toDateString();
+        $to = $request->to ?? Carbon::today()->toDateString();
+
+        return view('admin.report.game_log_report', compact('gameLogs', 'from', 'to'));
+    }
 }
