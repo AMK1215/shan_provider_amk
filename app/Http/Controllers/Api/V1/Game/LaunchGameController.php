@@ -133,23 +133,37 @@ class LaunchGameController extends Controller
                 'Accept' => 'application/json',
             ])->post($apiUrl, $payload);
 
-            if ($response->successful()) {
-                $responseData = $response->json();
-                // Log::info('Provider Launch Game API Response', ['response' => $responseData]);
+            // if ($response->successful()) {
+            //     $responseData = $response->json();
+            //     // Log::info('Provider Launch Game API Response', ['response' => $responseData]);
 
+            //     return response()->json([
+            //         'code' => $responseData['code'] ?? SeamlessWalletCode::InternalServerError->value,
+            //         'message' => $responseData['message'] ?? 'Game launched successfully',
+            //         'url' => $responseData['url'] ?? '',
+            //         'content' => $responseData['content'] ?? '',
+            //     ]);
+            // }
+
+            if (!empty($responseData['url'])) {
                 return response()->json([
-                    'code' => $responseData['code'] ?? SeamlessWalletCode::InternalServerError->value,
-                    'message' => $responseData['message'] ?? 'Game launched successfully',
-                    'url' => $responseData['url'] ?? '',
-                    'content' => $responseData['content'] ?? '',
+                    'code' => 200,
+                    'message' => 'Game launched successfully',
+                    'url' => $responseData['url'],
                 ]);
             }
+            
+            return response()->json([
+                'code' => $responseData['code'] ?? 500,
+                'message' => $responseData['message'] ?? 'Launch failed.',
+            ], 500);
+            
 
-            Log::error('Provider Launch Game API Request Failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-                'request_payload' => $payload,
-            ]);
+            // Log::error('Provider Launch Game API Request Failed', [
+            //     'status' => $response->status(),
+            //     'body' => $response->body(),
+            //     'request_payload' => $payload,
+            // ]);
 
             return response()->json(
                 ['code' => $response->status(), 'message' => 'Provider API request failed', 'url' => '', 'content' => $response->body()],
