@@ -33,10 +33,14 @@ class GameLogController extends Controller
         $from = $request->input('from');
         $to = $request->input('to');
 
-        if ($from && $to) {
-            $query->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]);
+        // If no dates are provided, default to today.
+        if (!$from || !$to) {
+            $from = Carbon::today()->toDateString();
+            $to = Carbon::today()->toDateString();
         }
 
+        $query->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]);
+        
         $gameLogs = $query->get();
 
         $gameLogs->transform(function ($log) use ($from, $to) {
