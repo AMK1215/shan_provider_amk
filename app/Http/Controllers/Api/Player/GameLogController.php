@@ -30,13 +30,20 @@ class GameLogController extends Controller
             ->groupBy('game_name')
             ->orderBy('game_name');
 
-        if ($request->has('from') && $request->has('to')) {
-            $from = Carbon::parse($request->from)->startOfDay();
-            $to = Carbon::parse($request->to)->endOfDay();
-            $query->whereBetween('created_at', [$from, $to]);
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        if ($from && $to) {
+            $query->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]);
         }
 
         $gameLogs = $query->get();
+
+        $gameLogs->transform(function ($log) use ($from, $to) {
+            $log->from = $from;
+            $log->to = $to;
+            return $log;
+        });
 
         return $this->success($gameLogs, 'Player game logs retrieved successfully.');
     }
