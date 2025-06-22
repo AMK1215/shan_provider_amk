@@ -118,7 +118,7 @@ class PlayerReportController extends Controller
     // $agent = User::find($agentID);
     // $subAgent = $agent->hasRole(UserType::SubAgent->value);
     // if($subAgent){
-    // $players = $auth->getAllDescendantPlayers();
+      $playerIds = $auth->getAllDescendantPlayers();
     //     $playerIds = $players->pluck('id')->toArray();
     // }else{
     //     $playerIds = [$auth->id];
