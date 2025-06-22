@@ -292,15 +292,7 @@
                                     </p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                            <a href="{{ route('admin.player_report.summary') }}"
-                                class="nav-link {{ Route::currentRouteName() == 'admin.player_report.summary' ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>
-                                    Win/Lose Report
-                                </p>
-                            </a>
-                        </li>
+                           
                         @endcan
                         @can('owner_access')
                             <li
@@ -379,6 +371,18 @@
                                     </a>
                                 </li>
                                 @endcan
+
+                                @can('player_view')
+                                <li class="nav-item">
+                            <a href="{{ route('admin.player_report.summary') }}"
+                                class="nav-link {{ Route::currentRouteName() == 'admin.player_report.summary' ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>
+                                    Win/Lose Report
+                                </p>
+                            </a>
+                        </li>
+                        @endcan
                                 <!-- <li class="nav-item menu-open">
                                     <a href=""
                                         class="nav-link">

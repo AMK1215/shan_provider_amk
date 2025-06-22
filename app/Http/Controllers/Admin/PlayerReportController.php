@@ -114,20 +114,22 @@ class PlayerReportController extends Controller
     public function summary(Request $request)
 {
     $auth = Auth::user();
-    // $agentID = $auth->id;
-    // $agent = User::find($agentID);
-    // $subAgent = $agent->hasRole(UserType::SubAgent->value);
-    // if($subAgent){
-      //$playerIds = $auth->getAllDescendantPlayers();
-    //     $playerIds = $players->pluck('id')->toArray();
+    
+    // subagent belong to parent agent_id and player belong to parent agent_id
+
+    $playerIds = $auth->getAllDescendantPlayers()->pluck('id')->toArray();
+    //$subAgentIds = $auth->getAllDescendantPlayers()->pluck('id')->toArray();
+
+    $start = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
+    $end = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
+
+    // if($auth->hasRole(UserType::SubAgent->value)){
+    //     $playerIds = $auth->getAllDescendantPlayers()->pluck('id')->toArray();
     // }else{
     //     $playerIds = [$auth->id];
     // }
 
-    $playerIds = $auth->getAllDescendantPlayers()->pluck('id')->toArray();
 
-    $start = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
-    $end = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
     $placeBets = PlaceBet::query()
         ->whereIn('player_id', $playerIds)
