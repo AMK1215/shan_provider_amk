@@ -237,19 +237,36 @@ class User extends Authenticatable implements Wallet
         return false;
     }
 
+    // public function getAllDescendantPlayers()
+    // {
+    //     $players = collect();
+    //     $children = $this->children()->with('roles')->get();
+
+    //     foreach ($children as $child) {
+    //         if ($child->hasRole('Player')) {
+    //             $players->push($child);
+    //         } elseif ($child->hasRole('SubAgent')) {
+    //             $players = $players->merge($child->getAllDescendantPlayers());
+    //         }
+    //     }
+
+    //     return $players;
+    // }
+
     public function getAllDescendantPlayers()
-    {
-        $players = collect();
-        $children = $this->children()->with('roles')->get();
+{
+    // Fetch direct players
+    $players = $this->children()->where('type', \App\Enums\UserType::Player)->get();
 
-        foreach ($children as $child) {
-            if ($child->hasRole('Player')) {
-                $players->push($child);
-            } elseif ($child->hasRole('SubAgent')) {
-                $players = $players->merge($child->getAllDescendantPlayers());
-            }
-        }
+    // Fetch all subagents
+    $subagents = $this->children()->where('type', \App\Enums\UserType::SubAgent)->get();
 
-        return $players;
+    // For each subagent, fetch their direct players recursively
+    foreach ($subagents as $sub) {
+        $players = $players->merge($sub->getAllDescendantPlayers());
     }
+
+    return $players;
+}
+
 }

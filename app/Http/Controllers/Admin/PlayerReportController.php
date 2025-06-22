@@ -17,6 +17,7 @@ class PlayerReportController extends Controller
     public function summary(Request $request)
 {
     $auth = Auth::user();
+    $subAgent = $auth->agent;
     $players = $auth->getAllDescendantPlayers();
     $playerIds = $players->pluck('id')->toArray();
 
