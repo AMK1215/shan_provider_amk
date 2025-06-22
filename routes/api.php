@@ -114,7 +114,7 @@ Route::post('/auth/logout', [LoginController::class, 'logout']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'profile']);
-    Route::post('/change-password', [ProfileController::class, 'changePassword']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
     Route::get('/banks', [BankControllerAlias::class, 'getBank']);
     Route::get('/promotions', [PromotionControllerAlias::class, 'index']);
     Route::get('/game-list', [GameController::class, 'gameList']);
