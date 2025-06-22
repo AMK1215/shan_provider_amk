@@ -62,26 +62,23 @@ class ReportController extends Controller
         $query = PlaceBet::query()
             ->select(
                 'place_bets.member_account',
-                'parent_agent.user_name as agent_name',
+                'agent_user.user_name as agent_name',
                 DB::raw("COUNT(CASE WHEN action = 'BET' THEN 1 END) as stake_count"),
                 DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) ELSE 0 END) as total_bet"),
                 DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount ELSE 0 END) as total_win")
             )
-            ->leftJoin('users as player_agent', 'place_bets.player_agent_id', '=', 'player_agent.id')
-            ->leftJoin('users as parent_agent', 'player_agent.agent_id', '=', 'parent_agent.id')
+            ->leftJoin('users as agent_user', 'place_bets.player_agent_id', '=', 'agent_user.id')
             ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
         // Apply agent/user hierarchy filtering based on role
         if ($agent->type === UserType::Owner->value) {
             $query->whereNotNull('place_bets.player_agent_id');
         } elseif ($agent->type === UserType::Agent->value) {
-            $subAgentIds = User::where('agent_id', $agent->id)
-                ->where('type', UserType::SubAgent->value)
-                ->pluck('id');
-            $allAgentIds = $subAgentIds->push($agent->id);
-            $query->whereIn('place_bets.player_agent_id', $allAgentIds);
+            $playerIds = $agent->getAllDescendantPlayers()->pluck('id');
+            $query->whereIn('place_bets.player_id', $playerIds);
         } elseif ($agent->type === UserType::SubAgent->value) {
-            $query->where('place_bets.player_agent_id', $agent->id);
+            $playerIds = User::where('agent_id', $agent->id)->where('type', UserType::Player)->pluck('id');
+            $query->whereIn('place_bets.player_id', $playerIds);
         } elseif ($agent->type === UserType::Player->value) {
             $query->where('place_bets.player_id', $agent->id);
         }
@@ -90,7 +87,7 @@ class ReportController extends Controller
             $query->where('member_account', $request->member_account);
         }
 
-        return $query->groupBy('place_bets.member_account', 'parent_agent.user_name')->get();
+        return $query->groupBy('place_bets.member_account', 'agent_user.user_name')->get();
     }
 
     private function getPlayerDetails($member_account, $request)
