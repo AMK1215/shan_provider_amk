@@ -6,6 +6,7 @@ use App\Enums\TransactionName;
 use App\Enums\UserType;
 use App\Models\Admin\UserLog;
 use App\Models\Transaction;
+use App\Models\TransferLog;
 use App\Models\User;
 use App\Services\WalletService;
 use Carbon\Carbon;
@@ -93,16 +94,38 @@ class HomeController extends Controller
 
     private function fetchTotalTransactions($id, string $type): float
     {
-        // Get all player IDs belonging to the agent
-        $playerIds = User::where('agent_id', $id)->where('type', UserType::Player)->pluck('id');
+        $user = User::find($id);
+        if (! $user) {
+            return 0;
+        }
 
-        $sum = Transaction::whereIn('target_user_id', $playerIds)
-            ->where('type', $type)
-            ->where('confirmed', 1)
-            ->whereDate('created_at', today())
-            ->sum('amount');
+        $query = TransferLog::query();
 
-        return $sum / 100;
+        if ($type === 'deposit') {
+            $query->where('type', 'deposit-approve');
+            // If user is SubAgent, they see only their transactions
+            // If user is Agent, they see all transactions from themself and their subagents, which from_user_id is agent_id
+            if ($user->hasRole('SubAgent')) {
+                $query->where('sub_agent_id', $id);
+            } else {
+                $query->where('from_user_id', $id);
+            }
+        } elseif ($type === 'withdraw') {
+            $query->where('type', 'withdraw-approve');
+            // If user is SubAgent, they see only their transactions
+            // If user is Agent, they see all transactions from themself and their subagents, which to_user_id is agent_id
+            if ($user->hasRole('SubAgent')) {
+                $query->where('sub_agent_id', $id);
+            } else {
+                $query->where('to_user_id', $id);
+            }
+        } else {
+            return 0;
+        }
+
+        $sum = $query->whereDate('created_at', today())->sum('amount');
+
+        return (float) $sum;
     }
 
     private function userCountGet($user): array
