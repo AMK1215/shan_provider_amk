@@ -118,11 +118,13 @@ class PlayerReportController extends Controller
     // $agent = User::find($agentID);
     // $subAgent = $agent->hasRole(UserType::SubAgent->value);
     // if($subAgent){
-      $playerIds = $auth->getAllDescendantPlayers();
+      //$playerIds = $auth->getAllDescendantPlayers();
     //     $playerIds = $players->pluck('id')->toArray();
     // }else{
     //     $playerIds = [$auth->id];
     // }
+
+    $playerIds = $auth->getAllDescendantPlayers()->pluck('id')->toArray();
 
     $start = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
     $end = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
