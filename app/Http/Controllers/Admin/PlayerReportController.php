@@ -21,33 +21,36 @@ class PlayerReportController extends Controller
         $auth = Auth::user();
         $playerIds = collect(); // Initialize an empty collection for player IDs
 
-        // Determine which players to display based on the authenticated user's role
-        if ($auth->type === UserType::Agent || $auth->type === UserType::Owner) {
-            // If the user is an Agent or Owner, they can see all their descendants' players
+        // Determine which players to display based on the authenticated user's role (type)
+        if ($auth->type === UserType::Owner) {
+            // Owner can see all players in the system
+            $playerIds = User::where('type', UserType::Player)->pluck('id')->toArray();
+
+        } elseif ($auth->type === UserType::Agent) {
+            // Agent can see all players directly under them and all players under their subagents.
+            // getAllDescendantPlayers should correctly gather players from subagents if they are linked to the agent.
             $players = $auth->getAllDescendantPlayers();
             $playerIds = $players->pluck('id')->toArray();
+
         } elseif ($auth->type === UserType::SubAgent) {
-            // If the user is a SubAgent, they should see players under their direct parent agent.
-            // These players' agent_id will be the parent agent's ID.
+            // SubAgent should see players under their direct parent agent.
             $parentAgent = $auth->agent; // Get the subagent's direct parent agent
 
             if ($parentAgent) {
                 // Get all players that have this parentAgent's ID as their agent_id
-                // This includes players created directly by the parent agent AND players
-                // created by any subagent of this parent agent (like the current $auth subagent).
                 $playersUnderParentAgent = User::where('agent_id', $parentAgent->id)
                                              ->where('type', UserType::Player)
-                                             ->get();
-                $playerIds = $playersUnderParentAgent->pluck('id')->toArray();
+                                             ->pluck('id')
+                                             ->toArray();
+                $playerIds = $playersUnderParentAgent;
             } else {
-                // Handle case where a subagent somehow doesn't have a parent agent (shouldn't happen with your current setup)
-                $playerIds = []; // No players to show
+                $playerIds = []; // No players to show if subagent has no parent
             }
-        } else {
-            // For any other user type (e.g., Player), they might not have access to reports
-            // Or you might handle it differently (e.g., show their own stats only)
-            $playerIds = []; // No players to show by default for other types
+        } elseif ($auth->type === UserType::Player) {
+            // A player can only see their own report
+            $playerIds = [$auth->id];
         }
+        // If other user types (e.g., SystemWallet) log in, $playerIds will remain empty, showing no data.
 
         $start = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $end = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
@@ -64,9 +67,12 @@ class PlayerReportController extends Controller
         }
 
         if ($request->filled('member_account')) {
+            // Assuming 'player' relationship exists on PlaceBet and 'user_name' is on User model
             $placeBets->whereHas('player', function($query) use ($request) {
                 $query->where('user_name', $request->member_account);
             });
+            // If member_account is directly on PlaceBet, then:
+            // $placeBets->where('member_account', $request->member_account);
         }
 
         // Group by player
@@ -102,12 +108,21 @@ class PlayerReportController extends Controller
             'totals' => $totals,
         ]);
     }
+
+
+    // working
 //     public function summary(Request $request)
 // {
 //     $auth = Auth::user();
-//     $subAgent = $auth->agent;
+//     $agentID = $auth->id;
+//     $agent = User::find($agentID);
+//     $subAgent = $agent->hasRole(UserType::SubAgent->value);
+//     if($subAgent){
 //     $players = $auth->getAllDescendantPlayers();
-//     $playerIds = $players->pluck('id')->toArray();
+//         $playerIds = $players->pluck('id')->toArray();
+//     }else{
+//         $playerIds = [$auth->id];
+//     }
 
 //     $start = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
 //     $end = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
