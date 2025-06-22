@@ -17,7 +17,8 @@ class ReportController extends Controller
     public function index(Request $request)
     {
         $agent = Auth::user();
-        $playerIds = $agent->getAllDescendantPlayers()->pluck('id');
+        //$agent = $this->getAgent() ?? Auth::user();
+
         $report = $this->buildQuery($request, $agent);
 
         $totalstake = $report->sum('stake_count');
@@ -53,7 +54,7 @@ class ReportController extends Controller
         return $user;
     }
 
-    private function buildQuery(Request $request, $agent, $playerIds)
+    private function buildQuery(Request $request, $agent)
     {
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
@@ -69,8 +70,7 @@ class ReportController extends Controller
                 // DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount * (CASE WHEN place_bets.currency = 'MMK2' THEN 0.001 ELSE 1 END) ELSE 0 END) as total_win")
             )
             ->leftJoin('users', 'place_bets.player_agent_id', '=', 'users.id')
-            ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
-            ->whereIn('place_bets.player_id', $playerIds);
+            ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
         // Apply agent/user hierarchy filtering based on role
         if ($agent->type === UserType::Owner->value) {
