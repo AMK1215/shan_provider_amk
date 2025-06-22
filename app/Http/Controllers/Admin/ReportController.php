@@ -77,20 +77,17 @@ class ReportController extends Controller
             // Owner can see all bets
             $query->whereNotNull('player_agent_id');
         } elseif ($agent->type === UserType::Agent->value) {
-            // Agent can see their own bets and their SubAgents' and Players' bets
+            // Agent can see their own Players' and their SubAgents' Players' bets
             $subAgentIds = User::where('agent_id', $agent->id)
                 ->where('type', UserType::SubAgent->value)
                 ->pluck('id');
-            $playerIds = User::where('agent_id', $agent->id)
-                ->where('type', UserType::Player->value)
-                ->pluck('id');
-            $query->whereIn('player_agent_id', $subAgentIds->merge($playerIds));
+
+            $allAgentIds = $subAgentIds->push($agent->id);
+            $query->whereIn('place_bets.player_agent_id', $allAgentIds);
+
         } elseif ($agent->type === UserType::SubAgent->value) {
             // SubAgent can only see their Players' bets
-            $playerIds = User::where('agent_id', $agent->id)
-                ->where('type', UserType::Player->value)
-                ->pluck('id');
-            $query->whereIn('player_agent_id', $playerIds);
+            $query->where('place_bets.player_agent_id', $agent->id);
         } elseif ($agent->type === UserType::Player->value) {
             // Player can only see their own bets
             $query->where('player_id', $agent->id);
