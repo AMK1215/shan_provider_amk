@@ -18,58 +18,51 @@ class PlayerReportController extends Controller
     {
         $auth = Auth::user();
 
-        // Fetch all descendant players (direct + subagent players)
-        $players = $auth->getAllDescendantPlayers();
-
-        // Player IDs array for PlaceBet filter
-        $playerIds = $players->pluck('id')->toArray();
-
-
-
-        $start = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
-        $end = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
-
-        $placeBets = PlaceBet::query()
-            ->whereIn('player_id', $playerIds);
-
-        if ($start) {
-            $placeBets->where('created_at', '>=', $start.' 00:00:00');
-        }
-        if ($end) {
-            $placeBets->where('created_at', '<=', $end.' 23:59:59');
-        }
-
-        // Group by player
-        $report = $placeBets
+        // Base query with joins for efficiency
+        $query = PlaceBet::query()
+            ->join('users as player', 'place_bets.player_id', '=', 'player.id')
+            ->join('users as agent', 'player.agent_id', '=', 'agent.id')
             ->selectRaw('
-                player_id,
-                COUNT(id) as total_spins,
-                SUM(COALESCE(bet_amount, 0)) as total_bet,
-                SUM(COALESCE(prize_amount, 0)) as total_payout,
-                SUM(COALESCE(prize_amount, 0) - COALESCE(bet_amount, 0)) as win_lose
-            ')
-            ->groupBy('player_id')
-            ->get();
+                player.user_name as player_user_name,
+                agent.user_name as agent_user_name,
+                COUNT(place_bets.id) as total_spins,
+                SUM(COALESCE(place_bets.bet_amount, 0)) as total_bet,
+                SUM(COALESCE(place_bets.prize_amount, 0)) as total_payout,
+                SUM(COALESCE(place_bets.prize_amount, 0) - COALESCE(place_bets.bet_amount, 0)) as win_lose
+            ');
 
-        // Attach player and agent info
-        $report = $report->map(function ($row) {
-            $player = User::find($row->player_id);
-            $row->player_user_name = $player?->user_name;
-            $row->agent_user_name = $player?->agent?->user_name;
-            return $row;
-        });
+        // Role-based filtering: Agents/SubAgents see their direct players only.
+        if ($auth->hasRole('Agent') || $auth->hasRole('SubAgent')) {
+            $playerIds = User::where('agent_id', $auth->id)->where('type', 'Player')->pluck('id');
+            $query->whereIn('place_bets.player_id', $playerIds);
+        }
+        // Owners see all.
 
-        // Totals
+        // Date filtering
+        $start_date = $request->input('start_date', Carbon::today()->toDateString());
+        $end_date = $request->input('end_date', Carbon::today()->toDateString());
+        
+        $query->whereBetween('place_bets.created_at', [
+            Carbon::parse($start_date)->startOfDay(),
+            Carbon::parse($end_date)->endOfDay(),
+        ]);
+
+        // Player username filter
+        if ($request->filled('member_account')) {
+            $query->where('player.user_name', $request->member_account);
+        }
+
+        // Group results and execute query
+        $report = $query->groupBy('player.user_name', 'agent.user_name')->get();
+
+        // Calculate totals
         $totals = [
             'total_bet'    => $report->sum('total_bet'),
             'total_payout' => $report->sum('total_payout'),
             'win_lose'     => $report->sum('win_lose'),
         ];
 
-        return view('admin.report.player_report_index', [
-            'report' => $report,
-            'totals' => $totals,
-        ]);
+        return view('admin.report.player_report_index', compact('report', 'totals'));
     }
 }
 

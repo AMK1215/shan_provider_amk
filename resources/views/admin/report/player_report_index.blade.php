@@ -37,7 +37,12 @@
                 <div class="form-row align-items-end">
                     <div class="col-md-5">
                         <label for="date_range">Date Range</label>
-                        <input type="text" class="form-control" name="date_range" id="date_range" value="{{ request('date_range') }}">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                            </div>
+                            <input type="text" class="form-control" id="date_range" readonly>
+                        </div>
                         <input type="hidden" name="start_date" id="start_date" value="{{ request('start_date') }}">
                         <input type="hidden" name="end_date" id="end_date" value="{{ request('end_date') }}">
                     </div>
