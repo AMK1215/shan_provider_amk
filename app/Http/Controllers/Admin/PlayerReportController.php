@@ -34,7 +34,7 @@ class PlayerReportController extends Controller
 
         } elseif ($auth->type === UserType::SubAgent) {
             // SubAgent should see players under their direct parent agent.
-            $parentAgent = $auth->agent; // Get the subagent's direct parent agent
+            $parentAgent = $auth->agent->parent; // Get the subagent's direct parent agent
 
             if ($parentAgent) {
                 // Get all players that have this parentAgent's ID as their agent_id
