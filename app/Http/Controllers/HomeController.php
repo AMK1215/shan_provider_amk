@@ -93,7 +93,10 @@ class HomeController extends Controller
 
     private function fetchTotalTransactions($id, string $type): float
     {
-        $sum = Transaction::where('target_user_id', $id)
+        // Get all player IDs belonging to the agent
+        $playerIds = User::where('agent_id', $id)->where('type', UserType::Player)->pluck('id');
+
+        $sum = Transaction::whereIn('target_user_id', $playerIds)
             ->where('type', $type)
             ->where('confirmed', 1)
             ->whereDate('created_at', today())
