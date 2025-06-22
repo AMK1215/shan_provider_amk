@@ -62,42 +62,35 @@ class ReportController extends Controller
         $query = PlaceBet::query()
             ->select(
                 'place_bets.member_account',
-                'users.user_name as agent_name',
+                'parent_agent.user_name as agent_name',
                 DB::raw("COUNT(CASE WHEN action = 'BET' THEN 1 END) as stake_count"),
                 DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) ELSE 0 END) as total_bet"),
                 DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount ELSE 0 END) as total_win")
-                // DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) * (CASE WHEN place_bets.currency = 'MMK2' THEN 0.001 ELSE 1 END) ELSE 0 END) as total_bet"),
-                // DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount * (CASE WHEN place_bets.currency = 'MMK2' THEN 0.001 ELSE 1 END) ELSE 0 END) as total_win")
             )
-            ->leftJoin('users', 'place_bets.player_agent_id', '=', 'users.id')
+            ->leftJoin('users as player_agent', 'place_bets.player_agent_id', '=', 'player_agent.id')
+            ->leftJoin('users as parent_agent', 'player_agent.agent_id', '=', 'parent_agent.id')
             ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
         // Apply agent/user hierarchy filtering based on role
         if ($agent->type === UserType::Owner->value) {
-            // Owner can see all bets
-            $query->whereNotNull('player_agent_id');
+            $query->whereNotNull('place_bets.player_agent_id');
         } elseif ($agent->type === UserType::Agent->value) {
-            // Agent can see their own Players' and their SubAgents' Players' bets
             $subAgentIds = User::where('agent_id', $agent->id)
                 ->where('type', UserType::SubAgent->value)
                 ->pluck('id');
-
             $allAgentIds = $subAgentIds->push($agent->id);
             $query->whereIn('place_bets.player_agent_id', $allAgentIds);
-
         } elseif ($agent->type === UserType::SubAgent->value) {
-            // SubAgent can only see their Players' bets
             $query->where('place_bets.player_agent_id', $agent->id);
         } elseif ($agent->type === UserType::Player->value) {
-            // Player can only see their own bets
-            $query->where('player_id', $agent->id);
+            $query->where('place_bets.player_id', $agent->id);
         }
 
         if ($request->filled('member_account')) {
             $query->where('member_account', $request->member_account);
         }
 
-        return $query->groupBy('place_bets.member_account', 'users.user_name')->get();
+        return $query->groupBy('place_bets.member_account', 'parent_agent.user_name')->get();
     }
 
     private function getPlayerDetails($member_account, $request)
