@@ -88,7 +88,8 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('admin.report.details', ['member_account' => $row->player_user_name]) }}" class="btn btn-sm btn-info">View Details</a>
+                            <a href="{{ route('admin.report.detail', ['member_account' => $row->player_user_name]) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                <!-- <a href="{{ route('admin.report.details', ['member_account' => $row->player_user_name]) }}" class="btn btn-sm btn-info">View Details</a> -->
                             </td>
                         </tr>
                         @endforeach
