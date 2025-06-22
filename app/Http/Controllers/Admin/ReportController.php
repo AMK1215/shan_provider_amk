@@ -74,11 +74,22 @@ class ReportController extends Controller
         if ($agent->type === UserType::Owner->value) {
             $query->whereNotNull('place_bets.player_agent_id');
         } elseif ($agent->type === UserType::Agent->value) {
-            $playerIds = $agent->getAllDescendantPlayers()->pluck('id');
-            $query->whereIn('place_bets.player_id', $playerIds);
+            // Agent sees their own players and their sub-agents' players.
+            // Get all sub-agent IDs under the current agent.
+            $subAgentIds = User::where('agent_id', $agent->id)
+                ->where('type', UserType::SubAgent->value)
+                ->pluck('id');
+
+            // Add the agent's own ID to the list.
+            $allRelatedAgentIds = $subAgentIds->push($agent->id);
+
+            // Filter bets where the player's direct agent is in this list.
+            $query->whereIn('place_bets.player_agent_id', $allRelatedAgentIds);
+
         } elseif ($agent->type === UserType::SubAgent->value) {
-            $playerIds = User::where('agent_id', $agent->id)->where('type', UserType::Player)->pluck('id');
-            $query->whereIn('place_bets.player_id', $playerIds);
+            // SubAgent can only see their own players' bets.
+            $query->where('place_bets.player_agent_id', $agent->id);
+
         } elseif ($agent->type === UserType::Player->value) {
             $query->where('place_bets.player_id', $agent->id);
         }
