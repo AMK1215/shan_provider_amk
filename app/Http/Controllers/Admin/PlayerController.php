@@ -170,10 +170,13 @@ class PlayerController extends Controller
         $siteLink = $agent->parent->site_link ?? 'null';
 
         $inputs = $request->validated();
+        
+        // Set default amount to 0 if not provided
+        $inputs['amount'] = $inputs['amount'] ?? 0;
 
         try {
             DB::beginTransaction();
-            if (isset($inputs['amount']) && $inputs['amount'] > $agent->balanceFloat) {
+            if ($inputs['amount'] > $agent->balanceFloat) {
                 return redirect()->back()->with('error', 'Balance Insufficient');
             }
 
@@ -188,13 +191,12 @@ class PlayerController extends Controller
 
             $user->roles()->sync(self::PLAYER_ROLE);
 
-            if (isset($inputs['amount'])) {
-                app(WalletService::class)->transfer($agent, $user, $inputs['amount'],
-                    TransactionName::CreditTransfer, [
-                        'old_balance' => $user->balanceFloat,
-                        'new_balance' => $user->balanceFloat + $request->amount,
-                    ]);
-            }
+            // Always process the amount (now defaults to 0)
+            app(WalletService::class)->transfer($agent, $user, $inputs['amount'],
+                TransactionName::CreditTransfer, [
+                    'old_balance' => $user->balanceFloat,
+                    'new_balance' => $user->balanceFloat + $inputs['amount'],
+                ]);
 
             // Log the transfer
             TransferLog::create([
@@ -214,7 +216,7 @@ class PlayerController extends Controller
 
             return redirect()->back()
                 ->with('successMessage', 'Player created successfully')
-                ->with('amount', $request->amount)
+                ->with('amount', $inputs['amount'])
                 ->with('password', $request->password)
                 ->with('site_link', $siteLink)
                 ->with('user_name', $user->user_name);
