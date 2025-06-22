@@ -33,7 +33,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="">
+            <!-- <form method="GET" action="">
                 <div class="form-row align-items-end">
                     <div class="col-md-5">
                         <label for="date_range">Date Range</label>
@@ -54,7 +54,29 @@
                         <button type="submit" class="btn btn-primary btn-block">Filter</button>
                     </div>
                 </div>
+            </form> -->
+            <div class="row">
+                <div class="col-md-12">
+                <form method="GET" action="">
+                <div class="form-row align-items-end">
+                    <div class="col-auto">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" class="form-control" name="start_date" id="start_date" value="{{ request('start_date') }}">
+                    </div>
+                    <div class="col-auto">
+                        <label for="end_date">End Date</label>
+                        <input type="date" class="form-control" name="end_date" id="end_date" value="{{ request('end_date') }}">
+                    </div>
+                    <div class="col-auto">
+                        <label for="member_account">Player</label>
+                        <input type="text" class="form-control" name="member_account" id="member_account" value="{{ request('member_account') }}" placeholder="Player Username">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </div>
+                </div>
             </form>
+            </div>
         </div>
     </div>
 
