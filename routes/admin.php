@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\LocalWagerController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PaymentTypeController;
 use App\Http\Controllers\Admin\PlayerController;
+use App\Http\Controllers\Admin\PlayerReportController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
@@ -200,6 +201,7 @@ Route::group([
 
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/{member_account}', [ReportController::class, 'show'])->name('report.detail');
+    Route::get('player-report', [PlayerReportController::class, 'summary'])->name('player_report.summary');
     Route::get('reports/daily-win-loss', [ReportController::class, 'dailyWinLossReport'])->name('reports.daily_win_loss');
     Route::get('reports/game-log-report', [ReportController::class, 'gameLogReport'])->name('reports.game_log_report');
     // Route::get('report/detail/{member_account}', [\App\Http\Controllers\Admin\ReportController::class, 'getReportDetails'])->name('admin.report.detail');

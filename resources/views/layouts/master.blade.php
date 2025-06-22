@@ -246,6 +246,16 @@
                                 </p>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('admin.player_report.summary') }}"
+                                class="nav-link {{ Route::currentRouteName() == 'admin.player_report.summary' ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>
+                                    Player Report
+                                </p>
+                            </a>
+                        </li>
                         @endcan
                         @can('player_view')
                             <li class="nav-item">
