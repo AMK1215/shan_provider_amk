@@ -63,7 +63,9 @@ class ReportController extends Controller
                 'users.user_name as agent_name',
                 DB::raw("COUNT(CASE WHEN action = 'BET' THEN 1 END) as stake_count"),
                 DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) ELSE 0 END) as total_bet"),
-                DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount ELSE 0 END) as total_win")
+                DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount ELSE 0 END) as total_win"),
+                DB::raw("SUM(CASE WHEN action = 'BET' THEN COALESCE(bet_amount, amount, 0) * (CASE WHEN place_bets.currency = 'MMK2' THEN 0.001 ELSE 1 END) ELSE 0 END) as total_bet"),
+                DB::raw("SUM(CASE WHEN wager_status = 'SETTLED' THEN prize_amount * (CASE WHEN place_bets.currency = 'MMK2' THEN 0.001 ELSE 1 END) ELSE 0 END) as total_win")
             )
             ->leftJoin('users', 'place_bets.player_agent_id', '=', 'users.id')
             ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
