@@ -16,7 +16,7 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $agent = $this->getAgent() ?? Auth::user();
+        $agent = Auth::user();
         $report = $this->buildQuery($request, $agent);
 
         $totalstake = $report->sum('stake_count');
