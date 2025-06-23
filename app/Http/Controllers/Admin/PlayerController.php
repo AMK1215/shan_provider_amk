@@ -43,88 +43,191 @@ class PlayerController extends Controller
      */
     public function index()
     {
-        // abort_if(
-        //     Gate::denies('make_transfer'),
-        //     Response::HTTP_FORBIDDEN,
-        //     '403 Forbidden | You cannot access this page because you do not have permission'
-        // );
+        $startId = Auth::id();
 
         // Step 1: Get all descendant player IDs under this owner/agent/subagent using recursive CTE
-        $startId = auth()->id();
-
         $playerIds = collect(DB::select("
-        WITH RECURSIVE descendants AS (
-            SELECT id FROM users WHERE id = ?
-            UNION ALL
-            SELECT u.id FROM users u INNER JOIN descendants d ON u.agent_id = d.id
-        )
-        SELECT id FROM users WHERE id IN (SELECT id FROM descendants) AND type = '40'
-    ", [$startId]))->pluck('id');
+            WITH RECURSIVE descendants AS (
+                SELECT id FROM users WHERE id = ?
+                UNION ALL
+                SELECT u.id FROM users u INNER JOIN descendants d ON u.agent_id = d.id
+            )
+            SELECT id FROM users WHERE id IN (SELECT id FROM descendants) AND type = '40' -- Assuming '40' is UserType::Player->value
+        ", [$startId]))->pluck('id');
 
-        // Step 2: Eager-load roles for the players, and whatever else you want
-        $players = User::with(['roles', 'placeBets'])
+        // Step 2: Eager-load roles for the players
+        // Removed 'placeBets' eager load as aggregates are handled separately
+        $players = User::with(['roles']) // Only eager load roles
             ->whereIn('id', $playerIds)
-            ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+            ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code', 'balance') // Ensure 'balance' is selected if balanceFloat uses it
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Step 3: PlaceBet stats (classic)
-        // 3.1 Total spins (distinct spins, e.g. by wager_code)
-        $spinTotals = \App\Models\PlaceBet::query()
+        // Step 3: PlaceBet stats (classic) - ADDING MMK2 CONVERSION
+        // 3.1 Total spins (distinct spins, e.g. by wager_code) - NO CURRENCY CONVERSION NEEDED HERE
+        $spinTotals = PlaceBet::query()
             ->selectRaw('player_id, COUNT(DISTINCT wager_code) as total_spin')
             ->whereIn('player_id', $playerIds)
             ->groupBy('player_id')
             ->get()
             ->keyBy('player_id');
 
-        // 3.2 Total bets (sum for BET)
-        $betTotals = \App\Models\PlaceBet::query()
-            ->selectRaw('player_id, SUM(bet_amount) as total_bet_amount')
+        // 3.2 Total bets (sum for SETTLED) - ADDING MMK2 CONVERSION
+        $betTotals = PlaceBet::query()
+            ->selectRaw('
+                player_id,
+                SUM(CASE
+                    WHEN currency = \'MMK2\' THEN COALESCE(bet_amount, 0) * 1000
+                    ELSE COALESCE(bet_amount, 0)
+                END) as total_bet_amount
+            ')
             ->whereIn('player_id', $playerIds)
             ->where('wager_status', 'SETTLED')
             ->groupBy('player_id')
             ->get()
             ->keyBy('player_id');
 
-        // 3.3 Total payout (sum for SETTLED)
-        $settleTotals = \App\Models\PlaceBet::query()
-            ->selectRaw('player_id, SUM(prize_amount) as total_payout_amount')
+        // 3.3 Total payout (sum for SETTLED) - ADDING MMK2 CONVERSION
+        $settleTotals = PlaceBet::query()
+            ->selectRaw('
+                player_id,
+                SUM(CASE
+                    WHEN currency = \'MMK2\' THEN COALESCE(prize_amount, 0) * 1000
+                    ELSE COALESCE(prize_amount, 0)
+                END) as total_payout_amount
+            ')
             ->whereIn('player_id', $playerIds)
             ->where('wager_status', 'SETTLED')
             ->groupBy('player_id')
             ->get()
             ->keyBy('player_id');
 
-        // Step 4: Build users collection with transfer logs for each player
-        $users = $players->map(function ($player) use ($spinTotals, $betTotals, $settleTotals) {
+        // Step 4: Fetch all relevant TransferLogs once to avoid N+1
+        $transferLogs = TransferLog::with(['fromUser', 'toUser'])
+            ->whereIn('from_user_id', $playerIds)
+            ->orWhereIn('to_user_id', $playerIds)
+            ->latest() // Get the latest transfers globally, or per-player if needed
+            ->get()
+            // Group by player_id. A log might belong to two players in $playerIds if agent transfers to subagent or player
+            // For displaying logs per player, you might need a more complex grouping or separate logic.
+            // For now, let's group by the `player_id` from the list that it's associated with.
+            ->groupBy(function($log) use ($playerIds) {
+                if ($playerIds->contains($log->from_user_id)) {
+                    return $log->from_user_id;
+                }
+                if ($playerIds->contains($log->to_user_id)) {
+                    return $log->to_user_id;
+                }
+                return null; // This case should theoretically not be hit if whereIn covers it
+            });
+
+
+        // Step 5: Build users collection with aggregated stats and transfer logs
+        $users = $players->map(function ($player) use ($spinTotals, $betTotals, $settleTotals, $transferLogs) {
             $spin = $spinTotals->get($player->id);
             $bet = $betTotals->get($player->id);
             $settle = $settleTotals->get($player->id);
 
-            // Get transfer logs where this player is either from or to (eager-load fromUser and toUser)
-            $logs = \App\Models\TransferLog::with(['fromUser', 'toUser'])
-                ->where('from_user_id', $player->id)
-                ->orWhere('to_user_id', $player->id)
-                ->latest()
-                ->get();
+            // Get logs for this specific player, defaulting to an empty collection if none
+            $playerSpecificLogs = $transferLogs->get($player->id, collect());
 
             return (object) [
                 'id' => $player->id,
                 'name' => $player->name,
                 'user_name' => $player->user_name,
                 'phone' => $player->phone,
-                'balanceFloat' => $player->balanceFloat,
+                'balanceFloat' => $player->balance, // Assuming 'balance' is the column, if it's an accessor, ensure it's efficient
                 'status' => $player->status,
                 'roles' => $player->roles->pluck('name')->toArray(),
                 'total_spin' => $spin->total_spin ?? 0,
                 'total_bet_amount' => $bet->total_bet_amount ?? 0,
                 'total_payout_amount' => $settle->total_payout_amount ?? 0,
-                'logs' => $logs,
+                'logs' => $playerSpecificLogs, // Pass the relevant logs
             ];
         });
 
         return view('admin.player.index', compact('users'));
     }
+    // public function index()
+    // {
+       
+
+    //     // Step 1: Get all descendant player IDs under this owner/agent/subagent using recursive CTE
+    //     $startId = auth()->id();
+
+    //     $playerIds = collect(DB::select("
+    //     WITH RECURSIVE descendants AS (
+    //         SELECT id FROM users WHERE id = ?
+    //         UNION ALL
+    //         SELECT u.id FROM users u INNER JOIN descendants d ON u.agent_id = d.id
+    //     )
+    //     SELECT id FROM users WHERE id IN (SELECT id FROM descendants) AND type = '40'
+    // ", [$startId]))->pluck('id');
+
+    //     // Step 2: Eager-load roles for the players, and whatever else you want
+    //     $players = User::with(['roles', 'placeBets'])
+    //         ->whereIn('id', $playerIds)
+    //         ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+
+    //     // Step 3: PlaceBet stats (classic)
+    //     // 3.1 Total spins (distinct spins, e.g. by wager_code)
+    //     $spinTotals = \App\Models\PlaceBet::query()
+    //         ->selectRaw('player_id, COUNT(DISTINCT wager_code) as total_spin')
+    //         ->whereIn('player_id', $playerIds)
+    //         ->groupBy('player_id')
+    //         ->get()
+    //         ->keyBy('player_id');
+
+    //     // 3.2 Total bets (sum for BET)
+    //     $betTotals = \App\Models\PlaceBet::query()
+    //         ->selectRaw('player_id, SUM(bet_amount) as total_bet_amount')
+    //         ->whereIn('player_id', $playerIds)
+    //         ->where('wager_status', 'SETTLED')
+    //         ->groupBy('player_id')
+    //         ->get()
+    //         ->keyBy('player_id');
+
+    //     // 3.3 Total payout (sum for SETTLED)
+    //     $settleTotals = \App\Models\PlaceBet::query()
+    //         ->selectRaw('player_id, SUM(prize_amount) as total_payout_amount')
+    //         ->whereIn('player_id', $playerIds)
+    //         ->where('wager_status', 'SETTLED')
+    //         ->groupBy('player_id')
+    //         ->get()
+    //         ->keyBy('player_id');
+
+    //     // Step 4: Build users collection with transfer logs for each player
+    //     $users = $players->map(function ($player) use ($spinTotals, $betTotals, $settleTotals) {
+    //         $spin = $spinTotals->get($player->id);
+    //         $bet = $betTotals->get($player->id);
+    //         $settle = $settleTotals->get($player->id);
+
+    //         // Get transfer logs where this player is either from or to (eager-load fromUser and toUser)
+    //         $logs = \App\Models\TransferLog::with(['fromUser', 'toUser'])
+    //             ->where('from_user_id', $player->id)
+    //             ->orWhere('to_user_id', $player->id)
+    //             ->latest()
+    //             ->get();
+
+    //         return (object) [
+    //             'id' => $player->id,
+    //             'name' => $player->name,
+    //             'user_name' => $player->user_name,
+    //             'phone' => $player->phone,
+    //             'balanceFloat' => $player->balanceFloat,
+    //             'status' => $player->status,
+    //             'roles' => $player->roles->pluck('name')->toArray(),
+    //             'total_spin' => $spin->total_spin ?? 0,
+    //             'total_bet_amount' => $bet->total_bet_amount ?? 0,
+    //             'total_payout_amount' => $settle->total_payout_amount ?? 0,
+    //             'logs' => $logs,
+    //         ];
+    //     });
+
+    //     return view('admin.player.index', compact('users'));
+    // }
 
     /**
      * Display a listing of the users with their agents.
