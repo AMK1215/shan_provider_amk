@@ -47,21 +47,21 @@ class PlayerReportController extends Controller
                 player_id,
                 COUNT(id) as total_spins,
                 SUM(CASE
-                    WHEN currency = "MMK2" THEN COALESCE(bet_amount, 0) * 1000
+                    WHEN currency = \'MMK2\' THEN COALESCE(bet_amount, 0) * 1000
                     ELSE COALESCE(bet_amount, 0)
                 END) as total_bet,
                 SUM(CASE
-                    WHEN currency = "MMK2" THEN COALESCE(prize_amount, 0) * 1000
+                    WHEN currency = \'MMK2\' THEN COALESCE(prize_amount, 0) * 1000
                     ELSE COALESCE(prize_amount, 0)
                 END) as total_payout,
                 SUM(
                     (CASE
-                        WHEN currency = "MMK2" THEN COALESCE(prize_amount, 0) * 1000
+                        WHEN currency = \'MMK2\' THEN COALESCE(prize_amount, 0) * 1000
                         ELSE COALESCE(prize_amount, 0)
                     END)
                     -
                     (CASE
-                        WHEN currency = "MMK2" THEN COALESCE(bet_amount, 0) * 1000
+                        WHEN currency = \'MMK2\' THEN COALESCE(bet_amount, 0) * 1000
                         ELSE COALESCE(bet_amount, 0)
                     END)
                 ) as win_lose
@@ -78,7 +78,6 @@ class PlayerReportController extends Controller
         });
 
         // Totals
-        // The sums for totals will now correctly reflect MMK equivalent values
         $totals = [
             'total_bet'    => $report->sum('total_bet'),
             'total_payout' => $report->sum('total_payout'),
