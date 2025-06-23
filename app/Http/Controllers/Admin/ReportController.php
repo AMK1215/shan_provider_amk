@@ -200,7 +200,7 @@ class ReportController extends Controller
         $totalPayout = $dailyReports->sum('total_payout');
         $totalWinLoss = $totalPayout - $totalTurnover;
 
-        return view('admin.report.daily_win_loss', compact('dailyReports', 'date', 'totalTurnover', 'totalPayout', 'totalWinLoss'));
+        return view('admin.reports.daily_win_loss', compact('dailyReports', 'date', 'totalTurnover', 'totalPayout', 'totalWinLoss'));
     }
 
     // public function dailyWinLossReport(Request $request)
