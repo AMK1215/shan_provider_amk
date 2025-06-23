@@ -27,32 +27,32 @@ class TransferLogController extends Controller
                 });
         });
 
-        // All-time totals (unfiltered)
+        // All-time totals
         $allTimeTotalDeposit = $baseQuery->clone()->where('type', 'top_up')->sum('amount');
         $allTimeTotalWithdraw = $baseQuery->clone()->where('type', 'withdraw')->sum('amount');
-        $allTimeProfit = $allTimeTotalDeposit - $allTimeTotalWithdraw;
 
-        // Query for the table, with all filters applied
-        $tableQuery = $baseQuery->clone()->with(['fromUser', 'toUser']);
+        $query = $baseQuery->clone()->with(['fromUser', 'toUser']);
+
+        // Apply filters if provided
         if ($request->filled('type')) {
-            $tableQuery->where('type', $request->type);
+            $query->where('type', $request->type);
         }
 
-        // Query for filtered info boxes, which is only filtered by date
-        $dateFilteredQuery = $baseQuery->clone();
         if ($request->filled('date_from') && $request->filled('date_to')) {
             $from = $request->date_from.' 00:00:00';
             $to = $request->date_to.' 23:59:59';
-            $tableQuery->whereBetween('created_at', [$from, $to]);
-            $dateFilteredQuery->whereBetween('created_at', [$from, $to]);
+            $query->whereBetween('created_at', [$from, $to]);
         }
-        
-        // Daily totals based on date-filtered query
-        $dailyTotalDeposit = $dateFilteredQuery->clone()->where('type', 'top_up')->sum('amount');
-        $dailyTotalWithdraw = $dateFilteredQuery->clone()->where('type', 'withdraw')->sum('amount');
+
+        // Daily totals
+        $dailyTotalDeposit = $query->clone()->where('type', 'top_up')->sum('amount');
+        $dailyTotalWithdraw = $query->clone()->where('type', 'withdraw')->sum('amount');
         $dailyProfit = $dailyTotalDeposit - $dailyTotalWithdraw;
-        
-        $transferLogs = $tableQuery->latest()->paginate(20);
+
+        $transferLogs = $query->latest()->paginate(20);
+
+        // All-time profit
+        $allTimeProfit = $allTimeTotalDeposit - $allTimeTotalWithdraw;
 
         return view('admin.transfer_logs.index', compact(
             'transferLogs',
