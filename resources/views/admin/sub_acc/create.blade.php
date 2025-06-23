@@ -87,12 +87,12 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="permission-details">
-                                            <h5>View Only Group</h5>
+                                            <!-- <h5>View Only Group</h5>
                                             <ul>
                                                 <li>View player list</li>
                                                 <li>View player report</li>
                                                 <li>View transaction log</li>
-                                            </ul>
+                                            </ul> -->
 
                                             <h5>Player Creation Group</h5>
                                             <ul>

@@ -43,7 +43,7 @@ class SubAccountController extends Controller
     ];
 
     private const PERMISSION_GROUPS = [
-        'view_only' => 'View Only',
+        // 'view_only' => 'View Only',
         'player_creation' => 'Player Creation',
         'deposit_withdraw' => 'Deposit/Withdraw',
     ];
