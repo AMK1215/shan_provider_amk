@@ -373,7 +373,7 @@
                                 @endcan
 
                                 @can('player_view')
-                                <li class="nav-item">
+                                <!-- <li class="nav-item">
                             <a href="{{ route('admin.player_report.summary') }}"
                                 class="nav-link {{ Route::currentRouteName() == 'admin.player_report.summary' ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-chart-line"></i>
@@ -381,7 +381,7 @@
                                     Win/Lose Report
                                 </p>
                             </a>
-                        </li>
+                        </li> -->
                         @endcan
                                 <!-- <li class="nav-item menu-open">
                                     <a href=""
