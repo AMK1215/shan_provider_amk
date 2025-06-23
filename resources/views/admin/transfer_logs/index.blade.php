@@ -64,8 +64,8 @@
                             <tbody>
                                 @forelse($transferLogs as $log)
                                 <tr>
-                                    <td>{{ $log->fromUser->name ?? 'N/A' }}</td>
-                                    <td>{{ $log->toUser->name ?? 'N/A' }}</td>
+                                    <td>{{ $log->fromUser->user_name ?? 'N/A' }}</td>
+                                    <td>{{ $log->toUser->user_name ?? 'N/A' }}</td>
                                     <td>
                                         @if($log->type === 'top_up')
                                             <span class="badge badge-success">

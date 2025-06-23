@@ -55,11 +55,9 @@ class WithDrawRequestController extends Controller
             'user_id' => Auth::id()
         ]);
 
-        // $agent = $this->getAgent() ?? Auth::user();
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        // $agent = $isSubAgent ? $user->agent : $user;
-        $agent = $user->agent;
+        $agent = $isSubAgent ? $user->agent : $user;
         $player = User::find($request->player);
 
         Log::info('User and agent info', [
@@ -176,8 +174,7 @@ class WithDrawRequestController extends Controller
 
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        // $agent = $isSubAgent ? $user->agent : $user;
-        $agent = $user->agent;
+        $agent = $isSubAgent ? $user->agent : $user;
 
         try {
             $note = 'Withdraw request rejected by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
