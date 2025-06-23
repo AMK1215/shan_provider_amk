@@ -36,9 +36,9 @@
                                     <th>Status</th>
                                     <th>Balance</th>
                                     <!-- <th>TotalSpin</th> -->
-                                    <th>TotalBetAMT</th>
-                                    <th>TotalPayoutAMT</th>
-                                    <th>W/L</th>
+                                    <!-- <th>TotalBetAMT</th> -->
+                                    <!-- <th>TotalPayoutAMT</th> -->
+                                    <!-- <th>W/L</th> -->
                                     {{-- <th>CreatedAt</th> --}}
                                     @can('subagent_access')
                                     <th>Action</th>
@@ -64,9 +64,9 @@
                                                     </td>
                                                     <td class="text-bold">{{ number_format($user->balanceFloat) }}</td>
                                                     <!-- <td>{{ $user->total_spin }}</td> -->
-                                                    <td>{{ number_format($user->total_bet_amount, 2) }}</td>
+                                                    <!-- <td>{{ number_format($user->total_bet_amount, 2) }}</td>
                                                     <td>{{ number_format($user->total_payout_amount, 2) }}</td>
-                                                    <td>{{ number_format($user->total_payout_amount - $user->total_bet_amount, 2) }}</td>
+                                                    <td>{{ number_format($user->total_payout_amount - $user->total_bet_amount, 2) }}</td> -->
                                                     @can('subagent_access')
                                                     <td>
                                                         @if ($user->status == 1)
