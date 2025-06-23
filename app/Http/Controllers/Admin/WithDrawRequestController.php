@@ -80,7 +80,7 @@ class WithDrawRequestController extends Controller
                 'sub_agent_id' => $isSubAgent ? $user->id : null,
                 'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                 'amount' => $request->amount,
-                'type' => 'withdraw-approve',
+                'type' => 'withdraw',
                 'description' => 'Withdraw request ' . $withdraw->id . ' approved by ' . $user->user_name,
                 'meta' => [
                     'withdraw_request_id' => $withdraw->id,
@@ -120,7 +120,7 @@ class WithDrawRequestController extends Controller
                 'sub_agent_id' => $isSubAgent ? $user->id : null,
                 'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                 'amount' => $withdraw->amount,
-                'type' => 'withdraw-reject',
+                'type' => 'withdraw',
                 'description' => 'Withdraw request ' . $withdraw->id . ' rejected by ' . $user->user_name,
                 'meta' => [
                     'withdraw_request_id' => $withdraw->id,

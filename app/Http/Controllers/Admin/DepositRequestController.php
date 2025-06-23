@@ -93,7 +93,7 @@ class DepositRequestController extends Controller
                     'sub_agent_id' => $isSubAgent ? $user->id : null,
                     'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                     'amount' => $request->amount,
-                    'type' => 'deposit-approve',
+                    'type' => 'top_up',
                     'description' => 'Deposit request ' . $deposit->id . ' approved by ' . $user->user_name,
                     'meta' => [
                         'deposit_request_id' => $deposit->id,
