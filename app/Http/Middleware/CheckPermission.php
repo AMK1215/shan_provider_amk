@@ -12,12 +12,12 @@ class CheckPermission
     public function handle(Request $request, Closure $next, $permission)
     {
         $user = Auth::user();
-        Log::info('Permission check', [
-            'user_id' => $user->id,
-            'roles' => $user->roles->pluck('title')->toArray(),
-            'permissions' => $user->permissions->pluck('title')->toArray(),
-            'checking_for' => $permission,
-        ]);
+        // Log::info('Permission check', [
+        //     'user_id' => $user->id,
+        //     'roles' => $user->roles->pluck('title')->toArray(),
+        //     'permissions' => $user->permissions->pluck('title')->toArray(),
+        //     'checking_for' => $permission,
+        // ]);
 
         if ($user->hasRole('Owner')) {
             return $next($request);

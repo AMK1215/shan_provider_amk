@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 
 class WithDrawRequestController extends Controller
 {
@@ -46,6 +48,13 @@ class WithDrawRequestController extends Controller
 
     public function statusChangeIndex(Request $request, WithDrawRequest $withdraw)
     {
+        Log::info('Withdraw status change started', [
+            'withdraw_id' => $withdraw->id,
+            'request_status' => $request->status,
+            'request_player' => $request->player,
+            'user_id' => Auth::id()
+        ]);
+
         // $agent = $this->getAgent() ?? Auth::user();
         $user = Auth::user();
         $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
@@ -53,11 +62,35 @@ class WithDrawRequestController extends Controller
         $agent = $user->agent;
         $player = User::find($request->player);
 
+        Log::info('User and agent info', [
+            'user_id' => $user->id,
+            'user_name' => $user->user_name,
+            'is_sub_agent' => $isSubAgent,
+            'agent_id' => $agent ? $agent->id : null,
+            'agent_name' => $agent ? $agent->user_name : null,
+            'player_id' => $player ? $player->id : null,
+            'player_name' => $player ? $player->user_name : null,
+            'player_balance' => $player ? $player->balanceFloat : null
+        ]);
+
         if ($request->status == 1 && $player->balanceFloat < $request->amount) {
+            Log::warning('Insufficient balance for withdraw', [
+                'player_balance' => $player->balanceFloat,
+                'request_amount' => $request->amount,
+                'withdraw_id' => $withdraw->id
+            ]);
             return redirect()->back()->with('error', 'Insufficient Balance!');
         }
 
         $note = 'Withdraw request approved by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
+
+        Log::info('Updating withdraw request', [
+            'withdraw_id' => $withdraw->id,
+            'status' => $request->status,
+            'sub_agent_id' => $user->id,
+            'sub_agent_name' => $user->user_name,
+            'note' => $note
+        ]);
 
         $withdraw->update([
             'status' => $request->status,
@@ -67,28 +100,70 @@ class WithDrawRequestController extends Controller
         ]);
 
         if ($request->status == 1) {
-            $old_balance = $player->balanceFloat;
-            app(WalletService::class)->transfer($player, $agent, $request->amount,
-                TransactionName::Withdraw, [
-                    'old_balance' => $old_balance,
-                    'new_balance' => $old_balance - $request->amount,
-                ]);
-            
-            \App\Models\TransferLog::create([
-                'from_user_id' => $player->id,
-                'to_user_id' => $agent->id,
-                'sub_agent_id' => $isSubAgent ? $user->id : null,
-                'sub_agent_name' => $isSubAgent ? $user->user_name : null,
+            Log::info('Processing withdraw approval', [
+                'withdraw_id' => $withdraw->id,
                 'amount' => $request->amount,
-                'type' => 'withdraw',
-                'description' => 'Withdraw request ' . $withdraw->id . ' approved by ' . $user->user_name,
-                'meta' => [
-                    'withdraw_request_id' => $withdraw->id,
-                    'player_old_balance' => $old_balance,
-                    'player_new_balance' => $old_balance - $request->amount,
-                ]
+                'player_old_balance' => $player->balanceFloat
             ]);
+
+            $old_balance = $player->balanceFloat;
+            
+            try {
+                app(WalletService::class)->transfer($player, $agent, $request->amount,
+                    TransactionName::Withdraw, [
+                        'old_balance' => $old_balance,
+                        'new_balance' => $old_balance - $request->amount,
+                    ]);
+                
+                Log::info('Wallet transfer completed successfully', [
+                    'withdraw_id' => $withdraw->id,
+                    'transfer_amount' => $request->amount,
+                    'player_old_balance' => $old_balance,
+                    'player_new_balance' => $old_balance - $request->amount
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Wallet transfer failed', [
+                    'withdraw_id' => $withdraw->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
+            
+            try {
+                \App\Models\TransferLog::create([
+                    'from_user_id' => $player->id,
+                    'to_user_id' => $agent->id,
+                    'sub_agent_id' => $isSubAgent ? $user->id : null,
+                    'sub_agent_name' => $isSubAgent ? $user->user_name : null,
+                    'amount' => $request->amount,
+                    'type' => 'withdraw',
+                    'description' => 'Withdraw request ' . $withdraw->id . ' approved by ' . $user->user_name,
+                    'meta' => [
+                        'withdraw_request_id' => $withdraw->id,
+                        'player_old_balance' => $old_balance,
+                        'player_new_balance' => $old_balance - $request->amount,
+                    ]
+                ]);
+                
+                Log::info('Transfer log created successfully', [
+                    'withdraw_id' => $withdraw->id,
+                    'transfer_log_created' => true
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Transfer log creation failed', [
+                    'withdraw_id' => $withdraw->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
         }
+
+        Log::info('Withdraw status change completed successfully', [
+            'withdraw_id' => $withdraw->id,
+            'final_status' => $request->status
+        ]);
 
         return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');
     }
