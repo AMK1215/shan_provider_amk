@@ -81,7 +81,7 @@ class PlayerController extends Controller
         $betTotals = \App\Models\PlaceBet::query()
             ->selectRaw('player_id, SUM(bet_amount) as total_bet_amount')
             ->whereIn('player_id', $playerIds)
-            ->where('wager_status', 'BET')
+            ->where('wager_status', 'wager_status')
             ->groupBy('player_id')
             ->get()
             ->keyBy('player_id');

@@ -28,7 +28,7 @@ class PlayerReportController extends Controller
 
         $placeBets = PlaceBet::query()
             ->whereIn('player_id', $playerIds)
-            ->where('action', 'SETTLED');
+            ->where('wager_status', 'SETTLED');
 
         if ($start) {
             $placeBets->where('created_at', '>=', $start . ' 00:00:00');
