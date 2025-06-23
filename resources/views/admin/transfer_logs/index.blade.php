@@ -9,6 +9,44 @@
                     <h3 class="card-title">Transfer Logs</h3>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success elevation-1"><i class="fas fa-arrow-up"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Filtered Deposits</span>
+                                    <span class="info-box-number">{{ number_format($dailyTotalDeposit, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-arrow-down"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Filtered Withdrawals</span>
+                                    <span class="info-box-number">{{ number_format($dailyTotalWithdraw, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary elevation-1"><i class="fas fa-piggy-bank"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">All-Time Deposits</span>
+                                    <span class="info-box-number">{{ number_format($allTimeTotalDeposit, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-hand-holding-usd"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">All-Time Withdrawals</span>
+                                    <span class="info-box-number">{{ number_format($allTimeTotalWithdraw, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Filters -->
                     <form action="{{ route('admin.transfer-logs.index') }}" method="GET" class="mb-4">
                         <div class="row">
@@ -55,9 +93,9 @@
                                     <th>Type</th>
                                     <th>Date</th>
                                     <th>Description</th>
-                                    @can('subagent_access')
+                                    @canany(['subagent_access', 'agent_access'])
                                     <th>ApprovedBy</th>
-                                    @endcan
+                                    @endcanany
                                     <!-- <th>Action</th> -->
                                 </tr>
                             </thead>
@@ -67,33 +105,45 @@
                                     <td>{{ $log->fromUser->user_name ?? 'N/A' }}</td>
                                     <td>{{ $log->toUser->user_name ?? 'N/A' }}</td>
                                     <td>
-                                        @if($log->type === 'top_up')
+                                        @if($log->type === 'top_up' || $log->type === 'deposit')
                                             <span class="badge badge-success">
                                                + {{ number_format($log->amount, 2) }}
                                             </span>
-                                        @else
+                                        @elseif($log->type === 'withdraw' || $log->type === 'refund')
                                           <span class="badge badge-danger">
                                             - {{ number_format($log->amount, 2) }}
                                           </span>
+                                        @else
+                                            <span class="badge badge-info">
+                                                {{ number_format($log->amount, 2) }}
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge {{ $log->type === 'top_up' ? 'badge-success' : 'badge-danger' }}">
+                                        @php
+                                            $badgeClass = 'badge-secondary';
+                                            if ($log->type === 'top_up' || $log->type === 'deposit') {
+                                                $badgeClass = 'badge-success';
+                                            } elseif ($log->type === 'withdraw' || $log->type === 'refund') {
+                                                $badgeClass = 'badge-danger';
+                                            }
+                                        @endphp
+                                        <span class="badge {{ $badgeClass }}">
                                             {{ ucfirst(str_replace('_', ' ', $log->type)) }}
                                         </span>
                                     </td>
                                     <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>{{ $log->description }}</td>
-                                    @can('subagent_access')
+                                    @canany(['subagent_access', 'agent_access'])
                                     <td>{{ $log->sub_agent_name ?? 'N/A' }}</td>
-                                    @endcan
+                                    @endcanany
                                     <!-- <td>
                                         <a href="{{ route('admin.PlayertransferLogDetail', $log->id) }}" class="btn btn-primary">View</a>
                                     </td> -->
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">No transfer logs found</td>
+                                    <td colspan="7" class="text-center">No transfer logs found</td>
                                 </tr>
                                 @endforelse
                             </tbody>

@@ -16,25 +16,27 @@ class TransferLogController extends Controller
         $user = Auth::user();
         $relatedIds = $this->getDirectlyRelatedUserIds($user);
 
-        $query = TransferLog::with(['fromUser', 'toUser'])
-            ->where(function ($q) use ($user, $relatedIds) {
-                $q->where(function ($q2) use ($user, $relatedIds) {
-                    $q2->where('from_user_id', $user->id)
-                        ->whereIn('to_user_id', $relatedIds);
-                })
-                    ->orWhere(function ($q2) use ($user, $relatedIds) {
-                        $q2->where('to_user_id', $user->id)
-                            ->whereIn('from_user_id', $relatedIds);
-                    });
-            });
+        $baseQuery = TransferLog::where(function ($q) use ($user, $relatedIds) {
+            $q->where(function ($q2) use ($user, $relatedIds) {
+                $q2->where('from_user_id', $user->id)
+                    ->whereIn('to_user_id', $relatedIds);
+            })
+                ->orWhere(function ($q2) use ($user, $relatedIds) {
+                    $q2->where('to_user_id', $user->id)
+                        ->whereIn('from_user_id', $relatedIds);
+                });
+        });
+
+        // All-time totals
+        $allTimeTotalDeposit = $baseQuery->clone()->where('type', 'top_up')->sum('amount');
+        $allTimeTotalWithdraw = $baseQuery->clone()->where('type', 'withdraw')->sum('amount');
+
+        $query = $baseQuery->clone()->with(['fromUser', 'toUser']);
 
         // Apply filters if provided
-        if ($request->has('type')) {
+        if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        // if ($request->has('date_from') && $request->has('date_to')) {
-        //     $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
-        // }
 
         if ($request->filled('date_from') && $request->filled('date_to')) {
             $from = $request->date_from.' 00:00:00';
@@ -42,9 +44,19 @@ class TransferLogController extends Controller
             $query->whereBetween('created_at', [$from, $to]);
         }
 
+        // Daily totals
+        $dailyTotalDeposit = $query->clone()->where('type', 'top_up')->sum('amount');
+        $dailyTotalWithdraw = $query->clone()->where('type', 'withdraw')->sum('amount');
+
         $transferLogs = $query->latest()->paginate(20);
 
-        return view('admin.transfer_logs.index', compact('transferLogs'));
+        return view('admin.transfer_logs.index', compact(
+            'transferLogs',
+            'dailyTotalDeposit',
+            'dailyTotalWithdraw',
+            'allTimeTotalDeposit',
+            'allTimeTotalWithdraw'
+        ));
     }
 
     /**
