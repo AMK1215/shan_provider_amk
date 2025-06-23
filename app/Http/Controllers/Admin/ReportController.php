@@ -63,10 +63,10 @@ class ReportController extends Controller
         ->select(
             'place_bets.member_account',
             'agent_user.user_name as agent_name',
-            DB::raw("COUNT(CASE WHEN action = 'BET' THEN 1 END) as stake_count"),
+            DB::raw("COUNT(CASE WHEN wager_status = 'SETTLED' THEN 1 END) as stake_count"),
             DB::raw("
                 SUM(CASE
-                    WHEN action = 'BET' THEN
+                    WHEN wager_status = 'SETTLED' THEN
                         CASE
                             WHEN place_bets.currency = 'MMK2' THEN COALESCE(bet_amount, amount, 0) * 1000
                             ELSE COALESCE(bet_amount, amount, 0)
