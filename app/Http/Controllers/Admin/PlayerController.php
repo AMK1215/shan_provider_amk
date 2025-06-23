@@ -136,7 +136,7 @@ class PlayerController extends Controller
                 'name' => $player->name,
                 'user_name' => $player->user_name,
                 'phone' => $player->phone,
-                'balanceFloat' => $player->balance, // Assuming 'balance' is the column, if it's an accessor, ensure it's efficient
+                'balanceFloat' => $player->balanceFloat, // Assuming 'balance' is the column, if it's an accessor, ensure it's efficient
                 'status' => $player->status,
                 'roles' => $player->roles->pluck('name')->toArray(),
                 'total_spin' => $spin->total_spin ?? 0,
