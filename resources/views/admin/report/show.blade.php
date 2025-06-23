@@ -52,9 +52,27 @@
                                         <td>{{ $bet->provider_name }}</td>
                                         <td>{{ $bet->game_name }}</td>
                                         <!-- <td>{{ $bet->game_type }}</td> -->
-                                        <td class="text-right text-success">{{ number_format($bet->bet_amount, 2) }}</td>
-                                        <td class="text-right text-info">{{ number_format($bet->prize_amount, 2) }}</td>
-                                        <td>{{ number_format($bet->prize_amount - $bet->bet_amount, 2) }}</td>
+                                        <td class="text-right text-success">
+                                            @if($bet->currency == 'MMK2')
+                                            {{ number_format($bet->bet_amount * 1000, 2) }}
+                                            @else
+                                            {{ number_format($bet->bet_amount, 2) }}
+                                            @endif
+                                        </td>
+                                        <td class="text-right text-info">
+                                            @if($bet->currency == 'MMK2')
+                                            {{ number_format($bet->prize_amount * 1000, 2) }}
+                                            @else
+                                            {{ number_format($bet->prize_amount, 2) }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($bet->currency == 'MMK2')
+                                            {{ number_format(($bet->prize_amount - $bet->bet_amount) * 1000, 2) }}
+                                            @else
+                                            {{ number_format($bet->prize_amount - $bet->bet_amount, 2) }}
+                                            @endif
+                                        </td>
                                         <td>{{ number_format($bet->before_balance, 2) }}</td>
                                         <td>{{ number_format($bet->balance, 2) }}</td>
                                         <!-- <td>
