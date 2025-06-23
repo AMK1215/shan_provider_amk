@@ -47,15 +47,21 @@ class TransferLogController extends Controller
         // Daily totals
         $dailyTotalDeposit = $query->clone()->where('type', 'top_up')->sum('amount');
         $dailyTotalWithdraw = $query->clone()->where('type', 'withdraw')->sum('amount');
+        $dailyProfit = $dailyTotalDeposit - $dailyTotalWithdraw;
 
         $transferLogs = $query->latest()->paginate(20);
+
+        // All-time profit
+        $allTimeProfit = $allTimeTotalDeposit - $allTimeTotalWithdraw;
 
         return view('admin.transfer_logs.index', compact(
             'transferLogs',
             'dailyTotalDeposit',
             'dailyTotalWithdraw',
             'allTimeTotalDeposit',
-            'allTimeTotalWithdraw'
+            'allTimeTotalWithdraw',
+            'dailyProfit',
+            'allTimeProfit'
         ));
     }
 
