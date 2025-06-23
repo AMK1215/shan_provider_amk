@@ -63,6 +63,7 @@
                 <th>Provider</th>
                 <th>Game</th>
                 <!-- <th>Game Type</th> -->
+                <th>Wager Status</th>
                 <th>Bet Amount</th>
                 <th>Payout</th>
                 <th>Win/Lost</th>
@@ -80,6 +81,7 @@
                 <td>{{ $bet->provider_name }}</td>
                 <td>{{ $bet->game_name }}</td>
                 <!-- <td>{{ $bet->game_type }}</td> -->
+                <td>{{ $bet->wager_status }}</td>
                 <td>
                     @if($bet->currency == 'MMK2')
                     {{ number_format($bet->bet_amount * 1000, 2) }}
