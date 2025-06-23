@@ -118,7 +118,7 @@
             @endif
 
             <!-- Agent Stats -->
-            @if(in_array($role, ['Agent', 'SubAgent']))
+            <!-- @if(in_array($role, ['Agent', 'SubAgent']))
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-warning">
                     <div class="inner">
@@ -166,7 +166,7 @@
                     </div>
                 </div>
             </div>
-            @endif
+            @endif -->
 
             <!-- Owner Balance Top-Up -->
             @can('owner_access')
