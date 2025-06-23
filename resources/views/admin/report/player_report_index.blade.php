@@ -92,7 +92,7 @@
                         <tr>
                             <th>Player ID</th>
                             <th>Agent ID</th>
-                            <th>Total Spins</th>
+                            <!-- <th>Total Spins</th> -->
                             <th>Total Bet</th>
                             <th>Total Payout</th>
                             <th>Win/Lose</th>
@@ -104,7 +104,7 @@
                         <tr>
                             <td>{{ $row->player_user_name }}</td>
                             <td>{{ $row->agent_user_name }}</td>
-                            <td>{{ $row->total_spins }}</td>
+                            <!-- <td>{{ $row->total_spins }}</td> -->
                             <td>{{ number_format($row->total_bet, 2) }}</td>
                             <td>{{ number_format($row->total_payout, 2) }}</td>
                             <td>
