@@ -80,12 +80,30 @@
                 <td>{{ $bet->provider_name }}</td>
                 <td>{{ $bet->game_name }}</td>
                 <!-- <td>{{ $bet->game_type }}</td> -->
-                <td>{{ number_format($bet->bet_amount, 2) }}</td>
-                <td>{{ number_format($bet->prize_amount, 2) }}</td>
-                <td>{{ number_format($bet->prize_amount - $bet->bet_amount, 2) }}</td>
+                <td>
+                    @if($bet->currency == 'MMK2')
+                    {{ number_format($bet->bet_amount * 1000, 2) }}
+                    @else
+                    {{ number_format($bet->bet_amount, 2) }}
+                    @endif
+                </td>
+                <td>
+                    @if($bet->currency == 'MMK2')
+                    {{ number_format($bet->prize_amount * 1000, 2) }}
+                    @else
+                    {{ number_format($bet->prize_amount, 2) }}
+                    @endif
+                </td>
+                <td>
+                    @if($bet->currency == 'MMK2')
+                    {{ number_format(($bet->prize_amount - $bet->bet_amount) * 1000, 2) }}
+                    @else
+                    {{ number_format($bet->prize_amount - $bet->bet_amount, 2) }}
+                    @endif
+                </td>
                 <td>{{ number_format($bet->before_balance, 2) }}</td>
                 <td>{{ number_format($bet->balance, 2) }}</td>
-                <td>{{ \Carbon\Carbon::parse($bet->request_time)->timezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</td>
+                <td>{{ \Carbon\Carbon::parse($bet->created_at)->timezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</td>
                 <!-- <td>{{ $bet->request_time }}</td> -->
                 <!-- <td>{{ $bet->status }}</td> -->
             </tr>

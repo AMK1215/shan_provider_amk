@@ -310,10 +310,10 @@ class SubAccountController extends Controller
 
         // Date range filter
         if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
+            $query->whereDate('created_at', '>=', $request->start_date.' 00:00:00');
         }
         if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
+            $query->whereDate('created_at', '<=', $request->end_date.' 23:59:59');
         }
 
         $bets = $query->orderBy('created_at', 'desc')->get();
