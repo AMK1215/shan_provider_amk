@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Admin\Product; // Make sure to import your Product model
+use App\Models\Product; // Make sure to import your Product model
 
 class ShanProductCodeSeeder extends Seeder
 {
