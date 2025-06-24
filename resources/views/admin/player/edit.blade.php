@@ -35,7 +35,7 @@
                         <div class="col-lg-8 offset-lg-2 col-md-8 offset-md-2 col-sm-8 offset-sm-2 col-10 offset-1">
                             <div class="form-group">
                                 <label>PlayerId<span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="user_name" value="{{$player->user_name}}">
+                                <input type="text" class="form-control" name="user_name" value="{{$player->user_name}}" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Name<span class="text-danger">*</span></label>
