@@ -27,7 +27,8 @@ class ProviderTransactionCallbackController extends Controller
     /**
      * Handle incoming provider transaction callbacks.
      */
-    public function __invoke(Request $request) // Using __invoke for single action controller
+    //public function __invoke(Request $request) // Using __invoke for single action controller
+    public function handle(Request $request)
     {
         try {
             $this->validateTransactionKey($request);
