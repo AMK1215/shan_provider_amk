@@ -89,17 +89,17 @@ class ShanLaunchGameController extends Controller
         ]);
 
         // 3. Check if sign exists
-        if ($expected_sign) {
-            Log::warning('ShanLaunchGame: Signature invalid', [
-                'member_account' => $member_account,
-                'expected_sign' => $expected_sign,
-            ]);
+        // if ($expected_sign) {
+        //     Log::warning('ShanLaunchGame: Signature invalid', [
+        //         'member_account' => $member_account,
+        //         'expected_sign' => $expected_sign,
+        //     ]);
 
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Signature invalid',
-            ], 403);
-        }
+        //     return response()->json([
+        //         'status' => 'fail',
+        //         'message' => 'Signature invalid',
+        //     ], 403);
+        // }
 
         // 3. Member must exist
         $user = User::where('user_name', $member_account)->first();
