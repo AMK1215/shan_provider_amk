@@ -109,12 +109,26 @@ class ProviderTransactionCallbackController extends Controller
      * Find the user by player ID.
      * @throws \Exception If the player is not found.
      */
+    // protected function findPlayer(string $playerId): User
+    // {
+    //     $player = User::where('user_name', $playerId)->first();
+    //     if (!$player) {
+    //         Log::warning('Provider callback: Player not found', ['player_id' => $playerId]);
+    //         throw new \Exception('Player not found.');
+    //     }
+    //     return $player;
+    // }
+
+     /**
+     * Find the user by player ID.
+     * @throws PlayerNotFoundException If the player is not found.
+     */
     protected function findPlayer(string $playerId): User
     {
         $player = User::where('user_name', $playerId)->first();
         if (!$player) {
             Log::warning('Provider callback: Player not found', ['player_id' => $playerId]);
-            throw new \Exception('Player not found.');
+            throw new PlayerNotFoundException('Player not found.'); // Throw custom exception
         }
         return $player;
     }
