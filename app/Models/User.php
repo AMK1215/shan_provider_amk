@@ -32,7 +32,7 @@ class User extends Authenticatable implements Wallet
 
     private const SUB_AGENT_ROLE = 3;
 
-    private const ADMIN_ROLE = 1;
+    private const ADMIN_ROLE = 1; // 10.00
 
     /**
      * The attributes that are mass assignable.
