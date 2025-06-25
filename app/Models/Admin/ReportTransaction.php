@@ -10,6 +10,7 @@ use App\Models\GameType;
 class ReportTransaction extends Model
 {
     use HasFactory;
+    protected $table = 'report_transactions';
 
     protected $fillable = ['game_type_id', 'user_id', 'rate', 'status', 'transaction_amount', 'bet_amount', 'valid_amount', 'payout', 'final_turn', 'banker']; 
 
