@@ -5,6 +5,7 @@ namespace App\Models\Admin;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\GameType;
 
 class ReportTransaction extends Model
 {
@@ -29,6 +30,6 @@ class ReportTransaction extends Model
     {
         return $this->belongsTo(GameType::class);
     }
-    
+
 }
 
