@@ -11,6 +11,7 @@ class DigitBet extends Model
 
     protected $fillable = [
         'user_id',
+        'member_account',
         'bet_type',
         'digit',
         'bet_amount',

@@ -129,7 +129,9 @@ class DigitBetController extends Controller
             // Create and save the DigitBet record
             $bet = DigitBet::create([
                 'user_id' => $user->id,
-                'member_account' => $user->user_name, // Adjust if user model has member_account
+                'member_account' => $user->user_name ?? $user->name ?? $user->phone ?? 'unknown',
+
+                //'member_account' => $user->user_name, // Adjust if user model has member_account
                 'bet_type' => $validated['bet_type'],
                 'digit' => $validated['digit'] ?? null,
                 'bet_amount' => $betAmount,
