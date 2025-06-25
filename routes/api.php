@@ -96,11 +96,16 @@ Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers'])
 Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
 Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
 
+Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('player-history', [ShanPlayerHistoryController::class, 'getPlayerHistory']);
+});
+
+
 Route::group(['prefix' => 'shan'], function () {
     Route::post('balance', [ShanGetBalanceController::class, 'getBalance']);
     Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
-    Route::get('player-history', [ShanPlayerHistoryController::class, 'getPlayerHistory']);
 });
+
 
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Game;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -23,6 +24,25 @@ class ShanLaunchGameController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            Log::warning('ShanLaunchGame: Unauthenticated user attempting to launch game', [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+        Log::info('ShanLaunchGame: Authenticated user', [
+            'user_id' => $user->id,
+            'user_name' => $user->user_name,
+        ]);
+
         // 1. Validate input (including sign and operator_code)
         $validator = Validator::make($request->all(), [
             'member_account' => 'required|string|max:50',
@@ -32,6 +52,7 @@ class ShanLaunchGameController extends Controller
 
         if ($validator->fails()) {
             Log::warning('ShanLaunchGame: Validation failed', [
+                'user_id' => $user->id,
                 'member_account' => $request->member_account,
                 'product_code' => $request->product_code,
                 'errors' => $validator->errors()->toArray(),
@@ -48,6 +69,7 @@ class ShanLaunchGameController extends Controller
         $product_code = $request->product_code;
 
         Log::info('ShanLaunchGame: Validation passed', [
+            'user_id' => $user->id,
             'member_account' => $member_account,
             'product_code' => $product_code,
         ]);
@@ -55,6 +77,7 @@ class ShanLaunchGameController extends Controller
         $product = Product::where('product_code', $product_code)->first();
         if (!$product) {
             Log::warning('ShanLaunchGame: Product not found', [
+                'user_id' => $user->id,
                 'member_account' => $member_account,
                 'product_code' => $product_code,
             ]);
@@ -66,6 +89,7 @@ class ShanLaunchGameController extends Controller
         }
 
         Log::info('ShanLaunchGame: Product found', [
+            'user_id' => $user->id,
             'member_account' => $member_account,
             'product_code' => $product_code,
             'product_id' => $product->id,
@@ -81,6 +105,7 @@ class ShanLaunchGameController extends Controller
         $expected_sign = md5($operator_code.$member_account.$secret_key);
 
         Log::info('ShanLaunchGame: Configuration loaded', [
+            'user_id' => $user->id,
             'member_account' => $member_account,
             'operator_code' => $operator_code,
             'provider_url' => $providerUrl,
@@ -105,6 +130,7 @@ class ShanLaunchGameController extends Controller
         $user = User::where('user_name', $member_account)->first();
         if (! $user) {
             Log::warning('ShanLaunchGame: Member not found', [
+                'authenticated_user_id' => Auth::user()->id,
                 'member_account' => $member_account,
             ]);
 
@@ -115,6 +141,7 @@ class ShanLaunchGameController extends Controller
         }
 
         Log::info('ShanLaunchGame: Member found', [
+            'authenticated_user_id' => Auth::user()->id,
             'member_account' => $member_account,
             'user_id' => $user->id,
         ]);
@@ -129,6 +156,7 @@ class ShanLaunchGameController extends Controller
         ];
 
         Log::info('ShanLaunchGame: Calling provider API', [
+            'authenticated_user_id' => Auth::user()->id,
             'provider_url' => $providerUrl,
             'request_data' => $requestData,
         ]);
@@ -140,6 +168,7 @@ class ShanLaunchGameController extends Controller
             $responseData = $response->json();
             
             Log::info('ShanLaunchGame: Provider API successful', [
+                'authenticated_user_id' => Auth::user()->id,
                 'member_account' => $member_account,
                 'provider_response' => $responseData,
                 'status_code' => $response->status(),
@@ -148,6 +177,7 @@ class ShanLaunchGameController extends Controller
             return response()->json($responseData, $response->status());
         } else {
             Log::error('ShanLaunchGame: Provider API failed', [
+                'authenticated_user_id' => Auth::user()->id,
                 'member_account' => $member_account,
                 'provider_url' => $providerUrl,
                 'status_code' => $response->status(),
