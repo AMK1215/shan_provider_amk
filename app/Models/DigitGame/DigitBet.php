@@ -26,6 +26,14 @@ class DigitBet extends Model
         'game_type_id',
     ];
 
+
+    protected $casts = [
+        'bet_time' => 'datetime', // <-- Add this line
+        'bet_amount' => 'decimal:2', // Good practice to cast decimals
+        'win_amount' => 'decimal:2',
+        'profit' => 'decimal:2',
+    ];
+    
     public function user()
     {
         return $this->belongsTo(User::class);
