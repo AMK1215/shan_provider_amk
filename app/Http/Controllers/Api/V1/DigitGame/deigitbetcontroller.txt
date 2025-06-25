@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\DigitGame;
 
 use App\Http\Controllers\Controller;
@@ -11,10 +12,14 @@ use Illuminate\Support\Str; // For generating wager_code
 // Models
 use App\Models\DigitGame\DigitBet;
 use App\Models\User; // Assuming User model is in App\Models
+// Make sure to adjust these if your models are in different namespaces
+// use App\Models\Product; // If you have a Product model
+// use App\Models\GameType; // If you have a GameType model
 
 // Services
 use App\Services\WalletService;
 use App\Enums\TransactionName; // Assuming you have this Enum
+use App\Enums\TransactionType; // Assuming you have this Enum if used directly in WalletService
 
 class DigitBetController extends Controller
 {
@@ -33,7 +38,9 @@ class DigitBetController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::user(); // Get the authenticated user
+
+        //dd($user->user_name);
 
         if (!$user) {
             return response()->json([
@@ -42,10 +49,11 @@ class DigitBetController extends Controller
             ], 401);
         }
 
+        // Validate incoming request data
         try {
             $validated = $request->validate([
                 'bet_type' => ['required', 'string', 'in:small,big,green,yellow,red,digit'],
-                'digit' => ['nullable', 'integer', 'min:0', 'max:9', 'required_if:bet_type,digit'],
+                'digit' => ['nullable', 'integer', 'min:0', 'max:9', 'required_if:bet_type,digit'], // Required only if bet_type is 'digit'
                 'rolled_number' => ['required', 'integer', 'min:0', 'max:9'],
                 'outcome' => ['required', 'string', 'in:win,lose'],
                 'bet_amount' => ['required', 'numeric', 'min:1'],
@@ -62,93 +70,84 @@ class DigitBetController extends Controller
 
         $betAmount = $validated['bet_amount'];
         $multiplier = $validated['multiplier'];
-        $rolledNumber = $validated['rolled_number'];
-        $totalBet = $betAmount * $multiplier; // Total amount risked by the player
+        $totalBet = $betAmount * $multiplier;
         $winAmount = 0;
-        $profit = -$totalBet; // Default profit is a loss of totalBet
+        $profit = -$totalBet; // Start with negative profit (loss of bet amount)
 
         // Ensure user has enough balance
         if ($user->balanceFloat < $totalBet) {
             return response()->json([
                 'success' => false,
                 'message' => 'Insufficient balance. Please deposit funds to play.'
-            ], 400);
+            ], 400); // Bad Request
         }
 
+        // Use a database transaction to ensure atomicity
+        // This is crucial for financial transactions
         DB::beginTransaction();
         try {
             // Deduct bet amount from user's balance
             $this->walletService->withdraw(
                 $user,
                 $totalBet,
-                TransactionName::GAME_BET,
-                ['game_name' => 'Digit Bet', 'bet_type' => $validated['bet_type'], 'rolled_number' => $rolledNumber]
+                TransactionName::GAME_BET, // Use your appropriate enum value
+                ['game_name' => 'Digit Bet', 'bet_type' => $validated['bet_type'], 'rolled_number' => $validated['rolled_number']]
             );
 
             // Calculate win_amount and profit based on game logic
+            // Assuming fixed odds for different bet types
             if ($validated['outcome'] === 'win') {
-                $payoutFactor = 0; // Initialize payout factor
-
                 switch ($validated['bet_type']) {
                     case 'digit':
-                        $selectedDigit = $validated['digit'];
-                        // Special case: If player bet on '5' AND the rolled number is '5'
-                        if ($selectedDigit === 5 && $rolledNumber === 5) {
-                            $payoutFactor = 10; // Payout bet amount * 10
-                        } else {
-                            $payoutFactor = 5; // Payout bet amount * 5 for other exact digits
-                        }
+                        // Example: 9x payout for picking the exact digit
+                        $payoutMultiplier = 9;
                         break;
                     case 'small':
                     case 'big':
-                        // Payout is bet amount + bet amount (i.e., 2x the bet amount)
-                        $payoutFactor = 2;
-                        break;
-                    case 'green': // Assuming these also use a 2x payout if they are simpler 50/50 style bets
+                    case 'green':
                     case 'yellow':
                     case 'red':
-                         // You might need to confirm the exact payout rules for colors.
-                         // For now, assuming 2x as per 'small'/'big' if not specified otherwise.
-                        $payoutFactor = 2;
+                        // Example: 2x payout for 50/50 or color bets
+                        $payoutMultiplier = 2;
                         break;
                     default:
-                        $payoutFactor = 0; // Should not be reached due to validation
+                        $payoutMultiplier = 0; // Should not happen due to validation
                         break;
                 }
-
-                $winAmount = $totalBet * $payoutFactor;
-                $profit = $winAmount - $totalBet; // Profit is winnings minus original total bet
+                $winAmount = $totalBet * $payoutMultiplier;
+                $profit = $winAmount - $totalBet;
 
                 // Deposit win amount to user's balance
                 $this->walletService->deposit(
                     $user,
                     $winAmount,
-                    TransactionName::GAME_WIN,
-                    ['game_name' => 'Digit Bet', 'bet_type' => $validated['bet_type'], 'rolled_number' => $rolledNumber, 'winnings' => $winAmount]
+                    TransactionName::GAME_WIN, // Use your appropriate enum value
+                    ['game_name' => 'Digit Bet', 'bet_type' => $validated['bet_type'], 'rolled_number' => $validated['rolled_number']]
                 );
             }
 
             // Create and save the DigitBet record
             $bet = DigitBet::create([
                 'user_id' => $user->id,
-                // Fallback for member_account: try user_name, then name, then phone, else 'unknown'
                 'member_account' => $user->user_name ?? $user->name ?? $user->phone ?? 'unknown',
+
+                //'member_account' => $user->user_name, // Adjust if user model has member_account
                 'bet_type' => $validated['bet_type'],
                 'digit' => $validated['digit'] ?? null,
                 'bet_amount' => $betAmount,
                 'multiplier' => $multiplier,
-                'rolled_number' => $rolledNumber,
+                'rolled_number' => $validated['rolled_number'],
                 'win_amount' => $winAmount,
                 'profit' => $profit,
-                'status' => 'Settle',
+                'status' => 'Settle', // Mark as settled as outcome is known
                 'bet_time' => now(),
-                'wager_code' => 'W' . Str::random(12) . time(),
+                'wager_code' => 'W' . Str::random(12) . time(), // Unique wager code
                 'outcome' => $validated['outcome'],
-                'game_type_id' => 1, // Placeholder: Update with actual game_type_id from your DB/config
+                'game_type_id' => 1, // Placeholder: Get this from your database/config
                 'game_name' => 'Digit Bet',
                 'game_type' => 'number',
-                'game_provider_id' => 'game_provider_id', // Placeholder: Update with actual game_provider_id from your DB/config
-                'product_id' => 1, // Placeholder: Update with actual product_id from your DB/config
+                'game_provider_id' => 'game_provider_id', // Placeholder: Get this from config
+                'product_id' => 1, // Placeholder: Get this from your database/config
             ]);
 
             DB::commit();
@@ -159,19 +158,20 @@ class DigitBetController extends Controller
             // Fetch updated history for the response
             $history = DigitBet::where('user_id', $user->id)
                                ->latest('bet_time')
-                               ->limit(10)
+                               ->limit(10) // Limit to last 10 entries
                                ->get()
                                ->map(function($bet) {
+                                   // Format for frontend if needed
                                    return [
                                        'timestamp' => $bet->bet_time->toDateTimeString(),
                                        'betType' => $bet->bet_type,
                                        'digit' => $bet->digit,
                                        'rolledNumber' => $bet->rolled_number,
                                        'outcome' => $bet->outcome,
-                                       'bet_amount' => (float) $bet->bet_amount, // Cast to float for frontend if needed
+                                       'bet_amount' => $bet->bet_amount,
                                        'multiplier' => $bet->multiplier,
-                                       'win_amount' => (float) $bet->win_amount,
-                                       'profit' => (float) $bet->profit,
+                                       'win_amount' => $bet->win_amount,
+                                       'profit' => $bet->profit,
                                    ];
                                });
 
@@ -190,7 +190,7 @@ class DigitBetController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred during the bet process. Please try again.',
-                'error' => $e->getMessage() // Keep for development, remove in production
+                'error' => $e->getMessage() // For development, remove in production
             ], 500);
         }
     }
@@ -213,20 +213,22 @@ class DigitBetController extends Controller
         }
 
         $history = DigitBet::where('user_id', $user->id)
-                           ->latest('bet_time')
-                           ->limit(10)
+                           ->latest('bet_time') // Order by latest bets
+                           ->limit(10)          // Get last 10 bets
                            ->get()
                            ->map(function($bet) {
+                               // Format the data as expected by your React frontend
                                return [
                                    'timestamp' => $bet->bet_time->toDateTimeString(),
                                    'betType' => $bet->bet_type,
                                    'digit' => $bet->digit,
                                    'rolledNumber' => $bet->rolled_number,
                                    'outcome' => $bet->outcome,
-                                   'bet_amount' => (float) $bet->bet_amount,
+                                   'bet_amount' => $bet->bet_amount,
                                    'multiplier' => $bet->multiplier,
-                                   'win_amount' => (float) $bet->win_amount,
-                                   'profit' => (float) $bet->profit,
+                                   'win_amount' => $bet->win_amount,
+                                   'profit' => $bet->profit,
+                                   // Add other fields if needed by the frontend history table
                                ];
                            });
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ProviderTransactionCallbackController;
 use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
+use App\Http\Controllers\Api\V1\Game\ShanPlayerHistoryController;
 use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
@@ -98,6 +99,7 @@ Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']
 Route::group(['prefix' => 'shan'], function () {
     Route::post('balance', [ShanGetBalanceController::class, 'getBalance']);
     Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
+    Route::get('player-history', [ShanPlayerHistoryController::class, 'getPlayerHistory']);
 });
 
 Route::prefix('v1')->group(function () {
