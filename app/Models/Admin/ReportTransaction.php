@@ -11,6 +11,10 @@ class ReportTransaction extends Model
 {
     use HasFactory;
     protected $table = 'report_transactions';
+    protected $primaryKey = 'id';
+    public $incrementing = true;
+    public $timestamps = true;
+
 
     protected $fillable = ['game_type_id', 'user_id', 'rate', 'status', 'transaction_amount', 'bet_amount', 'valid_amount', 'payout', 'final_turn', 'banker']; 
 
