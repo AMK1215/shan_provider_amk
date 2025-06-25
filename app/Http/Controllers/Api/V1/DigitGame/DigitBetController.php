@@ -40,7 +40,7 @@ class DigitBetController extends Controller
     {
         $user = Auth::user(); // Get the authenticated user
 
-        dd($user->user_name);
+        //dd($user->user_name);
 
         if (!$user) {
             return response()->json([
