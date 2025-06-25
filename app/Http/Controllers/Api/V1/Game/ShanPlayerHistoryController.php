@@ -8,6 +8,8 @@ use App\Models\Admin\ReportTransaction; // Assuming this is the correct namespac
 use Illuminate\Support\Facades\Auth; // Import the Auth facade
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\GameType;
 
 class ShanPlayerHistoryController extends Controller
 {
