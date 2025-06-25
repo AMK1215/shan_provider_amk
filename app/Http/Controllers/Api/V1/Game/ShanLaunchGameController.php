@@ -25,17 +25,17 @@ class ShanLaunchGameController extends Controller
         ]);
 
         // Check if user is authenticated
-        if (!Auth::check()) {
-            Log::warning('ShanLaunchGame: Unauthenticated user attempting to launch game', [
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+        // if (!Auth::check()) {
+        //     Log::warning('ShanLaunchGame: Unauthenticated user attempting to launch game', [
+        //         'ip' => $request->ip(),
+        //         'user_agent' => $request->userAgent(),
+        //     ]);
 
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Unauthorized. Please log in.',
-            ], 401);
-        }
+        //     return response()->json([
+        //         'status' => 'fail',
+        //         'message' => 'Unauthorized. Please log in.',
+        //     ], 401);
+        // }
 
         $user = Auth::user();
         Log::info('ShanLaunchGame: Authenticated user', [
