@@ -28,7 +28,7 @@ class ShanPlayerHistoryController extends Controller
         }
 
         // Get the authenticated user's ID
-        $userId = Auth::id();
+        $userId = Auth::user()->id;
 
         // Define pagination parameters
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
