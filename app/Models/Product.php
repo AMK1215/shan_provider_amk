@@ -54,4 +54,9 @@ class Product extends Model
 
         return $this->save();
     }
+
+    public function digitBets()
+    {
+        return $this->hasMany(DigitBet::class, 'product_id');
+    }
 }

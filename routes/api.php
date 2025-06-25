@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\Game\GameController;
 use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionControllerAlias;
 use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Controllers\Api\Player\GameLogController;
+use App\Http\Controllers\Api\V1\DigitGame\DigitBetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -124,3 +125,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/launch-game', [LaunchGameController::class, 'launchGame']);
     Route::get('/wallet-balance', [WalletController::class, 'balance']);
 });
+
+// DigitBet API routes, protected by sanctum middleware
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/digitbet', [DigitBetController::class, 'store']); // Endpoint for placing a bet
+    Route::get('/digitbet/history', [DigitBetController::class, 'history']); // Endpoint for getting bet history
+});
+

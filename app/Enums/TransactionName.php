@@ -39,4 +39,8 @@ enum TransactionName: string
     case PreserveRefund = 'preserve_refund';
     case TopUp = 'top_up';
     case TopUpReject = 'top_up_reject';
+    case DigitBet = 'digit_bet';
+    case GameWin = 'game_win';
+    case GameLoss = 'game_loss';
+    case GameBet = 'game_bet';
 }

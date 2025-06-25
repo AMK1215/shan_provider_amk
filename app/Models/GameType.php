@@ -45,4 +45,9 @@ class GameType extends Model
 
         return $this->save();
     }
+
+    public function digitBets()
+    {
+        return $this->hasMany(DigitBet::class, 'game_type_id');
+    }
 }

@@ -269,4 +269,11 @@ class User extends Authenticatable implements Wallet
     return $players;
 }
 
+// digit bet
+
+public function digitBets()
+{
+    return $this->hasMany(DigitBet::class, 'user_id');
+}
+
 }
