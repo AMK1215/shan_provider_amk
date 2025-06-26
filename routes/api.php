@@ -67,6 +67,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // main balance
     Route::post('exchange-main-to-game', [TransactionController::class, 'MainToGame']);
     Route::post('exchange-game-to-main', [TransactionController::class, 'GameToMain']);
+    Route::get('exchange-transactions', [TransactionController::class, 'index']);
+
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
