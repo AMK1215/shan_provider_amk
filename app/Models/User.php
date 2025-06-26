@@ -58,6 +58,7 @@ class User extends Authenticatable implements Wallet
         'agent_logo',
         'site_name',
         'site_link',
+        'main_balance',
     ];
 
     /**

@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionContro
 use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Controllers\Api\Player\GameLogController;
 use App\Http\Controllers\Api\V1\DigitGame\DigitBetController;
+use App\Http\Controllers\Api\Player\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,10 @@ Route::prefix('v1/api/seamless')->group(function () {
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
+
+    // main balance
+    Route::post('exchange-main-to-game', [TransactionController::class, 'MainToGame']);
+    Route::post('exchange-game-to-main', [TransactionController::class, 'GameToMain']);
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
