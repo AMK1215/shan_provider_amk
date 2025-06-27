@@ -14,18 +14,16 @@ return new class extends Migration
         Schema::create('report_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
-            $table->foreignId('game_type_id');
-            $table->decimal('rate')->default(0);
             $table->decimal('transaction_amount', 12);
             $table->decimal('bet_amount', 12)->nullable();
             $table->decimal('valid_amount', 12)->nullable();
             $table->string('status')->default('0');
-            $table->string('final_turn')->default('0');
             $table->string('banker')->default('0');
+            $table->decimal('before_balance', 20, 4)->nullable();
+            $table->decimal('after_balance', 20, 4)->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('game_type_id')->references('id')->on('game_types');
         });
     }
 

@@ -16,14 +16,15 @@ class ReportTransaction extends Model
     public $timestamps = true;
 
 
-    protected $fillable = ['game_type_id', 'user_id', 'rate', 'status', 'transaction_amount', 'bet_amount', 'valid_amount', 'payout', 'final_turn', 'banker']; 
+    protected $fillable = ['user_id', 'transaction_amount', 'bet_amount', 'valid_amount', 'status', 'banker', 'before_balance', 'after_balance']; 
 
     protected $casts = [
-        'rate' => 'decimal:2',
+        
         'transaction_amount' => 'decimal:2',
         'bet_amount' => 'decimal:2',
         'valid_amount' => 'decimal:2',
-        'payout' => 'decimal:2',
+        'before_balance' => 'decimal:2',
+        'after_balance' => 'decimal:2',
     ];
 
     public function user()
@@ -31,9 +32,19 @@ class ReportTransaction extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function gameType()
+    public function getTransactionAmountAttribute($value)
     {
-        return $this->belongsTo(GameType::class);
+        return number_format($value, 2);
+    }
+
+    public function getBetAmountAttribute($value)
+    {
+        return number_format($value, 2);
+    }
+
+    public function getValidAmountAttribute($value)
+    {
+        return number_format($value, 2);
     }
 
 }
