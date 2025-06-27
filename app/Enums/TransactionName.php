@@ -40,7 +40,6 @@ enum TransactionName: string
     case TopUp = 'top_up';
     case TopUpReject = 'top_up_reject';
     case DigitBet = 'digit_bet';
-    case GAME_WIN = 'game_win';
     case GameLoss = 'game_loss';
     case GAME_BET = 'game_bet';
     case GameWin = 'game_win';
