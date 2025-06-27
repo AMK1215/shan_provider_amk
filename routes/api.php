@@ -61,6 +61,9 @@ Route::prefix('v1/api/seamless')->group(function () {
     Route::post('pushbetdata', [PushBetDataController::class, 'pushBetData']);
 });
 
+Route::post('/transactions', [ShanTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
+
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
 
@@ -73,7 +76,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
-    Route::post('/transactions', [ShanTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
 
     // fanicial api
     Route::get('agentfinicialPaymentType', [BankController::class, 'all']);
