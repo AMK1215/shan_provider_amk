@@ -17,8 +17,8 @@ class TwoDigitController extends Controller
     {
         // get all head close digit
         $headCloseDigits = HeadClose::all();
-        // get all choose close digit
-        $chooseCloseDigits = ChooseDigit::all();
+        // get all choose close digit, ordered by choose_close_digit
+        $chooseCloseDigits = ChooseDigit::orderBy('choose_close_digit', 'asc')->get();
         return view('admin.two_digit.close_digit.index', compact('headCloseDigits', 'chooseCloseDigits'));
     }
 
