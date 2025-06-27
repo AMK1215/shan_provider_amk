@@ -235,6 +235,6 @@ Route::group([
     Route::delete('head-close-digit/{id}', [TwoDigitController::class, 'deleteHeadCloseDigit'])->name('head-close-digit.delete');
     // delete choose close digit
     Route::delete('choose-close-digit/{id}', [TwoDigitController::class, 'deleteChooseCloseDigit'])->name('head-close-digit.destroy');
-    Route::post('admin/choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleChooseDigitStatus'])->name('choose-close-digit.toggle-status');
+    Route::post('choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleChooseDigitStatus'])->name('choose-close-digit.toggle-status');
     // two digit end
 });

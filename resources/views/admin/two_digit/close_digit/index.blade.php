@@ -4,6 +4,7 @@
     .digits-flex-container {
     display: flex;
     flex-direction: row;
+    justify-content: center;
     gap: 15px;
     overflow-x: auto;
     padding-bottom: 10px;
@@ -55,6 +56,7 @@
 .horizontal-bar-group {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 8px;
 }
 .choose-digit-section {
@@ -69,13 +71,14 @@
 .horizontal-bar-group {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 12px;
 }
 .horizontal-bar-modern {
     display: flex;
     flex-direction: row;
     gap: 10px;
-    justify-content: flex-start;
+    justify-content: center;
     margin-bottom: 2px;
 }
 .digit-box-modern {
@@ -84,14 +87,14 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     border: 2px solid #444;
     color: #fff;
-    width: 48px;
-    height: 48px;
+    width: 100px;
+    height: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 800;
     cursor: pointer;
     transition: background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s;
     position: relative;
@@ -104,8 +107,9 @@
     box-shadow: 0 4px 16px rgba(0,123,255,0.10);
 }
 .digit-box-modern.active {
-    background: #28a745;
+    background:rgb(129, 29, 142);
     border-color: #28a745;
+    border-width: 3px;
     color: #fff;
 }
 .digit-label {
@@ -114,8 +118,8 @@
 }
 .toggle-indicator {
     margin-top: 4px;
-    width: 22px;
-    height: 12px;
+    width: 30px;
+    height: 15px;
     background: #444;
     border-radius: 6px;
     position: relative;
@@ -160,7 +164,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card justify-content-center">
                         <div class="card-header">
                             <h3 class="card-title">Head Close Digits Management</h3>
                             <div class="card-tools">
@@ -169,7 +173,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body justify-content-center">
                             <!-- Flex UI for Head Close Digits -->
                             <div class="head-digits-container">
                                 <h5 class="mb-3">Toggle Head Close Digits Status</h5>
@@ -197,7 +201,7 @@
                             </div>
 
                             <!-- Traditional Table View (Optional) -->
-                            <div class="mt-4">
+                            <!-- <div class="mt-4">
                                 <h5>Detailed View</h5>
                                 <table id="mytable" class="table table-bordered table-hover">
                                     <thead>
@@ -226,17 +230,17 @@
                                                             data-digit="{{ $digit->head_close_digit }}">
                                                         Edit
                                                     </button>
-                                                    <!-- <form class="d-inline" action="{{ route('admin.head-close-digit.destroy', $digit->id) }}" method="POST">
+                                                    <form class="d-inline" action="{{ route('admin.head-close-digit.destroy', $digit->id) }}" method="POST">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-sm delete-digit">Delete</button>
-                                                    </form> -->
+                                                    </form> 
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
-                            </div>
+                            </div> -->
 
                             <div class="horizontal-bar">
                                 @foreach($headCloseDigits as $digit)
@@ -255,7 +259,7 @@
                         <div class="card-body">
                             <div class="choose-digit-section">
                                 <div class="choose-digit-title">Choose Close Digit</div>
-                                <div class="horizontal-bar-group">
+                                <!-- <div class="horizontal-bar-group">
                                     @foreach($chooseCloseDigits->chunk(10) as $chunk)
                                         <div class="horizontal-bar-modern">
                                             @foreach($chunk as $digit)
@@ -272,7 +276,26 @@
                                             @endforeach
                                         </div>
                                     @endforeach
-                                </div>
+                                </div> -->
+
+                                <div class="horizontal-bar-group">
+                        @foreach($chooseCloseDigits->chunk(10) as $chunk)
+                            <div class="horizontal-bar-modern">
+                                @foreach($chunk as $digit)
+                                    <div class="digit-box-modern {{ $digit->status ? 'active' : '' }}"
+                                        data-id="{{ $digit->id }}"
+                                        data-status="{{ $digit->status }}"
+                                        onclick="toggleChooseDigitStatus(this)"
+                                        title="Click to toggle status">
+                                        <span class="digit-label">{{ $digit->choose_close_digit }}</span>
+                                        <span class="toggle-indicator">
+                                            <span class="toggle-dot"></span>
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
                             </div>
                         </div>
                     </div>
@@ -325,7 +348,18 @@
     </div>
 @endsection
 
-@section('scripts')
+@section('script')
+<link href="{{ asset('plugins/select2/css/select2.min.css') }}" rel="stylesheet" />
+<script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('plugins/select2/js/select2.full.min.js') }}"></script>
+<script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+<script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<link href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}" rel="stylesheet" />
+<script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+<script src="{{ asset('plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+<script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 <script>
 $(document).ready(function() {
     // Handle status toggle
@@ -410,16 +444,46 @@ $(document).ready(function() {
     });
 });
 
+// Function to show a custom message box instead of alert()
+function showMessageBox(message, type = 'info') {
+    const messageBox = document.createElement('div');
+    messageBox.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: ${type === 'success' ? '#4CAF50' : '#f44336'};
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    `;
+    messageBox.textContent = message;
+    document.body.appendChild(messageBox);
+
+    // Fade in
+    setTimeout(() => messageBox.style.opacity = '1', 10);
+
+    // Fade out and remove after 3 seconds
+    setTimeout(() => {
+        messageBox.style.opacity = '0';
+        messageBox.addEventListener('transitionend', () => messageBox.remove());
+    }, 3000);
+}
+
 function toggleChooseDigitStatus(element) {
     const digitId = element.getAttribute('data-id');
-    const currentStatus = element.getAttribute('data-status');
-    const newStatus = currentStatus == 1 ? 0 : 1;
+    const currentStatus = parseInt(element.getAttribute('data-status')); // Parse to integer
+    const newStatus = currentStatus === 1 ? 0 : 1; // Use strict equality
 
     // Optimistically update UI
     element.setAttribute('data-status', newStatus);
-    element.classList.toggle('active', newStatus == 1);
+    element.classList.toggle('active', newStatus === 1);
 
     // Optionally show a loading spinner or overlay here
+    // For example: element.style.pointerEvents = 'none'; // Disable clicks during fetch
 
     // Send AJAX request to update status in DB
     fetch('{{ route('admin.choose-close-digit.toggle-status') }}', {
@@ -433,20 +497,34 @@ function toggleChooseDigitStatus(element) {
             status: newStatus
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) { // Check if response status is not 2xx
+            // If the response is not OK, try to read the error message
+            return response.json().then(errorData => {
+                throw new Error(errorData.message || 'Server error occurred.');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (!data.success) {
             // Revert UI if failed
             element.setAttribute('data-status', currentStatus);
-            element.classList.toggle('active', currentStatus == 1);
-            alert('Failed to update status!');
+            element.classList.toggle('active', currentStatus === 1);
+            showMessageBox(data.message || 'Failed to update status!', 'error');
+        } else {
+            showMessageBox(data.message || 'Status updated successfully!', 'success');
         }
+        // Hide loading spinner/re-enable clicks
+        // element.style.pointerEvents = 'auto';
     })
-    .catch(() => {
-        // Revert UI if error
+    .catch(error => {
+        // Revert UI if network error or other exception
         element.setAttribute('data-status', currentStatus);
-        element.classList.toggle('active', currentStatus == 1);
-        alert('Failed to update status!');
+        element.classList.toggle('active', currentStatus === 1);
+        showMessageBox('Error: ' + error.message, 'error');
+        // Hide loading spinner/re-enable clicks
+        // element.style.pointerEvents = 'auto';
     });
 }
 </script>
