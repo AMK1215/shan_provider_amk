@@ -112,6 +112,11 @@
     border-width: 3px;
     color: #fff;
 }
+.digit-box-modern.inactive {
+    background: #222 !important;
+    border-color: #222 !important;
+    color: #fff;
+}
 .digit-label {
     font-size: 1.2rem;
     letter-spacing: 1px;
@@ -282,7 +287,7 @@
                         @foreach($chooseCloseDigits->chunk(10) as $chunk)
                             <div class="horizontal-bar-modern">
                                 @foreach($chunk as $digit)
-                                    <div class="digit-box-modern {{ $digit->status ? 'active' : '' }}"
+                                    <div class="digit-box-modern {{ $digit->status ? 'active' : 'inactive' }}"
                                         data-id="{{ $digit->id }}"
                                         data-status="{{ $digit->status }}"
                                         onclick="toggleChooseDigitStatus(this)"
@@ -475,12 +480,13 @@ function showMessageBox(message, type = 'info') {
 
 function toggleChooseDigitStatus(element) {
     const digitId = element.getAttribute('data-id');
-    const currentStatus = parseInt(element.getAttribute('data-status')); // Parse to integer
-    const newStatus = currentStatus === 1 ? 0 : 1; // Use strict equality
+    const currentStatus = parseInt(element.getAttribute('data-status'));
+    const newStatus = currentStatus === 1 ? 0 : 1;
 
     // Optimistically update UI
     element.setAttribute('data-status', newStatus);
     element.classList.toggle('active', newStatus === 1);
+    element.classList.toggle('inactive', newStatus === 0);
 
     // Optionally show a loading spinner or overlay here
     // For example: element.style.pointerEvents = 'none'; // Disable clicks during fetch
@@ -511,9 +517,10 @@ function toggleChooseDigitStatus(element) {
             // Revert UI if failed
             element.setAttribute('data-status', currentStatus);
             element.classList.toggle('active', currentStatus === 1);
+            element.classList.toggle('inactive', currentStatus === 0);
             showMessageBox(data.message || 'Failed to update status!', 'error');
         } else {
-            showMessageBox(data.message || 'Status updated successfully!', 'success');
+            showMessageBox(data.message || 'စိတ်ကြိုက် ပိတ်ဂဏန်းပိတ်သိမ်းမှု့အောင်မြင်ပါသည် | Status updated successfully!', 'success');
         }
         // Hide loading spinner/re-enable clicks
         // element.style.pointerEvents = 'auto';
@@ -522,6 +529,7 @@ function toggleChooseDigitStatus(element) {
         // Revert UI if network error or other exception
         element.setAttribute('data-status', currentStatus);
         element.classList.toggle('active', currentStatus === 1);
+        element.classList.toggle('inactive', currentStatus === 0);
         showMessageBox('Error: ' + error.message, 'error');
         // Hide loading spinner/re-enable clicks
         // element.style.pointerEvents = 'auto';
