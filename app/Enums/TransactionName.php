@@ -43,4 +43,7 @@ enum TransactionName: string
     case GAME_WIN = 'game_win';
     case GameLoss = 'game_loss';
     case GAME_BET = 'game_bet';
+    case GameWin = 'game_win';
+    case BankerDeposit = 'banker_deposit';
+    case BankerWithdraw = 'banker_withdraw';
 }
