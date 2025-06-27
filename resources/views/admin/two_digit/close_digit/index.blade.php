@@ -5,9 +5,9 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 15px;
-    overflow-x: auto;
-    padding-bottom: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
     /* Optional: hide scrollbar for a cleaner look */
     scrollbar-width: thin;
     scrollbar-color: #ccc #f8f9fa;
@@ -21,7 +21,33 @@
 }
 .digit-item {
     min-width: 80px;
-    /* ...other styles remain the same... */
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    position: relative;
+}
+.digit-number {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+.digit-toggle {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.digit-status {
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
 }
 .horizontal-bar {
     display: flex;
