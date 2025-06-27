@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\V1\Game\LaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ProviderTransactionCallbackController;
 use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ShanPlayerHistoryController;
-use App\Http\Controllers\Api\V1\Game\ShanTransactionController;
+use App\Http\Controllers\Api\V1\Shan\ShanTransactionController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
@@ -73,7 +73,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
     Route::get('/banks', [GSCPlusProviderController::class, 'banks']);
-    Route::post('/transactions', [ShanTransactionController::class, 'store']);
+    Route::post('/transactions', [ShanTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
 
     // fanicial api
     Route::get('agentfinicialPaymentType', [BankController::class, 'all']);

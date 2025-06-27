@@ -9,55 +9,102 @@ use App\Traits\HttpResponses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\WalletService; // Import the WalletService
+use App\Enums\TransactionName; // Assuming you have an Enum for transaction names
 
 class ShanTransactionController extends Controller
 {
     use HttpResponses;
 
-    public function index(Request $request): JsonResponse
+    protected WalletService $walletService;
+
+    // Constructor to inject WalletService
+    public function __construct(WalletService $walletService)
+    {
+        $this->walletService = $walletService;
+    }
+
+    public function ShanTransactionCreate(Request $request): JsonResponse
     {
         Log::info('ShanTransaction: Received request', [
             'request_data' => $request->all()
         ]);
 
         $validated = $request->validate([
-            'game_type_id' => 'required|integer',
+            'banker' => 'required|array',
+            'banker.player_id' => 'required|string',
+            'banker.amount' => 'required|numeric', // This is the amount for the banker's transaction
             'players' => 'required|array',
             'players.*.player_id' => 'required|string',
-            'players.*.bet_amount' => 'required|numeric',
-            'players.*.amount_changed' => 'required|numeric',
-            'players.*.win_lose_status' => 'required|integer|in:0,1',
+            'players.*.bet_amount' => 'required|numeric|min:0', // Ensure non-negative bet amount
+            'players.*.amount_changed' => 'required|numeric', // Can be positive (win) or negative (loss)
+            'players.*.win_lose_status' => 'required|integer|in:0,1', // 0 for loss, 1 for win
         ]);
 
         Log::info('ShanTransaction: Request validated successfully', [
             'validated_data' => $validated
         ]);
 
+        $results = []; // Initialize results array for all players + banker
+
         try {
             DB::beginTransaction();
 
-            // Process banker
-            $banker = User::where('user_name', 'systemWallet')->first();
+            // Fetch banker using player_id from the request
+            $banker = User::where('user_name', $validated['banker']['player_id'])->first();
             if (! $banker) {
                 Log::error('ShanTransaction: Banker not found', [
-                    'user_name' => 'systemWallet'
+                    'banker_player_id' => $validated['banker']['player_id']
                 ]);
-                return $this->error('', 'Banker (systemWallet) not found', 404);
+                DB::rollBack(); // Rollback if banker is not found
+                return $this->error('', 'Banker (' . $validated['banker']['player_id'] . ') not found', 404);
             }
 
             Log::info('ShanTransaction: Processing banker transaction', [
                 'banker_id' => $banker->id,
-                'banker_username' => $banker->user_name
+                'banker_username' => $banker->user_name,
+                'banker_requested_amount' => $validated['banker']['amount']
             ]);
 
-            $this->handleBankerTransaction($banker, [
-                'amount' => 100, // Adjust as needed
-                'is_final_turn' => true,
-            ], $validated['game_type_id']);
+            $bankerAmountChange = $validated['banker']['amount'];
 
-            $results = [['player_id' => $banker->user_name, 'balance' => $banker->wallet->balance]];
+            // Handle Banker Transaction using WalletService
+            $bankerOldBalance = $banker->wallet->balanceFloat; // Get balance before operation
+
+            if ($bankerAmountChange > 0) {
+                $this->walletService->deposit(
+                    $banker,
+                    $bankerAmountChange,
+                    TransactionName::BankerDeposit, // Use appropriate TransactionName Enum
+                    ['description' => 'Banker receiving funds']
+                );
+            } elseif ($bankerAmountChange < 0) {
+                $this->walletService->withdraw(
+                    $banker,
+                    abs($bankerAmountChange), // Withdraw positive amount
+                    TransactionName::BankerWithdraw, // Use appropriate TransactionName Enum
+                    ['description' => 'Banker paying out funds']
+                );
+            }
+            // Refresh banker model to get latest wallet balance after operation
+            $banker->refresh();
+            $bankerNewBalance = $banker->wallet->balanceFloat; // Get balance after operation
+
+            // Record banker's transaction
+            ReportTransaction::create([
+                'user_id' => $banker->id,
+                'transaction_amount' => abs($bankerAmountChange), // Store as positive value
+                'before_balance' => $bankerOldBalance,
+                'after_balance' => $bankerNewBalance,
+                'banker' => 1, // Indicate this is a banker transaction
+                'status' => $bankerAmountChange >= 0 ? 1 : 0, // 1 if banker's balance increased/no change, 0 if decreased
+            ]);
+
+            $results[] = [
+                'player_id' => $banker->user_name,
+                'balance' => $bankerNewBalance,
+            ];
 
             // Handle player transactions
             foreach ($validated['players'] as $playerData) {
@@ -67,101 +114,39 @@ class ShanTransactionController extends Controller
 
                 $player = $this->getUserByUsername($playerData['player_id']);
                 if ($player) {
-                    $this->handlePlayerTransaction($player, $playerData, $validated['game_type_id']);
+                    $this->handlePlayerTransaction($player, $playerData);
+                    // Reload the player's wallet balance after transaction to ensure latest balance
+                    $player->refresh(); // Refresh player model to get latest wallet data
                     $results[] = [
                         'player_id' => $player->user_name,
-                        'balance'   => $player->wallet->balance,
+                        'balance' => $player->wallet->balanceFloat, // Use float balance
                     ];
                     Log::info('ShanTransaction: Player transaction completed', [
                         'player_id' => $player->user_name,
-                        'new_balance' => $player->wallet->balance
+                        'new_balance' => $player->wallet->balanceFloat
                     ]);
                 } else {
                     Log::warning('ShanTransaction: Player not found', [
                         'player_id' => $playerData['player_id']
                     ]);
+                    // Optionally, you might want to return an error for this specific player
+                    // or add a message to the results array if a player is not found.
+                    // For now, we continue processing other players even if one is not found.
                 }
             }
 
             DB::commit();
-            Log::info('ShanTransaction: All transactions committed successfully', [
+            Log::info('ShanTransaction: All database transactions committed successfully', [
                 'results' => $results
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('ShanTransaction: Transaction failed', [
+            Log::error('ShanTransaction: Database transaction failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return $this->error('Transaction failed', $e->getMessage(), 500);
-        }
-
-        // --- CALLBACK TO CLIENT DEV SITE FOR EACH PLAYER ---
-        $clientTransactionUrl = 'https://luckymillion.pro/api/v1/game/transactions';
-        $transactionSecret    = 'yYpfrVcWmkwxWx7um0TErYHj4YcHOOWr'; // Use the agreed secret!
-
-        Log::info('ShanTransaction: Client transaction URL', [
-            'client_transaction_url' => $clientTransactionUrl
-        ]);
-
-        Log::info('ShanTransaction: Client transaction secret', [
-            'client_transaction_secret' => $transactionSecret
-        ]);
-
-        // Log::info('ShanTransaction: Client transaction payload', [
-        //     'client_transaction_payload' => $validated['players']
-        // ]);
-        // Log::info('ShanTransaction: Client transaction game type id', [
-        //     'client_transaction_game_type_id' => $validated['game_type_id']
-        // ]);
-        // Log::info('ShanTransaction: Client transaction results', [
-        //     'client_transaction_results' => $results
-        // ]);
-        // Log::info('ShanTransaction: Client transaction banker', [
-        //     'client_transaction_banker' => $banker
-        // ]);
-
-        foreach ($validated['players'] as $playerData) {
-            $clientPayload = [
-                'player_id'       => $playerData['player_id'],
-                'bet_amount'      => $playerData['bet_amount'],
-                'amount_changed'  => $playerData['amount_changed'],
-                'win_lose_status' => $playerData['win_lose_status'],
-                'game_type_id'    => $validated['game_type_id'],
-            ];
-
-            Log::info('ShanTransaction: Sending callback to client', [
-                'player_id' => $playerData['player_id'],
-                'payload' => $clientPayload
-            ]);
-
-            try {
-                $clientResp = Http::timeout(5)
-                    ->withHeaders([
-                        'X-Provider-Transaction-Key' => $transactionSecret,
-                        'Accept' => 'application/json',
-                    ])
-                    ->post($clientTransactionUrl, $clientPayload);
-
-                if ($clientResp->successful()) {
-                    Log::info('ShanTransaction: Client callback successful', [
-                        'player_id' => $playerData['player_id'],
-                        'response' => $clientResp->json()
-                    ]);
-                } else {
-                    Log::warning('ShanTransaction: Client callback failed', [
-                        'player_id' => $playerData['player_id'],
-                        'status' => $clientResp->status(),
-                        'response' => $clientResp->body()
-                    ]);
-                }
-            } catch (\Exception $e) {
-                Log::error('ShanTransaction: Client callback exception', [
-                    'player_id' => $playerData['player_id'],
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-            }
         }
 
         return $this->success($results, 'Transaction Successful');
@@ -169,76 +154,81 @@ class ShanTransactionController extends Controller
 
     private function getUserByUsername(string $username): ?User
     {
+        // Eager load wallet to prevent N+1 query issues later if needed,
+        // though `refresh()` will ensure it's fresh.
         return User::where('user_name', $username)->first();
     }
 
-    private function handleBankerTransaction(User $banker, array $bankerData, int $gameTypeId): void
+    /**
+     * Handles player specific transactions and updates their balance via WalletService.
+     *
+     * @param User $player The player user model.
+     * @param array $playerData The player's transaction data.
+     * @return void
+     */
+    private function handlePlayerTransaction(User $player, array $playerData): void
     {
-        Log::info('ShanTransaction: Creating banker transaction record', [
-            'banker_id' => $banker->id,
-            'game_type_id' => $gameTypeId,
-            'banker_data' => $bankerData
+        Log::info('ShanTransaction: Processing wallet operation for player', [
+            'player_id' => $player->id,
+            'amount_changed' => $playerData['amount_changed'],
+            'win_lose_status' => $playerData['win_lose_status']
         ]);
 
-        ReportTransaction::create([
-            'user_id' => $banker->id,
-            'game_type_id' => $gameTypeId,
-            'transaction_amount' => $bankerData['amount'],
-            'final_turn' => $bankerData['is_final_turn'] ? 1 : 0,
-            'banker' => 1,
-        ]);
+        $oldBalance = $player->wallet->balanceFloat; // Get balance before operation
 
-        if ($bankerData['is_final_turn']) {
-            $oldBalance = $banker->wallet->balance;
-            $banker->wallet->balance += $bankerData['amount'];
-            $banker->wallet->save();
-            
-            Log::info('ShanTransaction: Updated banker balance', [
-                'banker_id' => $banker->id,
-                'old_balance' => $oldBalance,
-                'new_balance' => $banker->wallet->balance,
-                'amount_changed' => $bankerData['amount']
+        // Determine if it's a deposit or withdrawal based on amount_changed
+        if ($playerData['amount_changed'] > 0) {
+            $this->walletService->deposit(
+                $player,
+                $playerData['amount_changed'],
+                TransactionName::GameWin, // Example enum, adjust as needed
+                [
+                    'description' => 'Win from Shan game',
+                    'bet_amount' => $playerData['bet_amount'],
+                    'win_lose_status' => $playerData['win_lose_status']
+                ]
+            );
+        } elseif ($playerData['amount_changed'] < 0) {
+            $this->walletService->withdraw(
+                $player,
+                abs($playerData['amount_changed']), // Withdraw positive amount
+                TransactionName::GameLoss, // Example enum, adjust as needed
+                [
+                    'description' => 'Loss in Shan game',
+                    'bet_amount' => $playerData['bet_amount'],
+                    'win_lose_status' => $playerData['win_lose_status']
+                ]
+            );
+        } else {
+            // Amount changed is 0, no wallet operation needed but still log
+            Log::info('ShanTransaction: Player amount_changed is 0, no wallet operation.', [
+                'player_id' => $player->id,
+                'player_data' => $playerData
             ]);
         }
-    }
 
-    private function handlePlayerTransaction(User $player, array $playerData, int $gameTypeId): void
-    {
-        Log::info('ShanTransaction: Creating player transaction record', [
-            'player_id' => $player->id,
-            'game_type_id' => $gameTypeId,
-            'player_data' => $playerData
-        ]);
+        // IMPORTANT: Refresh the player model to get the updated wallet balance BEFORE saving ReportTransaction
+        $player->refresh();
+        $newBalance = $player->wallet->balanceFloat; // Get balance after operation
 
+        // Record player's transaction in report_transactions table
         ReportTransaction::create([
             'user_id' => $player->id,
-            'game_type_id' => $gameTypeId,
-            'transaction_amount' => $playerData['amount_changed'],
+            'transaction_amount' => abs($playerData['amount_changed']), // Store as positive value
             'status' => $playerData['win_lose_status'],
             'bet_amount' => $playerData['bet_amount'],
-            'valid_amount' => $playerData['bet_amount'],
+            'valid_amount' => $playerData['bet_amount'], // Assuming valid_amount is same as bet_amount
+            'before_balance' => $oldBalance,
+            'after_balance' => $newBalance,
+            'banker' => 0, // Indicate this is a player transaction
         ]);
 
-        $this->updatePlayerBalance($player, $playerData['amount_changed'], $playerData['win_lose_status']);
-    }
-
-    private function updatePlayerBalance(User $player, float $amountChanged, int $winLoseStatus): void
-    {
-        $oldBalance = $player->wallet->balance;
-        
-        if ($winLoseStatus === 1) {
-            $player->wallet->balance += $amountChanged;
-        } else {
-            $player->wallet->balance -= $amountChanged;
-        }
-        $player->wallet->save();
-
-        Log::info('ShanTransaction: Updated player balance', [
+        Log::info('ShanTransaction: Player transaction and report record completed', [
             'player_id' => $player->id,
             'old_balance' => $oldBalance,
-            'new_balance' => $player->wallet->balance,
-            'amount_changed' => $amountChanged,
-            'win_lose_status' => $winLoseStatus
+            'new_balance' => $newBalance,
+            'amount_changed' => $playerData['amount_changed'],
+            'win_lose_status' => $playerData['win_lose_status']
         ]);
     }
 }
