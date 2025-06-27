@@ -100,6 +100,8 @@ class DatabaseSeeder extends Seeder
             BIGPOTSlotSeeder::class,
             pascal_gamingSlotSeeder::class,
             AviatrixOtherSeeder::class,
+            HeadCloseSeeder::class,
+            ChooseDigitSeeder::class,
 
         ]);
     }

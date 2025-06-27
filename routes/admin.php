@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\WinnerTextController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\TwoD\TwoDigitController;
 
 Route::group([
     'prefix' => 'admin',
@@ -60,12 +61,7 @@ Route::group([
     Route::resource('bank', BankController::class);
     // Route::resource('product', ProductController::class);
 
-    // banner etc end
-    // deposit request start
-
-    // deposit request end
-
-    // master, agent, sub-agent
+    
 
     // agent start
     Route::resource('agent', AgentController::class);
@@ -230,4 +226,15 @@ Route::group([
     Route::get('game-list-order/{gameList}/edit', [GameListController::class, 'GameListOrderedit'])->name('game_list_order.edit');
     Route::post('/game-lists/{id}/update-order', [GameListController::class, 'updateOrder'])->name('GameListOrderUpdate');
 
+    // two digit start
+    Route::get('head-close-digit', [TwoDigitController::class, 'headCloseDigit'])->name('head-close-digit');
+    Route::get('choose-close-digit', [TwoDigitController::class, 'chooseCloseDigit'])->name('choose-close-digit');
+    Route::post('head-close-digit/toggle-status', [TwoDigitController::class, 'toggleStatus'])->name('head-close-digit.toggle-status');
+    Route::post('choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleStatus'])->name('choose-close-digit.toggle-status');
+    // delete head close digit
+    Route::delete('head-close-digit/{id}', [TwoDigitController::class, 'deleteHeadCloseDigit'])->name('head-close-digit.delete');
+    // delete choose close digit
+    Route::delete('choose-close-digit/{id}', [TwoDigitController::class, 'deleteChooseCloseDigit'])->name('head-close-digit.destroy');
+    Route::post('admin/choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleChooseDigitStatus'])->name('choose-close-digit.toggle-status');
+    // two digit end
 });

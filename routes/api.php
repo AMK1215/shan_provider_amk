@@ -19,7 +19,7 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\PromotionController;
-use App\Http\Controllers\Api\V1\ShanGetBalanceController;
+use App\Http\Controllers\Api\V1\Shan\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use App\Http\Controllers\Api\V1\Auth\ProfileController;
 use App\Http\Controllers\Api\V1\Bank\BankController as BankControllerAlias;
@@ -110,7 +110,7 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
 
 
 Route::group(['prefix' => 'shan'], function () {
-    Route::post('balance', [ShanGetBalanceController::class, 'getBalance']);
+    Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
     Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
 });
 
