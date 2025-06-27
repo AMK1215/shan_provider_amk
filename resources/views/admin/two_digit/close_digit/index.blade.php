@@ -449,8 +449,8 @@ function showMessageBox(message, type = 'info') {
     const messageBox = document.createElement('div');
     messageBox.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: 10px;
+        right: 10px;
         background-color: ${type === 'success' ? '#4CAF50' : '#f44336'};
         color: white;
         padding: 15px;
