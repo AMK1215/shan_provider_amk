@@ -147,6 +147,16 @@
     background: #28a745;
     transform: translateX(10px);
 }
+.digit-item.inactive {
+    background: #222 !important;
+    border-color: #222 !important;
+    color: #fff;
+}
+.digit-item.active {
+    background: #28a745;
+    color: #fff;
+    border-color: #28a745;
+}
 </style>
 @endsection
 
@@ -184,7 +194,7 @@
                                 <h5 class="mb-3">Toggle Head Close Digits Status</h5>
                                 <div class="digits-flex-container">
                                     @foreach($headCloseDigits as $digit)
-                                        <div class="digit-item" data-id="{{ $digit->id }}">
+                                        <div class="digit-item {{ $digit->status ? 'active' : 'inactive' }}" data-id="{{ $digit->id }}">
                                             <div class="digit-number">{{ $digit->head_close_digit }}</div>
                                             <div class="digit-toggle">
                                                 <label class="switch">
@@ -376,10 +386,10 @@ $(document).ready(function() {
 
         // Update UI immediately
         if (isChecked) {
-            digitItem.addClass('active');
+            digitItem.addClass('active').removeClass('inactive');
             statusText.removeClass('text-danger').addClass('text-success').text('ON');
         } else {
-            digitItem.removeClass('active');
+            digitItem.removeClass('active').addClass('inactive');
             statusText.removeClass('text-success').addClass('text-danger').text('OFF');
         }
 
@@ -408,10 +418,10 @@ $(document).ready(function() {
                 // Revert UI if request fails
                 $(this).prop('checked', !isChecked);
                 if (!isChecked) {
-                    digitItem.addClass('active');
+                    digitItem.addClass('active').removeClass('inactive');
                     statusText.removeClass('text-danger').addClass('text-success').text('ON');
                 } else {
-                    digitItem.removeClass('active');
+                    digitItem.removeClass('active').addClass('inactive');
                     statusText.removeClass('text-success').addClass('text-danger').text('OFF');
                 }
 
