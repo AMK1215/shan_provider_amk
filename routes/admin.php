@@ -231,10 +231,8 @@ Route::group([
     Route::get('choose-close-digit', [TwoDigitController::class, 'chooseCloseDigit'])->name('choose-close-digit');
     Route::post('head-close-digit/toggle-status', [TwoDigitController::class, 'toggleStatus'])->name('head-close-digit.toggle-status');
     Route::post('choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleStatus'])->name('choose-close-digit.toggle-status');
-    // delete head close digit
-    Route::delete('head-close-digit/{id}', [TwoDigitController::class, 'deleteHeadCloseDigit'])->name('head-close-digit.delete');
-    // delete choose close digit
-    Route::delete('choose-close-digit/{id}', [TwoDigitController::class, 'deleteChooseCloseDigit'])->name('head-close-digit.destroy');
     Route::post('choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleChooseDigitStatus'])->name('choose-close-digit.toggle-status');
+    Route::post('battle/toggle-status', [TwoDigitController::class, 'toggleBattleStatus'])->name('battle.toggle-status');
+    Route::post('two-d-limit/store', [TwoDigitController::class, 'storeTwoDLimit'])->name('two-d-limit.store');
     // two digit end
 });

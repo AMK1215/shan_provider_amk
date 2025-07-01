@@ -104,6 +104,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::get('/game_types', [GSCPlusProviderController::class, 'gameTypes']);
 Route::get('/providers/{type}', [GSCPlusProviderController::class, 'providers']);
 Route::get('/game_lists/{type}/{provider}', [GSCPlusProviderController::class, 'gameLists']);
+
+Route::get('/game_lists/{type}/{productcode}', [GSCPlusProviderController::class, 'NewgameLists']);
 Route::get('/hot_game_lists', [GSCPlusProviderController::class, 'hotGameLists']);
 
 Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], function () {
@@ -148,4 +150,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/digitbet', [DigitBetController::class, 'store']); // Endpoint for placing a bet
     Route::get('/digitbet/history', [DigitBetController::class, 'history']); // Endpoint for getting bet history
 });
-

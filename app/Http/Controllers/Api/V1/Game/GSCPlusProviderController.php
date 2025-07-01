@@ -67,6 +67,19 @@ class GSCPlusProviderController extends Controller
         return $this->success(GameListResource::collection($gameLists));
     }
 
+    public function NewgameLists($type, $provider, Request $request)
+    {
+        $gameLists = GameList::with('product')
+            ->where('product_code', $provider)
+            ->where('game_type_id', $type)
+            ->where('is_active', 1)
+            ->OrderBy('order', 'asc')
+            ->where('game_name', 'like', '%'.$request->game_name.'%')
+            ->paginate(20);
+
+        return $this->success(GameListResource::collection($gameLists));
+    }
+
     public function hotGameLists()
     {
         $hot_games = GameList::where('hot_status', '1')->get();

@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\TwoDigit;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\TwoDigit\Bettle;
+use App\Http\Requests\TwoD\TwoDPlayRequest;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth; // Ensure Auth facade is used
+use App\Traits\HttpResponses;
+use App\Services\TwoDPlayService; // Import the service
+
+class TwoDigitBetController extends Controller
+{
+    use HttpResponses; // For success/error JSON responses
+
+    protected TwoDPlayService $playService;
+
+    public function __construct(TwoDPlayService $playService)
+    {
+        $this->playService = $playService;
+    }
+
+    /**
+     * Store a new 2D bet.
+     *
+     * @param TwoDPlayRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(TwoDPlayRequest $request)
+    {
+        Log::info('TwoDigitBetController: Store method called.');
+
+        // 1. Authentication check (Laravel's auth middleware should handle this, but an explicit check is fine)
+        if (!Auth::check()) {
+            Log::warning('TwoDigitBetController: Unauthenticated attempt to place bet.');
+            return $this->error('Authentication Required', 'You are not authenticated! Please login.', 401);
+        }
+
+        // 2. Check current active betting battle (session)
+        $currentBettle = Bettle::where('status', true)->first();
+        if (! $currentBettle) {
+            Log::info('TwoDigitBetController: Betting is closed at this time.');
+            return $this->error(
+                'Betting Closed',
+                'This 2D lottery Bettle is closed at this time. Welcome back next time!',
+                401
+            );
+        }
+
+        // Retrieve the validated data from the request
+        $totalAmount = $request->input('totalAmount');
+        $amounts = $request->input('amounts');
+
+        Log::info('TwoDigitBetController: Validated amounts received', [
+            'totalAmount' => $totalAmount,
+            'amounts' => $amounts
+        ]);
+
+        try {
+            // Delegate the core betting logic to the TwoDPlayService
+            $result = $this->playService->play($totalAmount, $amounts);
+
+            // Handle different types of results from the service
+            if (is_string($result)) {
+                // If the service returns a string, it's an error message
+                // This covers 'Insufficient funds.', 'Resource not found.', or general exceptions
+                if ($result === 'Insufficient funds in your wallet.') {
+                    return $this->error('Insufficient Funds', 'လက်ကျန်ငွေ မလုံလောက်ပါ။', 400); // 400 Bad Request for client-side issue
+                } elseif ($result === 'Required resource (e.g., 2D Limit) not found.') {
+                    return $this->error('Configuration Error', '2D limit configuration is missing. Please contact support.', 500);
+                } elseif ($result === 'Betting is currently closed. No active battle session found.') {
+                    // Although checked above, defensive check in service is good.
+                    return $this->error('Betting Closed', 'This 2D lottery Bettle is closed at this time. Welcome back next time!', 401);
+                } else {
+                    // General service-side error
+                    return $this->error('Betting Failed', $result, 400); // 400 or 500 depending on cause
+                }
+            } elseif (is_array($result) && ! empty($result)) {
+                // If the service returns an array, it contains over-limit digits
+                $digitStrings = collect($result)->map(fn($digit) => "'{$digit}'")->implode(', ');
+                $message = "သင့်ရွှေးချယ်ထားသော {$digitStrings} ဂဏန်းမှာ သတ်မှတ် အမောင့်ထက်ကျော်လွန်ပါသောကြောင့် ကံစမ်း၍မရနိုင်ပါ။";
+                return $this->error('Over Limit', $message, 400); // 400 Bad Request
+            } else {
+                // If $result is not a string (error) or an array (over-limit digits), it's a success
+                // The service already handled the creation of TwoBet records and wallet deduction
+                return $this->success(null, 'ထီအောင်မြင်စွာ ထိုးပြီးပါပြီ။'); // Success message
+            }
+
+        } catch (\Exception $e) {
+            // Catch any unexpected exceptions from the service layer
+            Log::error('TwoDigitBetController: Uncaught exception in store method: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return $this->error('Server Error', 'An unexpected error occurred. Please try again later.', 500);
+        }
+    }
+}

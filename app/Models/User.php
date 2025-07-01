@@ -21,6 +21,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\TwoDigit\TwoBet;
 
 class User extends Authenticatable implements Wallet
 {
@@ -59,6 +60,10 @@ class User extends Authenticatable implements Wallet
         'site_name',
         'site_link',
         'main_balance',
+        'limit',
+        'limit3',
+        'cor',
+        'cor3'
     ];
 
     /**
@@ -275,6 +280,16 @@ class User extends Authenticatable implements Wallet
 public function digitBets()
 {
     return $this->hasMany(DigitBet::class, 'user_id');
+}
+
+public function twoBets()
+{
+    return $this->hasMany(TwoBet::class, 'user_id');
+}
+// If 'agent_id' also refers to a User
+public function placedBetsAsAgent()
+{
+    return $this->hasMany(TwoBet::class, 'agent_id');
 }
 
 }

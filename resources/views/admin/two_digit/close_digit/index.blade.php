@@ -183,6 +183,77 @@
     color: #fff;
     border-color: #28a745;
 }
+
+
+    .horizontal-bar-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px; /* Space between rows/chunks */
+        justify-content: center;
+        max-width: 800px; /* Adjust as needed */
+        margin: 0 auto;
+    }
+    .horizontal-bar-modern {
+        display: flex;
+        gap: 10px; /* Space between individual digit boxes */
+        flex-wrap: wrap; /* Allow wrapping if many items in a chunk */
+    }
+    .digit-box-modern {
+        background-color:rgb(22, 9, 31); /* Purple for inactive */
+        border: 2px solidrgb(90, 8, 8);
+        border-radius: 10px;
+        color: #fff;
+        padding: 15px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 150px; /* Make them wider for battle names */
+        height: 120px; /* Adjust height */
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .digit-box-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    .digit-box-modern.active {
+        background-color:rgb(10, 111, 61); /* Green for active */
+        border-color:rgb(194, 23, 151);
+    }
+    .digit-label {
+        font-size: 1.1em;
+        font-weight: bold;
+        line-height: 1.3;
+    }
+    .toggle-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 25px;
+        height: 15px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.3s ease;
+    }
+    .toggle-dot {
+        width: 11px;
+        height: 11px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        transform: translateX(2px); /* Default to left for inactive */
+    }
+    .digit-box-modern.active .toggle-dot {
+        transform: translateX(12px); /* Move to right for active */
+    }
+
 </style>
 @endsection
 
@@ -193,7 +264,7 @@
                 <div class="col-12">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                        <li class="breadcrumb-item active">Head Close Digits</li>
+                        <li class="breadcrumb-item active">2D Settings</li>
                     </ol>
                 </div>
             </div>
@@ -207,10 +278,53 @@
                 <div class="col-12">
                     <div class="card justify-content-center">
                         <div class="card-header">
-                            <h3 class="card-title">Head Close Digits Management</h3>
+                        <div class="row mt-4"> {{-- Added margin-top for spacing --}}
+                        <div class="col-4">
+                            <h4 class="mb-3">Manage Battle Times</h4>
+                            <div class="horizontal-bar-group">
+                                @foreach($battles->chunk(2) as $chunk) {{-- Chunk by 2 since you have two main periods --}}
+                                    <div class="horizontal-bar-modern">
+                                        @foreach($chunk as $battle)
+                                            <div class="digit-box-modern {{ $battle->status ? 'active' : '' }}"
+                                                data-id="{{ $battle->id }}"
+                                                data-status="{{ $battle->status }}"
+                                                onclick="toggleBattleStatus(this)"
+                                                title="Click to toggle status for {{ $battle->battle_name }}">
+                                                <span class="digit-label">
+                                                    {{ $battle->battle_name }}<br>
+                                                    ({{ \Carbon\Carbon::parse($battle->start_time)->format('h:i A') }} -
+                                                    {{ \Carbon\Carbon::parse($battle->end_time)->format('h:i A') }})
+                                                </span>
+                                                <span class="toggle-indicator">
+                                                    <span class="toggle-dot"></span>
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="col-4">
+                        <h4 class="mb-3">Manage TwoD Limit (Break)</h4>
+                        <div class="horizontal-bar-group">
+                            @if($twoDLimit) {{-- Check if $twoDLimit is not null --}}
+                                <div class="digit-box-modern">
+                                    <h6>TwoD Limit (Break)</h6>
+                                    <p>{{ number_format($twoDLimit->two_d_limit, 0, '.', ',') }}</p>
+                                </div>
+                            @else
+                                <div class="digit-box-modern">
+                                    No 2D Limit set yet.
+                                    {{-- You might add a link/button here to create one --}}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    </div>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#headCloseDigitModal">
-                                    <i class="fas fa-plus text-white mr-2"></i>Add Head Close Digit
+                                    <i class="fas fa-plus text-white mr-2"></i>Add TwoD Limit (Break)
                                 </button>
                             </div>
                         </div>
@@ -241,47 +355,7 @@
                                 </div>
                             </div>
 
-                            <!-- Traditional Table View (Optional) -->
-                            <!-- <div class="mt-4">
-                                <h5>Detailed View</h5>
-                                <table id="mytable" class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Choose Close Digit</th>
-                                            <th>Status</th>
-                                            <th>Created At</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($headCloseDigits as $digit)
-                                            <tr>
-                                                <td class="text-sm font-weight-normal">{{ $loop->iteration }}</td>
-                                                <td>{{ $digit->head_close_digit }}</td>
-                                                <td>
-                                                    <span class="badge {{ $digit->status ? 'badge-success' : 'badge-danger' }}">
-                                                        {{ $digit->status ? 'Active' : 'Inactive' }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $digit->created_at->format('Y-m-d H:i:s') }}</td>
-                                                <td>
-                                                    <button class="btn btn-primary btn-sm edit-digit" 
-                                                            data-id="{{ $digit->id }}" 
-                                                            data-digit="{{ $digit->head_close_digit }}">
-                                                        Edit
-                                                    </button>
-                                                    <form class="d-inline" action="{{ route('admin.head-close-digit.destroy', $digit->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm delete-digit">Delete</button>
-                                                    </form> 
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div> -->
+                           
 
                             <div class="horizontal-bar">
                                 @foreach($headCloseDigits as $digit)
@@ -300,24 +374,7 @@
                         <div class="card-body">
                             <div class="choose-digit-section">
                                 <div class="choose-digit-title">Choose Close Digit</div>
-                                <!-- <div class="horizontal-bar-group">
-                                    @foreach($chooseCloseDigits->chunk(10) as $chunk)
-                                        <div class="horizontal-bar-modern">
-                                            @foreach($chunk as $digit)
-                                                <div class="digit-box-modern {{ $digit->status ? 'active' : '' }}"
-                                                     data-id="{{ $digit->id }}"
-                                                     data-status="{{ $digit->status }}"
-                                                     onclick="toggleChooseDigitStatus(this)"
-                                                     title="Click to toggle status">
-                                                    <span class="digit-label">{{ $digit->choose_close_digit }}</span>
-                                                    <span class="toggle-indicator">
-                                                        <span class="toggle-dot"></span>
-                                                    </span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endforeach
-                                </div> -->
+                               
 
                                 <div class="horizontal-bar-group">
                         @foreach($chooseCloseDigits->chunk(10) as $chunk)
@@ -351,37 +408,28 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="headCloseDigitModalLabel">Add Head Close Digit</h5>
+                    <h5 class="modal-title" id="headCloseDigitModalLabel">Add TwoD Limit (Break)</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="" method="POST">
+                <form action="{{ route('admin.two-d-limit.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="head_close_digit">Head Close Digit</label>
-                            <input type="number" class="form-control @error('head_close_digit') is-invalid @enderror" 
-                                   id="head_close_digit" name="head_close_digit" 
-                                   min="0" max="9" placeholder="Enter digit (0-9)" required>
-                            @error('head_close_digit')
+                            <label for="head_close_digit">TwoD Limit (Break)</label>
+                            <input type="number" class="form-control @error('two_d_limit') is-invalid @enderror" 
+                                   id="head_close_digit" name="two_d_limit" 
+                                placeholder="Enter 2D Limit (Break)" required>
+                            @error('two_d_limit')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="form-group">
-                            <label for="status">Status</label>
-                            <select class="form-control @error('status') is-invalid @enderror" id="status" name="status">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-                            @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-success">Add Head Close Digit</button>
+                        <button type="submit" class="btn btn-success">Add TwoD Limit (Break)</button>
                     </div>
                 </form>
             </div>
@@ -571,6 +619,53 @@ function toggleChooseDigitStatus(element) {
         // element.style.pointerEvents = 'auto';
     });
 }
+
+
+function toggleBattleStatus(element) {
+        const battleId = element.getAttribute('data-id');
+        const currentStatus = parseInt(element.getAttribute('data-status'));
+        const newStatus = currentStatus === 1 ? 0 : 1;
+
+        // Optimistically update UI
+        element.setAttribute('data-status', newStatus);
+        element.classList.toggle('active', newStatus === 1);
+
+        fetch('{{ route('admin.battle.toggle-status') }}', { // Points to the new route
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id: battleId,
+                status: newStatus
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Server error occurred.');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                // Revert UI if failed
+                element.setAttribute('data-status', currentStatus);
+                element.classList.toggle('active', currentStatus === 1);
+                showMessageBox(data.message || 'Failed to update battle status!', 'error');
+            } else {
+                showMessageBox(data.message || 'Battle status updated successfully!', 'success');
+            }
+        })
+        .catch(error => {
+            // Revert UI if network error or other exception
+            element.setAttribute('data-status', currentStatus);
+            element.classList.toggle('active', currentStatus === 1);
+            showMessageBox('Error: ' + error.message, 'error');
+        });
+    }
 </script>
 
 @if (session()->has('success'))

@@ -102,6 +102,8 @@ class DatabaseSeeder extends Seeder
             AviatrixOtherSeeder::class,
             HeadCloseSeeder::class,
             ChooseDigitSeeder::class,
+            BattleTableSeeder::class,
+
 
         ]);
     }
