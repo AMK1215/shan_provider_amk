@@ -12,35 +12,18 @@ class GameProviderResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    // public function toArray(Request $request): array
-    // {
-    //     return $this->products->map(function ($item) {
-    //         return [
-    //             'id' => $item->id,
-    //             'code' => $item->code,
-    //             'name' => $item->name,
-    //             'short_name' => $item->short_name,
-    //             'img' => $item->img_url,
-    //         ];
-    //     })->toArray();
-    // }
+
     public function toArray(Request $request): array
     {
         return $this->products->map(function ($item) {
-            // return [
-            //     'id' => $item->id,
-            //     'code' => $item->code,
-            //     'name' => $item->name,
-            //     'short_name' => $item->short_name,
-            //     'img' => $item->img_url, // appends property
-            // ];
+
             return [
                 'id' => $item->id,
                 'provider' => $item->provider,
                 'currency' => $item->currency,
                 'status' => $item->status,
                 'provider_id' => $item->provider_id,
-                'product_id' => $item->product_id,
+                'product_id' => $item->id,
                 'product_code' => $item->product_code,
                 'product_name' => $item->product_name,
                 'game_type' => $item->game_type,
