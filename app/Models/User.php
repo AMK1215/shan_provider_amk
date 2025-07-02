@@ -13,6 +13,7 @@ use App\Models\Admin\Promotion;
 use App\Models\Admin\Role;
 use App\Models\Admin\TopTenWithdraw;
 use App\Models\PlaceBet;
+use App\Models\TwoDigit\TwoBet;
 use Bavix\Wallet\Interfaces\Wallet;
 use Bavix\Wallet\Traits\HasWallet;
 use Bavix\Wallet\Traits\HasWalletFloat;
@@ -21,7 +22,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\TwoDigit\TwoBet;
 
 class User extends Authenticatable implements Wallet
 {
@@ -63,7 +63,7 @@ class User extends Authenticatable implements Wallet
         'limit',
         'limit3',
         'cor',
-        'cor3'
+        'cor3',
     ];
 
     /**
@@ -260,36 +260,36 @@ class User extends Authenticatable implements Wallet
     // }
 
     public function getAllDescendantPlayers()
-{
-    // Fetch direct players
-    $players = $this->children()->where('type', \App\Enums\UserType::Player)->get();
+    {
+        // Fetch direct players
+        $players = $this->children()->where('type', \App\Enums\UserType::Player)->get();
 
-    // Fetch all subagents
-    $subagents = $this->children()->where('type', \App\Enums\UserType::SubAgent)->get();
+        // Fetch all subagents
+        $subagents = $this->children()->where('type', \App\Enums\UserType::SubAgent)->get();
 
-    // For each subagent, fetch their direct players recursively
-    foreach ($subagents as $sub) {
-        $players = $players->merge($sub->getAllDescendantPlayers());
+        // For each subagent, fetch their direct players recursively
+        foreach ($subagents as $sub) {
+            $players = $players->merge($sub->getAllDescendantPlayers());
+        }
+
+        return $players;
     }
 
-    return $players;
-}
+    // digit bet
 
-// digit bet
+    public function digitBets()
+    {
+        return $this->hasMany(DigitBet::class, 'user_id');
+    }
 
-public function digitBets()
-{
-    return $this->hasMany(DigitBet::class, 'user_id');
-}
+    public function twoBets()
+    {
+        return $this->hasMany(TwoBet::class, 'user_id');
+    }
 
-public function twoBets()
-{
-    return $this->hasMany(TwoBet::class, 'user_id');
-}
-// If 'agent_id' also refers to a User
-public function placedBetsAsAgent()
-{
-    return $this->hasMany(TwoBet::class, 'agent_id');
-}
-
+    // If 'agent_id' also refers to a User
+    public function placedBetsAsAgent()
+    {
+        return $this->hasMany(TwoBet::class, 'agent_id');
+    }
 }

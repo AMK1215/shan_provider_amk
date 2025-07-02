@@ -2,10 +2,10 @@
 
 namespace App\Models\TwoDigit; // Adjust namespace as per your application's structure
 
-use App\Models\User; // Assuming your User model is in App\Models
-use App\Models\TwoDigit\Bettle; // Assuming Bettle model is in App\Models\TwoDigit
-use App\Models\TwoDigit\ChooseDigit; // Assuming ChooseDigit model is in App\Models\TwoDigit
-use App\Models\TwoDigit\HeadClose; // Assuming HeadClose model is in App\Models\TwoDigit
+use App\Models\TwoDigit\Bettle; // Assuming your User model is in App\Models
+use App\Models\TwoDigit\ChooseDigit; // Assuming Bettle model is in App\Models\TwoDigit
+use App\Models\TwoDigit\HeadClose; // Assuming ChooseDigit model is in App\Models\TwoDigit
+use App\Models\User; // Assuming HeadClose model is in App\Models\TwoDigit
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,7 +39,7 @@ class TwoBet extends Model
         'slip_no',
         'before_balance',
         'after_balance',
-        'prize_sent'
+        'prize_sent',
     ];
 
     // Cast properties for automatic type conversion

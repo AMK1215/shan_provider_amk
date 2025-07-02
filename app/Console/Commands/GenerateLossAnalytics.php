@@ -23,8 +23,9 @@ class GenerateLossAnalytics extends Command
     public function handle(): void
     {
         $groupBy = $this->option('group');
-        if (!in_array($groupBy, ['member_account', 'player_id'])) {
-            $this->error("Invalid group option. Use --group=member_account or --group=player_id.");
+        if (! in_array($groupBy, ['member_account', 'player_id'])) {
+            $this->error('Invalid group option. Use --group=member_account or --group=player_id.');
+
             return;
         }
 
@@ -34,15 +35,16 @@ class GenerateLossAnalytics extends Command
             ->select(
                 $groupBy,
                 DB::raw('COUNT(*) as total_rounds'),
-                DB::raw("SUM(CASE WHEN amount > 0 THEN 1 ELSE 0 END) as wins"),
-                DB::raw("SUM(CASE WHEN amount = 0 THEN 1 ELSE 0 END) as losses")
+                DB::raw('SUM(CASE WHEN amount > 0 THEN 1 ELSE 0 END) as wins'),
+                DB::raw('SUM(CASE WHEN amount = 0 THEN 1 ELSE 0 END) as losses')
             )
             ->groupBy($groupBy)
             ->orderByDesc('total_rounds')
             ->get();
 
         if ($results->isEmpty()) {
-            $this->warn("No data found in place_bets.");
+            $this->warn('No data found in place_bets.');
+
             return;
         }
 
@@ -54,11 +56,11 @@ class GenerateLossAnalytics extends Command
 
             $tableData[] = [
                 ucfirst($groupBy) => $row->$groupBy,
-                'Rounds'          => $row->total_rounds,
-                'Wins'            => $row->wins,
-                'Losses'          => $row->losses,
-                'Win Rate %'      => $winRate,
-                'Loss Rate %'     => $lossRate,
+                'Rounds' => $row->total_rounds,
+                'Wins' => $row->wins,
+                'Losses' => $row->losses,
+                'Win Rate %' => $winRate,
+                'Loss Rate %' => $lossRate,
             ];
         }
 

@@ -2,9 +2,9 @@
 
 namespace App\Models\TwoDigit;
 
+use App\Models\TwoDigit\TwoBet;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\TwoDigit\TwoBet;
 
 class Bettle extends Model
 {
@@ -40,8 +40,7 @@ class Bettle extends Model
     }
 
     public function twoBets()
-{
-    return $this->hasMany(TwoBet::class, 'bettle_id');
-}
-
+    {
+        return $this->hasMany(TwoBet::class, 'bettle_id');
+    }
 }

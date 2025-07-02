@@ -18,6 +18,4 @@ enum DigitTransactionName: string
     case TwoDigitBetBuyIn = 'two_digit_bet_buy_in';
     case TwoDigitBetBuyOut = 'two_digit_bet_buy_out';
 
-
-
 }

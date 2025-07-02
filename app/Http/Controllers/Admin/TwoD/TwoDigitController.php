@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Admin\TwoD;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\TwoDigit\HeadClose;
-use App\Models\TwoDigit\ChooseDigit;
-use Illuminate\Http\JsonResponse; // Import JsonResponse
-use Illuminate\Support\Facades\Log;
 use App\Models\TwoDigit\Bettle;
-use App\Models\TwoDigit\TwoDLimit;
-
+use App\Models\TwoDigit\ChooseDigit;
+use App\Models\TwoDigit\HeadClose;
+use App\Models\TwoDigit\TwoDLimit; // Import JsonResponse
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TwoDigitController extends Controller
 {
@@ -24,6 +23,7 @@ class TwoDigitController extends Controller
         $battles = Bettle::orderBy('start_time', 'asc')->get();
         // get lasted first two d limit
         $twoDLimit = TwoDLimit::orderBy('created_at', 'desc')->first();
+
         return view('admin.two_digit.close_digit.index', compact('headCloseDigits', 'chooseCloseDigits', 'battles', 'twoDLimit'));
     }
 
@@ -31,6 +31,7 @@ class TwoDigitController extends Controller
     public function chooseCloseDigit()
     {
         $chooseCloseDigits = ChooseDigit::all();
+
         return view('admin.two_digit.close_digit.index', compact('chooseCloseDigits'));
     }
 
@@ -46,7 +47,7 @@ class TwoDigitController extends Controller
         try {
             $digit = HeadClose::find($request->id);
 
-            if (!$digit) {
+            if (! $digit) {
                 return response()->json(['success' => false, 'message' => 'Digit not found.'], 404);
             }
 
@@ -57,21 +58,19 @@ class TwoDigitController extends Controller
 
         } catch (\Exception $e) {
             // Log the error for debugging
-            Log::error("Failed to toggle ChooseDigit status: " . $e->getMessage(), [
+            Log::error('Failed to toggle ChooseDigit status: '.$e->getMessage(), [
                 'digit_id' => $request->id,
                 'requested_status' => $request->status,
-                'exception' => $e->getTraceAsString()
+                'exception' => $e->getTraceAsString(),
             ]);
+
             return response()->json(['success' => false, 'message' => 'An internal server error occurred.'], 500);
         }
     }
 
     // toggle choose digit status
-     /**
+    /**
      * Toggles the status of a ChooseDigit record.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function toggleChooseDigitStatus(Request $request): JsonResponse
     {
@@ -84,7 +83,7 @@ class TwoDigitController extends Controller
         try {
             $digit = ChooseDigit::find($request->id);
 
-            if (!$digit) {
+            if (! $digit) {
                 return response()->json(['success' => false, 'message' => 'Digit not found.'], 404);
             }
 
@@ -95,21 +94,18 @@ class TwoDigitController extends Controller
 
         } catch (\Exception $e) {
             // Log the error for debugging
-            Log::error("Failed to toggle ChooseDigit status: " . $e->getMessage(), [
+            Log::error('Failed to toggle ChooseDigit status: '.$e->getMessage(), [
                 'digit_id' => $request->id,
                 'requested_status' => $request->status,
-                'exception' => $e->getTraceAsString()
+                'exception' => $e->getTraceAsString(),
             ]);
+
             return response()->json(['success' => false, 'message' => 'An internal server error occurred.'], 500);
         }
     }
 
-
     /**
      * Toggles the status of a Battle record.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function toggleBattleStatus(Request $request): JsonResponse
     {
@@ -121,7 +117,7 @@ class TwoDigitController extends Controller
         try {
             $battle = Bettle::find($request->id);
 
-            if (!$battle) {
+            if (! $battle) {
                 return response()->json(['success' => false, 'message' => 'Battle time not found.'], 404);
             }
 
@@ -131,11 +127,12 @@ class TwoDigitController extends Controller
             return response()->json(['success' => true, 'message' => 'Battle status updated successfully.']);
 
         } catch (\Exception $e) {
-            \Log::error("Failed to toggle Battle status: " . $e->getMessage(), [
+            \Log::error('Failed to toggle Battle status: '.$e->getMessage(), [
                 'battle_id' => $request->id,
                 'requested_status' => $request->status,
-                'exception' => $e->getTraceAsString()
+                'exception' => $e->getTraceAsString(),
             ]);
+
             return response()->json(['success' => false, 'message' => 'An internal server error occurred.'], 500);
         }
     }
@@ -151,17 +148,18 @@ class TwoDigitController extends Controller
             'two_d_limit' => $request->two_d_limit,
         ]);
         Log::info($twoDLimit);
+
         return redirect()->route('admin.head-close-digit')->with('success', 'TwoD Limit (Break) added successfully.');
     }
 
-    // two d bet 
+    // two d bet
     public function twoDBet()
     {
         $twoDBets = TwoDBet::all();
+
         return view('admin.two_digit.bet.index', compact('twoDBets'));
     }
 
     // store two d bet
 
-    
 }

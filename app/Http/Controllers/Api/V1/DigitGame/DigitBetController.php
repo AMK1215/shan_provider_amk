@@ -1,20 +1,19 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1\DigitGame;
 
+use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str; // For generating wager_code
-
-// Models
 use App\Models\DigitGame\DigitBet;
-use App\Models\User; // Assuming User model is in App\Models
-
-// Services
+use App\Models\User;
 use App\Services\WalletService;
-use App\Enums\TransactionName; // Assuming you have this Enum
+use Illuminate\Http\Request; // For generating wager_code
+// Models
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // Assuming User model is in App\Models
+// Services
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str; // Assuming you have this Enum
 
 class DigitBetController extends Controller
 {
@@ -28,17 +27,16 @@ class DigitBetController extends Controller
     /**
      * Handle placing a new digit bet.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated.'
+                'message' => 'Unauthenticated.',
             ], 401);
         }
 
@@ -52,11 +50,12 @@ class DigitBetController extends Controller
                 'multiplier' => ['required', 'integer', 'min:1'],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('DigitBet validation failed for user ' . $user->id . ':', ['errors' => $e->errors(), 'request_data' => $request->all()]);
+            Log::error('DigitBet validation failed for user '.$user->id.':', ['errors' => $e->errors(), 'request_data' => $request->all()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         }
 
@@ -71,7 +70,7 @@ class DigitBetController extends Controller
         if ($user->balanceFloat < $totalBet) {
             return response()->json([
                 'success' => false,
-                'message' => 'Insufficient balance. Please deposit funds to play.'
+                'message' => 'Insufficient balance. Please deposit funds to play.',
             ], 400);
         }
 
@@ -107,8 +106,8 @@ class DigitBetController extends Controller
                     case 'green': // Assuming these also use a 2x payout if they are simpler 50/50 style bets
                     case 'yellow':
                     case 'red':
-                         // You might need to confirm the exact payout rules for colors.
-                         // For now, assuming 2x as per 'small'/'big' if not specified otherwise.
+                        // You might need to confirm the exact payout rules for colors.
+                        // For now, assuming 2x as per 'small'/'big' if not specified otherwise.
                         $payoutFactor = 2;
                         break;
                     default:
@@ -142,7 +141,7 @@ class DigitBetController extends Controller
                 'profit' => $profit,
                 'status' => 'Settle',
                 'bet_time' => now(),
-                'wager_code' => 'W' . Str::random(12) . time(),
+                'wager_code' => 'W'.Str::random(12).time(),
                 'outcome' => $validated['outcome'],
                 'game_type_id' => 1, // Placeholder: Update with actual game_type_id from your DB/config
                 'game_name' => 'Digit Bet',
@@ -158,22 +157,22 @@ class DigitBetController extends Controller
 
             // Fetch updated history for the response
             $history = DigitBet::where('user_id', $user->id)
-                               ->latest('bet_time')
-                               ->limit(10)
-                               ->get()
-                               ->map(function($bet) {
-                                   return [
-                                       'timestamp' => $bet->bet_time->toDateTimeString(),
-                                       'betType' => $bet->bet_type,
-                                       'digit' => $bet->digit,
-                                       'rolledNumber' => $bet->rolled_number,
-                                       'outcome' => $bet->outcome,
-                                       'bet_amount' => (float) $bet->bet_amount, // Cast to float for frontend if needed
-                                       'multiplier' => $bet->multiplier,
-                                       'win_amount' => (float) $bet->win_amount,
-                                       'profit' => (float) $bet->profit,
-                                   ];
-                               });
+                ->latest('bet_time')
+                ->limit(10)
+                ->get()
+                ->map(function ($bet) {
+                    return [
+                        'timestamp' => $bet->bet_time->toDateTimeString(),
+                        'betType' => $bet->bet_type,
+                        'digit' => $bet->digit,
+                        'rolledNumber' => $bet->rolled_number,
+                        'outcome' => $bet->outcome,
+                        'bet_amount' => (float) $bet->bet_amount, // Cast to float for frontend if needed
+                        'multiplier' => $bet->multiplier,
+                        'win_amount' => (float) $bet->win_amount,
+                        'profit' => (float) $bet->profit,
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
@@ -181,16 +180,17 @@ class DigitBetController extends Controller
                 'data' => [
                     'balance' => $user->balanceFloat,
                     'history' => $history,
-                ]
+                ],
             ], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('DigitBet transaction failed for user ' . $user->id . ':', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('DigitBet transaction failed for user '.$user->id.':', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred during the bet process. Please try again.',
-                'error' => $e->getMessage() // Keep for development, remove in production
+                'error' => $e->getMessage(), // Keep for development, remove in production
             ], 500);
         }
     }
@@ -198,42 +198,41 @@ class DigitBetController extends Controller
     /**
      * Get the bet history for the authenticated user.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function history(Request $request)
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated.'
+                'message' => 'Unauthenticated.',
             ], 401);
         }
 
         $history = DigitBet::where('user_id', $user->id)
-                           ->latest('bet_time')
-                           ->limit(10)
-                           ->get()
-                           ->map(function($bet) {
-                               return [
-                                   'timestamp' => $bet->bet_time->toDateTimeString(),
-                                   'betType' => $bet->bet_type,
-                                   'digit' => $bet->digit,
-                                   'rolledNumber' => $bet->rolled_number,
-                                   'outcome' => $bet->outcome,
-                                   'bet_amount' => (float) $bet->bet_amount,
-                                   'multiplier' => $bet->multiplier,
-                                   'win_amount' => (float) $bet->win_amount,
-                                   'profit' => (float) $bet->profit,
-                               ];
-                           });
+            ->latest('bet_time')
+            ->limit(10)
+            ->get()
+            ->map(function ($bet) {
+                return [
+                    'timestamp' => $bet->bet_time->toDateTimeString(),
+                    'betType' => $bet->bet_type,
+                    'digit' => $bet->digit,
+                    'rolledNumber' => $bet->rolled_number,
+                    'outcome' => $bet->outcome,
+                    'bet_amount' => (float) $bet->bet_amount,
+                    'multiplier' => $bet->multiplier,
+                    'win_amount' => (float) $bet->win_amount,
+                    'profit' => (float) $bet->profit,
+                ];
+            });
 
         return response()->json([
             'success' => true,
             'message' => 'Bet history retrieved successfully.',
-            'data' => $history
+            'data' => $history,
         ], 200);
     }
 }

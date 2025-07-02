@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             PragmaticPlayVirtualSportGameSeeder::class,
             PragmaticPlayLiveCasinoGameSeeder::class,
             DreamGamingSeeder::class,
-            //BigGamingFishingSeeder::class,
+            // BigGamingFishingSeeder::class,
             EvoPlayGameSeeder::class,
             JDBSLOTGameSeeder::class,
             JDBSFishingameSeeder::class,
@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
             JILIFishingGameSeeder::class,
             JILIPokerGameSeeder::class,
             HACKSAWSlotGameSeeder::class,
-            //HACKSAWOtherGameSeeder::class,
+            // HACKSAWOtherGameSeeder::class,
             ImoonOtherGameSeeder::class,
             EpicwinGameSeeder::class,
             FACHAISLOTGameSeeder::class,
@@ -95,7 +95,7 @@ class DatabaseSeeder extends Seeder
             BoomingGamesSlotSeeder::class,
             SpribeOtherSeeder::class,
             WOWGamingPokerSeeder::class,
-            WOWGamingSLOTSeeder::class, 
+            WOWGamingSLOTSeeder::class,
             WOWGamingP2PSeeder::class,
             BIGPOTSlotSeeder::class,
             pascal_gamingSlotSeeder::class,
@@ -103,7 +103,6 @@ class DatabaseSeeder extends Seeder
             HeadCloseSeeder::class,
             ChooseDigitSeeder::class,
             BattleTableSeeder::class,
-
 
         ]);
     }

@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\V1\Game;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Product;
 
 class ShanLaunchGameController extends Controller
 {
@@ -27,7 +27,7 @@ class ShanLaunchGameController extends Controller
         $validator = Validator::make($request->all(), [
             'member_account' => 'required|string|max:50',
             'product_code' => 'required|string',
-            
+
         ]);
 
         if ($validator->fails()) {
@@ -53,7 +53,7 @@ class ShanLaunchGameController extends Controller
         ]);
 
         $product = Product::where('product_code', $product_code)->first();
-        if (!$product) {
+        if (! $product) {
             Log::warning('ShanLaunchGame: Product not found', [
                 'member_account' => $member_account,
                 'product_code' => $product_code,
@@ -121,7 +121,7 @@ class ShanLaunchGameController extends Controller
 
         // 4. Call Provider API to get Launch Game URL
         $providerUrl = 'https://ponewine20x.xyz/api/shan/launch-game'; // e.g. 'https://provider-site.com/api/shan/launch-game'
-        
+
         $requestData = [
             'member_account' => $member_account,
             'operator_code' => $operator_code,
@@ -138,7 +138,7 @@ class ShanLaunchGameController extends Controller
         // 5. Pass back provider's response (or parse/modify as needed)
         if ($response->successful()) {
             $responseData = $response->json();
-            
+
             Log::info('ShanLaunchGame: Provider API successful', [
                 'member_account' => $member_account,
                 'provider_response' => $responseData,

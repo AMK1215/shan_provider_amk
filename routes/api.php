@@ -1,35 +1,35 @@
 <?php
 
+use App\Http\Controllers\Api\Player\GameLogController;
+use App\Http\Controllers\Api\Player\TransactionController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Auth\ProfileController;
+use App\Http\Controllers\Api\V1\Bank\BankController as BankControllerAlias;
 use App\Http\Controllers\Api\V1\BankController;
 use App\Http\Controllers\Api\V1\BannerController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\Dashboard\AdminLoginController;
 use App\Http\Controllers\Api\V1\DepositRequestController;
+use App\Http\Controllers\Api\V1\DigitGame\DigitBetController;
+use App\Http\Controllers\Api\V1\DigitGame\DigitSlotController;
+use App\Http\Controllers\Api\V1\Game\GameController;
 use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 use App\Http\Controllers\Api\V1\Game\LaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ProviderTransactionCallbackController;
 use App\Http\Controllers\Api\V1\Game\ShanLaunchGameController;
 use App\Http\Controllers\Api\V1\Game\ShanPlayerHistoryController;
-use App\Http\Controllers\Api\V1\Shan\ShanTransactionController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\DepositController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GameListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\GetBalanceController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\ProductListController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
+use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionControllerAlias;
 use App\Http\Controllers\Api\V1\PromotionController;
 use App\Http\Controllers\Api\V1\Shan\ShanGetBalanceController;
-use App\Http\Controllers\Api\V1\WithDrawRequestController;
-use App\Http\Controllers\Api\V1\Auth\ProfileController;
-use App\Http\Controllers\Api\V1\Bank\BankController as BankControllerAlias;
-use App\Http\Controllers\Api\V1\Game\GameController;
-use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionControllerAlias;
+use App\Http\Controllers\Api\V1\Shan\ShanTransactionController;
 use App\Http\Controllers\Api\V1\Wallet\WalletController;
-use App\Http\Controllers\Api\Player\GameLogController;
-use App\Http\Controllers\Api\V1\DigitGame\DigitBetController;
-use App\Http\Controllers\Api\Player\TransactionController;
-use App\Http\Controllers\Api\V1\DigitGame\DigitSlotController;
+use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -64,7 +64,6 @@ Route::prefix('v1/api/seamless')->group(function () {
 
 Route::post('/transactions', [ShanTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
 
-
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
 
@@ -72,7 +71,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('exchange-main-to-game', [TransactionController::class, 'MainToGame']);
     Route::post('exchange-game-to-main', [TransactionController::class, 'GameToMain']);
     Route::get('exchange-transactions-log', [TransactionController::class, 'exchangeTransactionLog']);
-
 
     // user api
     Route::get('user', [AuthController::class, 'getUser']);
@@ -113,21 +111,19 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
     Route::get('player-history', [ShanPlayerHistoryController::class, 'getPlayerHistory']);
 });
 
-
 Route::group(['prefix' => 'shan'], function () {
     Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
     Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
 });
 
-
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
         Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
-        //Route::post('transactions', [ProviderTransactionCallbackController::class]);
+        // Route::post('transactions', [ProviderTransactionCallbackController::class]);
     });
 });
 
-//Route::post('/callback', ProviderTransactionCallbackController::class);.
+// Route::post('/callback', ProviderTransactionCallbackController::class);.
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
@@ -152,5 +148,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/digitbet/history', [DigitBetController::class, 'history']); // Endpoint for getting bet history
     Route::post('/digit-slot/bet', [DigitSlotController::class, 'bet']);
 });
-
-

@@ -3,18 +3,19 @@
 namespace App\Services;
 
 use App\Helpers\SessionHelper; // Assuming this helper correctly determines 'morning' or 'evening'
-use App\Models\TwoDigit\TwoBet;
 use App\Models\TwoDigit\Bettle;
 use App\Models\TwoDigit\ChooseDigit;
 use App\Models\TwoDigit\HeadClose;
-use App\Models\TwoDigit\TwoDLimit; // Overall 2D limit
 use App\Models\TwoDigit\SlipNumberCounter;
+use App\Models\TwoDigit\TwoBet; // Overall 2D limit
+use App\Models\TwoDigit\TwoDLimit;
 use App\Models\User; // Assuming User model is in App\Models
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
 // Removed: use App\Services\WalletService; // No longer needed
 // Removed: use App\Enums\DigitTransactionName; // No longer needed
 
@@ -29,9 +30,10 @@ class TwoDPlayService
     /**
      * Handles the logic for placing a 2D bet using custom main_balance.
      *
-     * @param float $totalBetAmount The total sum of all individual bet amounts.
-     * @param array $amounts An array of individual bets, e.g., [['num' => '01', 'amount' => 100], ...].
+     * @param  float  $totalBetAmount  The total sum of all individual bet amounts.
+     * @param  array  $amounts  An array of individual bets, e.g., [['num' => '01', 'amount' => 100], ...].
      * @return array|string Returns an array of over-limit digits, or a success message.
+     *
      * @throws \Exception If authentication fails, limits are not set, or other issues occur.
      */
     public function play(float $totalBetAmount, array $amounts)
@@ -60,12 +62,12 @@ class TwoDPlayService
             // 1. Get user's personal limit (if any) and overall 2D limit
             // Assuming 'two_d_limit' is a column directly on the User model for personal limit
             $userPersonalLimit = $user->two_d_limit ?? null;
-            Log::info("User personal 2D limit: " . ($userPersonalLimit ?? 'Not Set'));
+            Log::info('User personal 2D limit: '.($userPersonalLimit ?? 'Not Set'));
 
             // Get the overall default 2D limit (break limit)
             $overallTwoDLimit = TwoDLimit::orderBy('created_at', 'desc')->first();
-            if (!$overallTwoDLimit) {
-                throw new ModelNotFoundException("Overall 2D limit (break) not set.");
+            if (! $overallTwoDLimit) {
+                throw new ModelNotFoundException('Overall 2D limit (break) not set.');
             }
             $overallBreakAmount = $overallTwoDLimit->two_d_limit;
             Log::info("Overall 2D break limit: {$overallBreakAmount}");
@@ -77,7 +79,7 @@ class TwoDPlayService
 
             // 3. Pre-check for over-limits (combining HeadClose and ChooseDigit checks)
             $overLimitDigits = $this->checkAllLimits($amounts, $sessionType, $gameDate, $overallBreakAmount, $userPersonalLimit);
-            if (!empty($overLimitDigits)) {
+            if (! empty($overLimitDigits)) {
                 // No DB::rollBack() here, as this is a pre-check before any DB writes
                 return $overLimitDigits; // Return the list of digits that are over limit
             }
@@ -127,15 +129,18 @@ class TwoDPlayService
             }
 
             DB::commit();
+
             return 'Bet placed successfully.';
 
         } catch (ModelNotFoundException $e) {
             DB::rollback();
             Log::error('Resource not found in TwoDPlayService: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return 'Required resource (e.g., 2D Limit) not found.';
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error in TwoDPlayService play method: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return $e->getMessage(); // Return specific error message for debugging
         }
     }
@@ -143,11 +148,6 @@ class TwoDPlayService
     /**
      * Checks all limits (head close, choose digit, and total bet amount per digit).
      *
-     * @param array $amounts
-     * @param string $sessionType
-     * @param string $gameDate
-     * @param float $overallBreakAmount
-     * @param float|null $userPersonalLimit
      * @return array Returns an array of digits that are over limit.
      */
     protected function checkAllLimits(
@@ -168,7 +168,7 @@ class TwoDPlayService
 
         $closedHeadDigits = HeadClose::where('status', false)
             ->pluck('head_close_digit')
-            ->map(fn ($digit) => (string)$digit) // Ensure string comparison
+            ->map(fn ($digit) => (string) $digit) // Ensure string comparison
             ->unique()
             ->all();
 
@@ -180,12 +180,14 @@ class TwoDPlayService
             // Check if head digit is closed
             if (in_array($headDigitOfSelected, $closedHeadDigits)) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue; // Move to next bet
             }
 
             // Check if full 2D digit is closed
             if (in_array($twoDigit, $closedTwoDigits)) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue; // Move to next bet
             }
 
@@ -202,6 +204,7 @@ class TwoDPlayService
             // Check against overall 2D break limit
             if ($projectedTotalBetAmount > $overallBreakAmount) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue; // Move to next bet
             }
 
@@ -220,6 +223,7 @@ class TwoDPlayService
 
             if ($userPersonalLimit !== null && $projectedUserBetAmount > $userPersonalLimit) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue;
             }
         }
@@ -227,11 +231,8 @@ class TwoDPlayService
         return $overLimitDigits;
     }
 
-
     /**
      * Generates a unique slip number.
-     *
-     * @return string
      */
     protected function generateUniqueSlipNumber(): string
     {

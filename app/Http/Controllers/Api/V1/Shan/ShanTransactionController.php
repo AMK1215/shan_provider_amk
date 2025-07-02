@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api\V1\Shan;
 
+use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\ReportTransaction;
 use App\Models\User;
+use App\Services\WalletService;
 use App\Traits\HttpResponses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Services\WalletService; // Import the WalletService
-use App\Enums\TransactionName; // Assuming you have an Enum for transaction names
+use Illuminate\Support\Facades\DB; // Import the WalletService
+use Illuminate\Support\Facades\Log; // Assuming you have an Enum for transaction names
 
 class ShanTransactionController extends Controller
 {
@@ -28,7 +28,7 @@ class ShanTransactionController extends Controller
     public function ShanTransactionCreate(Request $request): JsonResponse
     {
         Log::info('ShanTransaction: Received request', [
-            'request_data' => $request->all()
+            'request_data' => $request->all(),
         ]);
 
         $validated = $request->validate([
@@ -43,7 +43,7 @@ class ShanTransactionController extends Controller
         ]);
 
         Log::info('ShanTransaction: Request validated successfully', [
-            'validated_data' => $validated
+            'validated_data' => $validated,
         ]);
 
         $results = []; // Initialize results array for all players + banker
@@ -55,16 +55,17 @@ class ShanTransactionController extends Controller
             $banker = User::where('user_name', $validated['banker']['player_id'])->first();
             if (! $banker) {
                 Log::error('ShanTransaction: Banker not found', [
-                    'banker_player_id' => $validated['banker']['player_id']
+                    'banker_player_id' => $validated['banker']['player_id'],
                 ]);
                 DB::rollBack(); // Rollback if banker is not found
-                return $this->error('', 'Banker (' . $validated['banker']['player_id'] . ') not found', 404);
+
+                return $this->error('', 'Banker ('.$validated['banker']['player_id'].') not found', 404);
             }
 
             Log::info('ShanTransaction: Processing banker transaction', [
                 'banker_id' => $banker->id,
                 'banker_username' => $banker->user_name,
-                'banker_requested_amount' => $validated['banker']['amount']
+                'banker_requested_amount' => $validated['banker']['amount'],
             ]);
 
             $bankerAmountChange = $validated['banker']['amount'];
@@ -109,7 +110,7 @@ class ShanTransactionController extends Controller
             // Handle player transactions
             foreach ($validated['players'] as $playerData) {
                 Log::info('ShanTransaction: Processing player transaction', [
-                    'player_data' => $playerData
+                    'player_data' => $playerData,
                 ]);
 
                 $player = $this->getUserByUsername($playerData['player_id']);
@@ -123,11 +124,11 @@ class ShanTransactionController extends Controller
                     ];
                     Log::info('ShanTransaction: Player transaction completed', [
                         'player_id' => $player->user_name,
-                        'new_balance' => $player->wallet->balanceFloat
+                        'new_balance' => $player->wallet->balanceFloat,
                     ]);
                 } else {
                     Log::warning('ShanTransaction: Player not found', [
-                        'player_id' => $playerData['player_id']
+                        'player_id' => $playerData['player_id'],
                     ]);
                     // Optionally, you might want to return an error for this specific player
                     // or add a message to the results array if a player is not found.
@@ -137,15 +138,16 @@ class ShanTransactionController extends Controller
 
             DB::commit();
             Log::info('ShanTransaction: All database transactions committed successfully', [
-                'results' => $results
+                'results' => $results,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('ShanTransaction: Database transaction failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return $this->error('Transaction failed', $e->getMessage(), 500);
         }
 
@@ -162,16 +164,15 @@ class ShanTransactionController extends Controller
     /**
      * Handles player specific transactions and updates their balance via WalletService.
      *
-     * @param User $player The player user model.
-     * @param array $playerData The player's transaction data.
-     * @return void
+     * @param  User  $player  The player user model.
+     * @param  array  $playerData  The player's transaction data.
      */
     private function handlePlayerTransaction(User $player, array $playerData): void
     {
         Log::info('ShanTransaction: Processing wallet operation for player', [
             'player_id' => $player->id,
             'amount_changed' => $playerData['amount_changed'],
-            'win_lose_status' => $playerData['win_lose_status']
+            'win_lose_status' => $playerData['win_lose_status'],
         ]);
 
         $oldBalance = $player->wallet->balanceFloat; // Get balance before operation
@@ -185,7 +186,7 @@ class ShanTransactionController extends Controller
                 [
                     'description' => 'Win from Shan game',
                     'bet_amount' => $playerData['bet_amount'],
-                    'win_lose_status' => $playerData['win_lose_status']
+                    'win_lose_status' => $playerData['win_lose_status'],
                 ]
             );
         } elseif ($playerData['amount_changed'] < 0) {
@@ -196,14 +197,14 @@ class ShanTransactionController extends Controller
                 [
                     'description' => 'Loss in Shan game',
                     'bet_amount' => $playerData['bet_amount'],
-                    'win_lose_status' => $playerData['win_lose_status']
+                    'win_lose_status' => $playerData['win_lose_status'],
                 ]
             );
         } else {
             // Amount changed is 0, no wallet operation needed but still log
             Log::info('ShanTransaction: Player amount_changed is 0, no wallet operation.', [
                 'player_id' => $player->id,
-                'player_data' => $playerData
+                'player_data' => $playerData,
             ]);
         }
 
@@ -228,7 +229,7 @@ class ShanTransactionController extends Controller
             'old_balance' => $oldBalance,
             'new_balance' => $newBalance,
             'amount_changed' => $playerData['amount_changed'],
-            'win_lose_status' => $playerData['win_lose_status']
+            'win_lose_status' => $playerData['win_lose_status'],
         ]);
     }
 }

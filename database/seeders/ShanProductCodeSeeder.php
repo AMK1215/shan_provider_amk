@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Product;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Product; // Make sure to import your Product model
+use Illuminate\Database\Seeder; // Make sure to import your Product model
 
 class ShanProductCodeSeeder extends Seeder
 {
@@ -41,4 +41,3 @@ class ShanProductCodeSeeder extends Seeder
         $this->command->info("Product with code '{$productCodeToSeed}' seeded successfully.");
     }
 }
-

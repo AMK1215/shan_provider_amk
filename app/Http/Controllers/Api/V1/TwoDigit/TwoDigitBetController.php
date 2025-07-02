@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\V1\TwoDigit;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\TwoDigit\Bettle;
 use App\Http\Requests\TwoD\TwoDPlayRequest;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; // Ensure Auth facade is used
+use App\Models\TwoDigit\Bettle;
+use App\Services\TwoDPlayService;
 use App\Traits\HttpResponses;
-use App\Services\TwoDPlayService; // Import the service
+use Illuminate\Http\Request; // Ensure Auth facade is used
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log; // Import the service
 
 class TwoDigitBetController extends Controller
 {
@@ -25,7 +25,6 @@ class TwoDigitBetController extends Controller
     /**
      * Store a new 2D bet.
      *
-     * @param TwoDPlayRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(TwoDPlayRequest $request)
@@ -33,8 +32,9 @@ class TwoDigitBetController extends Controller
         Log::info('TwoDigitBetController: Store method called.');
 
         // 1. Authentication check (Laravel's auth middleware should handle this, but an explicit check is fine)
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             Log::warning('TwoDigitBetController: Unauthenticated attempt to place bet.');
+
             return $this->error('Authentication Required', 'You are not authenticated! Please login.', 401);
         }
 
@@ -42,6 +42,7 @@ class TwoDigitBetController extends Controller
         $currentBettle = Bettle::where('status', true)->first();
         if (! $currentBettle) {
             Log::info('TwoDigitBetController: Betting is closed at this time.');
+
             return $this->error(
                 'Betting Closed',
                 'This 2D lottery Bettle is closed at this time. Welcome back next time!',
@@ -55,7 +56,7 @@ class TwoDigitBetController extends Controller
 
         Log::info('TwoDigitBetController: Validated amounts received', [
             'totalAmount' => $totalAmount,
-            'amounts' => $amounts
+            'amounts' => $amounts,
         ]);
 
         try {
@@ -79,8 +80,9 @@ class TwoDigitBetController extends Controller
                 }
             } elseif (is_array($result) && ! empty($result)) {
                 // If the service returns an array, it contains over-limit digits
-                $digitStrings = collect($result)->map(fn($digit) => "'{$digit}'")->implode(', ');
+                $digitStrings = collect($result)->map(fn ($digit) => "'{$digit}'")->implode(', ');
                 $message = "သင့်ရွှေးချယ်ထားသော {$digitStrings} ဂဏန်းမှာ သတ်မှတ် အမောင့်ထက်ကျော်လွန်ပါသောကြောင့် ကံစမ်း၍မရနိုင်ပါ။";
+
                 return $this->error('Over Limit', $message, 400); // 400 Bad Request
             } else {
                 // If $result is not a string (error) or an array (over-limit digits), it's a success
@@ -90,7 +92,8 @@ class TwoDigitBetController extends Controller
 
         } catch (\Exception $e) {
             // Catch any unexpected exceptions from the service layer
-            Log::error('TwoDigitBetController: Uncaught exception in store method: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('TwoDigitBetController: Uncaught exception in store method: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return $this->error('Server Error', 'An unexpected error occurred. Please try again later.', 500);
         }
     }

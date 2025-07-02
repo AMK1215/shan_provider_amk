@@ -46,12 +46,12 @@ class TransferLogController extends Controller
             $tableQuery->whereBetween('created_at', [$from, $to]);
             $dateFilteredQuery->whereBetween('created_at', [$from, $to]);
         }
-        
+
         // Daily totals based on date-filtered query
         $dailyTotalDeposit = $dateFilteredQuery->clone()->where('type', 'top_up')->sum('amount');
         $dailyTotalWithdraw = $dateFilteredQuery->clone()->where('type', 'withdraw')->sum('amount');
         $dailyProfit = $dailyTotalDeposit - $dailyTotalWithdraw;
-        
+
         $transferLogs = $tableQuery->latest()->paginate(20);
 
         return view('admin.transfer_logs.index', compact(

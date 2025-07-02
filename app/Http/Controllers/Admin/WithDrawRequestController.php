@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-
 class WithDrawRequestController extends Controller
 {
     protected const SUB_AGENT_ROLE = 'SubAgent';
@@ -52,7 +51,7 @@ class WithDrawRequestController extends Controller
             'withdraw_id' => $withdraw->id,
             'request_status' => $request->status,
             'request_player' => $request->player,
-            'user_id' => Auth::id()
+            'user_id' => Auth::id(),
         ]);
 
         $user = Auth::user();
@@ -68,15 +67,16 @@ class WithDrawRequestController extends Controller
             'agent_name' => $agent ? $agent->user_name : null,
             'player_id' => $player ? $player->id : null,
             'player_name' => $player ? $player->user_name : null,
-            'player_balance' => $player ? $player->balanceFloat : null
+            'player_balance' => $player ? $player->balanceFloat : null,
         ]);
 
         if ($request->status == 1 && $player->balanceFloat < $request->amount) {
             Log::warning('Insufficient balance for withdraw', [
                 'player_balance' => $player->balanceFloat,
                 'request_amount' => $request->amount,
-                'withdraw_id' => $withdraw->id
+                'withdraw_id' => $withdraw->id,
             ]);
+
             return redirect()->back()->with('error', 'Insufficient Balance!');
         }
 
@@ -87,7 +87,7 @@ class WithDrawRequestController extends Controller
             'status' => $request->status,
             'sub_agent_id' => $user->id,
             'sub_agent_name' => $user->user_name,
-            'note' => $note
+            'note' => $note,
         ]);
 
         $withdraw->update([
@@ -101,33 +101,33 @@ class WithDrawRequestController extends Controller
             Log::info('Processing withdraw approval', [
                 'withdraw_id' => $withdraw->id,
                 'amount' => $request->amount,
-                'player_old_balance' => $player->balanceFloat
+                'player_old_balance' => $player->balanceFloat,
             ]);
 
             $old_balance = $player->balanceFloat;
-            
+
             try {
                 app(WalletService::class)->transfer($player, $agent, $request->amount,
                     TransactionName::Withdraw, [
                         'old_balance' => $old_balance,
                         'new_balance' => $old_balance - $request->amount,
                     ]);
-                
+
                 Log::info('Wallet transfer completed successfully', [
                     'withdraw_id' => $withdraw->id,
                     'transfer_amount' => $request->amount,
                     'player_old_balance' => $old_balance,
-                    'player_new_balance' => $old_balance - $request->amount
+                    'player_new_balance' => $old_balance - $request->amount,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Wallet transfer failed', [
                     'withdraw_id' => $withdraw->id,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 throw $e;
             }
-            
+
             try {
                 \App\Models\TransferLog::create([
                     'from_user_id' => $player->id,
@@ -136,23 +136,23 @@ class WithDrawRequestController extends Controller
                     'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                     'amount' => $request->amount,
                     'type' => 'withdraw',
-                    'description' => 'Withdraw request ' . $withdraw->id . ' approved by ' . $user->user_name,
+                    'description' => 'Withdraw request '.$withdraw->id.' approved by '.$user->user_name,
                     'meta' => [
                         'withdraw_request_id' => $withdraw->id,
                         'player_old_balance' => $old_balance,
                         'player_new_balance' => $old_balance - $request->amount,
-                    ]
+                    ],
                 ]);
-                
+
                 Log::info('Transfer log created successfully', [
                     'withdraw_id' => $withdraw->id,
-                    'transfer_log_created' => true
+                    'transfer_log_created' => true,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Transfer log creation failed', [
                     'withdraw_id' => $withdraw->id,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 throw $e;
             }
@@ -160,7 +160,7 @@ class WithDrawRequestController extends Controller
 
         Log::info('Withdraw status change completed successfully', [
             'withdraw_id' => $withdraw->id,
-            'final_status' => $request->status
+            'final_status' => $request->status,
         ]);
 
         return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');
@@ -193,11 +193,11 @@ class WithDrawRequestController extends Controller
                 'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                 'amount' => $withdraw->amount,
                 'type' => 'withdraw',
-                'description' => 'Withdraw request ' . $withdraw->id . ' rejected by ' . $user->user_name,
+                'description' => 'Withdraw request '.$withdraw->id.' rejected by '.$user->user_name,
                 'meta' => [
                     'withdraw_request_id' => $withdraw->id,
                     'status' => 'rejected',
-                ]
+                ],
             ]);
 
             return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');

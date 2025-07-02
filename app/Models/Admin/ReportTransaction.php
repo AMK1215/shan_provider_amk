@@ -2,24 +2,27 @@
 
 namespace App\Models\Admin;
 
+use App\Models\GameType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\GameType;
 
 class ReportTransaction extends Model
 {
     use HasFactory;
+
     protected $table = 'report_transactions';
+
     protected $primaryKey = 'id';
+
     public $incrementing = true;
+
     public $timestamps = true;
 
-
-    protected $fillable = ['user_id', 'transaction_amount', 'bet_amount', 'valid_amount', 'status', 'banker', 'before_balance', 'after_balance']; 
+    protected $fillable = ['user_id', 'transaction_amount', 'bet_amount', 'valid_amount', 'status', 'banker', 'before_balance', 'after_balance'];
 
     protected $casts = [
-        
+
         'transaction_amount' => 'decimal:2',
         'bet_amount' => 'decimal:2',
         'valid_amount' => 'decimal:2',
@@ -46,6 +49,4 @@ class ReportTransaction extends Model
     {
         return number_format($value, 2);
     }
-
 }
-

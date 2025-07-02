@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class TwoDLimit extends Model
 {
     use HasFactory;
+
     protected $table = 'two_d_limits';
 
     protected $fillable = [

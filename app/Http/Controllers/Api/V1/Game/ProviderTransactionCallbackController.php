@@ -27,7 +27,7 @@ class ProviderTransactionCallbackController extends Controller
     /**
      * Handle incoming provider transaction callbacks.
      */
-    //public function __invoke(Request $request) // Using __invoke for single action controller
+    // public function __invoke(Request $request) // Using __invoke for single action controller
     public function handle(Request $request)
     {
         try {
@@ -51,6 +51,7 @@ class ProviderTransactionCallbackController extends Controller
 
         } catch (ValidationException $e) {
             Log::warning('Provider callback: Validation failed', ['errors' => $e->errors(), 'request' => $request->all()]);
+
             return $this->error('', $e->getMessage(), 422);
         } catch (InsufficientFunds $e) { // Catch specific insufficient funds exception
             DB::rollBack(); // Ensure transaction is rolled back
@@ -61,6 +62,7 @@ class ProviderTransactionCallbackController extends Controller
                 'trace' => $e->getTraceAsString(), // Log trace for debugging
                 'request' => $request->all(),
             ]);
+
             // Return a specific error code/message suitable for the game provider
             // A 400 Bad Request is common for client-side errors like insufficient funds.
             return $this->error('', 'Insufficient player funds for this transaction.', 400);
@@ -71,12 +73,14 @@ class ProviderTransactionCallbackController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all(),
             ]);
+
             return $this->error('', 'Failed to process callback due to internal error.', 500);
         }
     }
 
     /**
      * Validate the provider transaction key.
+     *
      * @throws \Exception If the key is invalid.
      */
     protected function validateTransactionKey(Request $request): void
@@ -92,6 +96,7 @@ class ProviderTransactionCallbackController extends Controller
 
     /**
      * Validate the incoming request data.
+     *
      * @throws ValidationException If validation fails.
      */
     protected function validateRequest(Request $request): array
@@ -107,6 +112,7 @@ class ProviderTransactionCallbackController extends Controller
 
     /**
      * Find the user by player ID.
+     *
      * @throws \Exception If the player is not found.
      */
     // protected function findPlayer(string $playerId): User
@@ -119,17 +125,19 @@ class ProviderTransactionCallbackController extends Controller
     //     return $player;
     // }
 
-     /**
+    /**
      * Find the user by player ID.
+     *
      * @throws PlayerNotFoundException If the player is not found.
      */
     protected function findPlayer(string $playerId): User
     {
         $player = User::where('user_name', $playerId)->first();
-        if (!$player) {
+        if (! $player) {
             Log::warning('Provider callback: Player not found', ['player_id' => $playerId]);
             throw new PlayerNotFoundException('Player not found.'); // Throw custom exception
         }
+
         return $player;
     }
 
@@ -212,6 +220,7 @@ class ProviderTransactionCallbackController extends Controller
 
     /**
      * Validate the provider transaction key.
+     *
      * @throws \Exception If the key is invalid.
      */
     // protected function validateTransactionKey(Request $request): void
@@ -227,6 +236,7 @@ class ProviderTransactionCallbackController extends Controller
 
     /**
      * Validate the incoming request data.
+     *
      * @throws ValidationException If validation fails.
      */
     // protected function validateRequest(Request $request): array
@@ -242,6 +252,7 @@ class ProviderTransactionCallbackController extends Controller
 
     /**
      * Find the user by player ID.
+     *
      * @throws \Exception If the player is not found.
      */
     // protected function findPlayer(string $playerId): User

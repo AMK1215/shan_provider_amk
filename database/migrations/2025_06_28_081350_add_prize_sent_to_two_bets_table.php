@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('two_bets', function (Blueprint $table) {
             $table->boolean('prize_sent')->default(false);
-            
+
         });
     }
 

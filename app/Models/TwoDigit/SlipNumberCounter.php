@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class SlipNumberCounter extends Model
 {
     use HasFactory;
+
     protected $table = 'slip_number_counters';
+
     protected $fillable = ['current_number'];
 }

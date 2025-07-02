@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon; // Optional, for more robust time handling if needed
-
+use Illuminate\Support\Facades\DB; // Optional, for more robust time handling if needed
 
 class BattleTableSeeder extends Seeder
 {

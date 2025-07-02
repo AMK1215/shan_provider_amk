@@ -39,7 +39,6 @@ class DepositController extends Controller
     /**
      * Handle incoming deposit requests.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function deposit(Request $request)
@@ -78,9 +77,6 @@ class DepositController extends Controller
     /**
      * Centralized logic for processing seamless wallet transactions (withdraw/deposit).
      *
-     * @param Request $request
-     * @param bool $isDeposit
-     * @return array
      * @throws Exception
      */
     private function processTransactions(Request $request, bool $isDeposit): array
@@ -89,9 +85,9 @@ class DepositController extends Controller
         // $operatorCode = Config::get('seamless_key.operator_code'); // Not used directly in this method
 
         $expectedSign = md5(
-            $request->operator_code .
-            $request->request_time .
-            ($isDeposit ? 'deposit' : 'withdraw') .
+            $request->operator_code.
+            $request->request_time.
+            ($isDeposit ? 'deposit' : 'withdraw').
             $secretKey
         );
         $isValidSign = strtolower($request->sign) === strtolower($expectedSign);
@@ -100,7 +96,7 @@ class DepositController extends Controller
         $results = [];
         $walletService = app(WalletService::class);
         $admin = User::adminUser();
-        if (!$admin) {
+        if (! $admin) {
             throw new Exception('Admin user not configured properly.');
         }
 
@@ -111,29 +107,33 @@ class DepositController extends Controller
             $productCode = $batchRequest['product_code'] ?? null;
             $gameType = $batchRequest['game_type'] ?? '';
 
-            if (!$isValidSign) {
+            if (! $isValidSign) {
                 Log::warning('Invalid signature for batch', ['member_account' => $memberAccount, 'provided' => $request->sign, 'expected' => $expectedSign]);
                 $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InvalidSignature, 'Invalid signature', $request->currency);
+
                 continue;
             }
 
-            if (!$isValidCurrency) {
+            if (! $isValidCurrency) {
                 Log::warning('Invalid currency for batch', ['member_account' => $memberAccount, 'currency' => $request->currency]);
                 $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::InternalServerError, 'Invalid Currency', $request->currency);
+
                 continue;
             }
 
             try {
                 $user = User::where('user_name', $memberAccount)->first();
-                if (!$user) {
+                if (! $user) {
                     Log::warning('Member not found', ['member_account' => $memberAccount]);
                     $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::MemberNotExist, 'Member not found', $request->currency);
+
                     continue;
                 }
 
-                if (!$user->wallet) {
+                if (! $user->wallet) {
                     Log::warning('Wallet missing for member', ['member_account' => $memberAccount]);
                     $results[] = $this->buildErrorResponse($memberAccount, $productCode, 0.0, SeamlessWalletCode::MemberNotExist, 'Member wallet missing', $request->currency);
+
                     continue;
                 }
 
@@ -169,6 +169,7 @@ class DepositController extends Controller
                             $request->currency
                         );
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Missing game_type');
+
                         continue;
                     }
 
@@ -180,14 +181,16 @@ class DepositController extends Controller
                         Log::warning('Duplicate transaction ID detected in place_bets or wallet_transactions', ['tx_id' => $transactionId, 'member_account' => $memberAccount]);
                         $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::DuplicateTransaction, 'Duplicate transaction', $request->currency);
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'duplicate', $request->request_time, 'Duplicate transaction');
+
                         continue;
                     }
 
                     // Validate action and wager status
-                    if (!$this->isValidActionForDeposit($action) || !$this->isValidWagerStatus($transactionRequest['wager_status'] ?? null)) {
+                    if (! $this->isValidActionForDeposit($action) || ! $this->isValidWagerStatus($transactionRequest['wager_status'] ?? null)) {
                         Log::warning('Invalid action or wager status for deposit endpoint', ['action' => $action, 'wager_status' => $transactionRequest['wager_status'] ?? 'N/A', 'member_account' => $memberAccount]);
                         $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Invalid action type or wager status for deposit', $request->currency);
                         $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Invalid action type or wager status for deposit');
+
                         continue;
                     }
 
@@ -197,10 +200,11 @@ class DepositController extends Controller
                             ->where('member_account', $memberAccount)
                             ->first();
 
-                        if (!$originalBet) {
+                        if (! $originalBet) {
                             Log::warning('Original bet not found for CANCEL action', ['wager_code' => $wagerCode, 'member_account' => $memberAccount, 'transaction_id' => $transactionId]);
                             $results[] = $this->buildErrorResponse($memberAccount, $productCode, $currentBalance, SeamlessWalletCode::BetNotExist, 'Original bet not found for cancellation', $request->currency);
                             $this->logPlaceBet($batchRequest, $request, $transactionRequest, 'failed', $request->request_time, 'Original bet not found for cancellation');
+
                             continue;
                         }
                     }
@@ -212,7 +216,7 @@ class DepositController extends Controller
                             $query->lockForUpdate();
                         }])->find($user->id);
 
-                        if (!$userWithWallet || !$userWithWallet->wallet) {
+                        if (! $userWithWallet || ! $userWithWallet->wallet) {
                             throw new Exception('User or wallet not found during transaction locking.');
                         }
 
@@ -240,7 +244,7 @@ class DepositController extends Controller
                         //     DB::commit(); // Commit the transaction for this specific skip
                         //     continue;
                         // }
-                        
+
                         // Handle other actions with zero/negative amount if they should be logged but not affect balance
                         // if ($convertedAmount <= 0) {
                         //      Log::info('Logging zero/negative amount transaction without balance change', [
@@ -263,7 +267,6 @@ class DepositController extends Controller
                         //     continue;
                         // }
 
-
                         $walletService->deposit($userWithWallet, $convertedAmount, TransactionName::Deposit, [
                             'seamless_transaction_id' => $transactionId,
                             'action' => $action,
@@ -277,7 +280,7 @@ class DepositController extends Controller
 
                         $results[] = [
                             'member_account' => $memberAccount,
-                            'product_code' => (int)$productCode,
+                            'product_code' => (int) $productCode,
                             'before_balance' => round($beforeTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'balance' => round($afterTransactionBalance / $this->getCurrencyValue($request->currency), 4),
                             'code' => SeamlessWalletCode::Success->value,
@@ -317,14 +320,6 @@ class DepositController extends Controller
 
     /**
      * Helper to build a consistent error response.
-     *
-     * @param string $memberAccount
-     * @param string $productCode
-     * @param float $balance
-     * @param SeamlessWalletCode $code
-     * @param string $message
-     * @param string $currency
-     * @return array
      */
     private function buildErrorResponse(string $memberAccount, string $productCode, float $balance, SeamlessWalletCode $code, string $message, string $currency): array
     {
@@ -332,7 +327,7 @@ class DepositController extends Controller
 
         return [
             'member_account' => $memberAccount,
-            'product_code' => (int)$productCode,
+            'product_code' => (int) $productCode,
             'before_balance' => $formattedBalance,
             'balance' => $formattedBalance,
             'code' => $code->value,
@@ -342,10 +337,6 @@ class DepositController extends Controller
 
     /**
      * Converts a float to a specified number of decimal places.
-     *
-     * @param float $value
-     * @param int $precision
-     * @return float
      */
     private function toDecimalPlaces(float $value, int $precision = 4): float
     {
@@ -355,9 +346,6 @@ class DepositController extends Controller
     /**
      * Gets the currency conversion value.
      * This is a placeholder; you'd implement actual currency rates here.
-     *
-     * @param string $currency
-     * @return int
      */
     private function getCurrencyValue(string $currency): int
     {
@@ -374,9 +362,6 @@ class DepositController extends Controller
 
     /**
      * Check if the action is valid specifically for the deposit endpoint.
-     *
-     * @param string $action
-     * @return bool
      */
     private function isValidActionForDeposit(string $action): bool
     {
@@ -385,9 +370,6 @@ class DepositController extends Controller
 
     /**
      * Check if the wager status is valid.
-     *
-     * @param string|null $wagerStatus
-     * @return bool
      */
     private function isValidWagerStatus(?string $wagerStatus): bool
     {
@@ -401,15 +383,14 @@ class DepositController extends Controller
     /**
      * Logs the transaction attempt in the place_bets table.
      *
-     * @param array $batchRequest The current batch request being processed.
-     * @param Request $fullRequest The full incoming HTTP request.
-     * @param array $transactionRequest The individual transaction details from the batch.
-     * @param string $status The status of the transaction ('completed', 'failed', 'duplicate', 'info', 'loss').
-     * @param int|null $requestTime The original request_time from the full request (milliseconds).
-     * @param string|null $errorMessage Optional error message.
-     * @param float|null $beforeBalance Optional balance before the transaction.
-     * @param float|null $afterBalance Optional balance after the transaction.
-     * @return void
+     * @param  array  $batchRequest  The current batch request being processed.
+     * @param  Request  $fullRequest  The full incoming HTTP request.
+     * @param  array  $transactionRequest  The individual transaction details from the batch.
+     * @param  string  $status  The status of the transaction ('completed', 'failed', 'duplicate', 'info', 'loss').
+     * @param  int|null  $requestTime  The original request_time from the full request (milliseconds).
+     * @param  string|null  $errorMessage  Optional error message.
+     * @param  float|null  $beforeBalance  Optional balance before the transaction.
+     * @param  float|null  $afterBalance  Optional balance after the transaction.
      */
     private function logPlaceBet(
         array $batchRequest,
@@ -463,7 +444,7 @@ class DepositController extends Controller
                 'status' => $status,
                 'before_balance' => $beforeBalance,
                 'balance' => $afterBalance,
-                //'error_message' => $errorMessage,
+                // 'error_message' => $errorMessage,
             ]);
         } catch (QueryException $e) {
             if (in_array($e->getCode(), ['23000', '23505'])) { // SQLSTATE for unique constraint violation

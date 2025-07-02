@@ -22,7 +22,7 @@ class DepositRequestController extends Controller
     public function index(Request $request)
     {
         // Check permissions
-        if (!Auth::user()->hasPermission('process_deposit') && !Auth::user()->hasPermission('view_deposit_requests')) {
+        if (! Auth::user()->hasPermission('process_deposit') && ! Auth::user()->hasPermission('view_deposit_requests')) {
             abort(403, 'You do not have permission to access deposit requests.');
         }
 
@@ -50,7 +50,7 @@ class DepositRequestController extends Controller
     public function statusChangeIndex(Request $request, DepositRequest $deposit)
     {
         // Check permissions
-        if (!Auth::user()->hasPermission('process_deposit')) {
+        if (! Auth::user()->hasPermission('process_deposit')) {
             abort(403, 'You do not have permission to process deposits.');
         }
 
@@ -94,13 +94,13 @@ class DepositRequestController extends Controller
                     'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                     'amount' => $request->amount,
                     'type' => 'top_up',
-                    'description' => 'Deposit request ' . $deposit->id . ' approved by ' . $user->user_name,
+                    'description' => 'Deposit request '.$deposit->id.' approved by '.$user->user_name,
                     'meta' => [
                         'deposit_request_id' => $deposit->id,
                         'player_old_balance' => $old_balance,
                         'player_new_balance' => $old_balance + $request->amount,
                         'refrence_no' => $deposit->refrence_no,
-                    ]
+                    ],
                 ]);
             }
 
@@ -113,7 +113,7 @@ class DepositRequestController extends Controller
     public function statusChangeReject(Request $request, DepositRequest $deposit)
     {
         // Check permissions
-        if (!Auth::user()->hasPermission('process_deposit')) {
+        if (! Auth::user()->hasPermission('process_deposit')) {
             abort(403, 'You do not have permission to process deposits.');
         }
 
@@ -147,12 +147,12 @@ class DepositRequestController extends Controller
                 'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                 'amount' => $deposit->amount,
                 'type' => 'deposit-reject',
-                'description' => 'Deposit request ' . $deposit->id . ' rejected by ' . $user->user_name,
+                'description' => 'Deposit request '.$deposit->id.' rejected by '.$user->user_name,
                 'meta' => [
                     'deposit_request_id' => $deposit->id,
                     'status' => 'rejected',
                     'refrence_no' => $deposit->refrence_no,
-                ]
+                ],
             ]);
 
             return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
@@ -164,7 +164,7 @@ class DepositRequestController extends Controller
     public function view(DepositRequest $deposit)
     {
         // Check permissions
-        if (!Auth::user()->hasPermission('process_deposit') && !Auth::user()->hasPermission('view_deposit_requests')) {
+        if (! Auth::user()->hasPermission('process_deposit') && ! Auth::user()->hasPermission('view_deposit_requests')) {
             abort(403, 'You do not have permission to view deposit requests.');
         }
 
@@ -184,7 +184,7 @@ class DepositRequestController extends Controller
     public function DepositShowLog(DepositRequest $deposit)
     {
         // Check permissions
-        if (!Auth::user()->hasPermission('process_deposit') && !Auth::user()->hasPermission('view_deposit_requests')) {
+        if (! Auth::user()->hasPermission('process_deposit') && ! Auth::user()->hasPermission('view_deposit_requests')) {
             abort(403, 'You do not have permission to view deposit logs.');
         }
 

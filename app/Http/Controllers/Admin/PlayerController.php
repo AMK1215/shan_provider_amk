@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PlayerRequest;
 use App\Http\Requests\TransferLogRequest;
 use App\Models\PaymentType;
+use App\Models\PlaceBet;
 use App\Models\Report;
 use App\Models\TransferLog;
 use App\Models\User;
@@ -22,7 +23,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\PlaceBet;
 
 class PlayerController extends Controller
 {
@@ -112,16 +112,15 @@ class PlayerController extends Controller
             // Group by player_id. A log might belong to two players in $playerIds if agent transfers to subagent or player
             // For displaying logs per player, you might need a more complex grouping or separate logic.
             // For now, let's group by the `player_id` from the list that it's associated with.
-            ->groupBy(function($log) use ($playerIds) {
+            ->groupBy(function ($log) use ($playerIds) {
                 if ($playerIds->contains($log->from_user_id)) {
                     return $log->from_user_id;
                 }
                 if ($playerIds->contains($log->to_user_id)) {
                     return $log->to_user_id;
                 }
-                return null; // This case should theoretically not be hit if whereIn covers it
+                 // This case should theoretically not be hit if whereIn covers it
             });
-
 
         // Step 5: Build users collection with aggregated stats and transfer logs
         $users = $players->map(function ($player) use ($spinTotals, $betTotals, $settleTotals, $transferLogs) {
@@ -151,7 +150,6 @@ class PlayerController extends Controller
     }
     // public function index()
     // {
-       
 
     //     // Step 1: Get all descendant player IDs under this owner/agent/subagent using recursive CTE
     //     $startId = auth()->id();
@@ -274,7 +272,7 @@ class PlayerController extends Controller
         $siteLink = $agent->parent->site_link ?? 'null';
 
         $inputs = $request->validated();
-        
+
         // Set default amount to 0 if not provided
         $inputs['amount'] = $inputs['amount'] ?? 0;
 

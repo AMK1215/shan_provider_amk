@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\SeamlessWalletCode;
 use Illuminate\Http\JsonResponse; // ✅ correct
 
-
 class ApiResponseService
 {
     /**
@@ -21,12 +20,11 @@ class ApiResponseService
     // }
 
     public static function success(mixed $data = null, string $message = 'Success')
-{
-    return response()->json([
-        'data' => $data ?? []
-    ]);
-}
-
+    {
+        return response()->json([
+            'data' => $data ?? [],
+        ]);
+    }
 
     /**
      * Return a standardized API error response using SeamlessWalletCode.
@@ -40,8 +38,7 @@ class ApiResponseService
         ];
     }
 
-
- /**
+    /**
      * Standard format for internal APIs (includes code/message/data).
      */
     // public static function success(mixed $data = null, string $message = 'Success'): JsonResponse
@@ -68,7 +65,7 @@ class ApiResponseService
     public static function gplusSuccess(array $data): JsonResponse
     {
         return response()->json([
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -78,8 +75,7 @@ class ApiResponseService
     public static function gplusError(array $data): JsonResponse
     {
         return response()->json([
-            'data' => $data
+            'data' => $data,
         ]);
     }
-
 }

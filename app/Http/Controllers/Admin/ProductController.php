@@ -13,7 +13,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $gameTypes = GameType::with(['products' => function($query) {
+        $gameTypes = GameType::with(['products' => function ($query) {
             $query->withPivot('image');
         }])->where('status', 1)
             ->get();

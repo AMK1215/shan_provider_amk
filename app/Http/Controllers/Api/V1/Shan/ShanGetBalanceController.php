@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Shan;
 
+use App\Enums\SeamlessWalletCode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ApiResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use App\Enums\SeamlessWalletCode;
 
 class ShanGetBalanceController extends Controller
 {
@@ -22,7 +22,7 @@ class ShanGetBalanceController extends Controller
 
         $results = [];
         foreach ($request->batch_requests as $req) {
-            
+
             // Only MMK is allowed, but if you want to enforce, add a check (optional):
             if (strtoupper($request->currency) !== 'MMK') {
                 $results[] = [

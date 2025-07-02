@@ -17,7 +17,7 @@ class ReportController extends Controller
     public function index(Request $request)
     {
         $agent = Auth::user();
-        //$agent = $this->getAgent() ?? Auth::user();
+        // $agent = $this->getAgent() ?? Auth::user();
 
         $report = $this->buildQuery($request, $agent);
 
@@ -55,16 +55,16 @@ class ReportController extends Controller
     }
 
     private function buildQuery(Request $request, $agent)
-{
-    $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
-    $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
+    {
+        $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
+        $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
-    $query = PlaceBet::query()
-        ->select(
-            'place_bets.member_account',
-            'agent_user.user_name as agent_name',
-            DB::raw("COUNT(CASE WHEN wager_status = 'SETTLED' THEN 1 END) as stake_count"),
-            DB::raw("
+        $query = PlaceBet::query()
+            ->select(
+                'place_bets.member_account',
+                'agent_user.user_name as agent_name',
+                DB::raw("COUNT(CASE WHEN wager_status = 'SETTLED' THEN 1 END) as stake_count"),
+                DB::raw("
                 SUM(CASE
                     WHEN wager_status = 'SETTLED' THEN
                         CASE
@@ -74,7 +74,7 @@ class ReportController extends Controller
                     ELSE 0
                 END) as total_bet
             "),
-            DB::raw("
+                DB::raw("
                 SUM(CASE
                     WHEN wager_status = 'SETTLED' THEN
                         CASE
@@ -84,32 +84,32 @@ class ReportController extends Controller
                     ELSE 0
                 END) as total_win
             ")
-        )
-        ->leftJoin('users as agent_user', 'place_bets.player_agent_id', '=', 'agent_user.id')
-        ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+            )
+            ->leftJoin('users as agent_user', 'place_bets.player_agent_id', '=', 'agent_user.id')
+            ->whereBetween('place_bets.created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
-    // Apply agent/user hierarchy filtering based on role
-    if ($agent->type === UserType::Owner->value) {
-        $query->whereNotNull('place_bets.player_agent_id');
-    } elseif ($agent->type === UserType::Agent->value) {
-        // Agent should only see players directly under them.
-        $playerIds = User::where('agent_id', $agent->id)
-            ->where('type', UserType::Player)
-            ->pluck('id');
-        $query->whereIn('place_bets.player_id', $playerIds);
-    } elseif ($agent->type === UserType::SubAgent->value) {
-        $playerIds = $agent->children()->where('type', UserType::Player)->pluck('id');
-        $query->whereIn('place_bets.player_id', $playerIds);
-    } elseif ($agent->type === UserType::Player->value) {
-        $query->where('place_bets.player_id', $agent->id);
+        // Apply agent/user hierarchy filtering based on role
+        if ($agent->type === UserType::Owner->value) {
+            $query->whereNotNull('place_bets.player_agent_id');
+        } elseif ($agent->type === UserType::Agent->value) {
+            // Agent should only see players directly under them.
+            $playerIds = User::where('agent_id', $agent->id)
+                ->where('type', UserType::Player)
+                ->pluck('id');
+            $query->whereIn('place_bets.player_id', $playerIds);
+        } elseif ($agent->type === UserType::SubAgent->value) {
+            $playerIds = $agent->children()->where('type', UserType::Player)->pluck('id');
+            $query->whereIn('place_bets.player_id', $playerIds);
+        } elseif ($agent->type === UserType::Player->value) {
+            $query->where('place_bets.player_id', $agent->id);
+        }
+
+        if ($request->filled('member_account')) {
+            $query->where('member_account', $request->member_account);
+        }
+
+        return $query->groupBy('place_bets.member_account', 'agent_user.user_name')->get();
     }
-
-    if ($request->filled('member_account')) {
-        $query->where('member_account', $request->member_account);
-    }
-
-    return $query->groupBy('place_bets.member_account', 'agent_user.user_name')->get();
-}
 
     // private function buildQuery(Request $request, $agent)
     // {
@@ -207,7 +207,7 @@ class ReportController extends Controller
     // {
     //     $agent = Auth::user();
     //     $playerIds = $agent->getAllDescendantPlayers()->pluck('id');
-        
+
     //     $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
     //     $dailyReports = PlaceBet::whereIn('player_id', $playerIds)
@@ -222,7 +222,7 @@ class ReportController extends Controller
     //         )
     //         ->groupBy('users.user_name', 'place_bets.player_id')
     //         ->get();
-        
+
     //     $totalTurnover = $dailyReports->sum('total_turnover');
     //     $totalPayout = $dailyReports->sum('total_payout');
     //     $totalWinLoss = $totalPayout - $totalTurnover;
