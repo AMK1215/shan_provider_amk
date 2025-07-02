@@ -25,7 +25,6 @@ class DigitSlotController extends Controller
             'bets.*.bet_type' => 'required|string',
             'bets.*.digit' => 'nullable|integer|min:0|max:9',
             'bets.*.bet_amount' => 'required|numeric|min:1',
-            'bets.*.multiplier' => 'required|numeric',
             'bets.*.rolled_number' => 'required|integer|min:0|max:9',
             'bets.*.win_amount' => 'required|numeric',
             'bets.*.profit' => 'required|numeric',
@@ -64,6 +63,7 @@ class DigitSlotController extends Controller
                 // Always set user_id and member_account
                 $data['user_id'] = $user->id;
                 $data['member_account'] = $user->user_name ?? '';
+                $data['multiplier'] = 1;
                 $data['wager_code'] = Str::random(10);
 
                 $results[] = DigitBet::create($data);
