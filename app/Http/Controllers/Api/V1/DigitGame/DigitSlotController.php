@@ -11,13 +11,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\User;
+
+
 
 class DigitSlotController extends Controller
 {
-    use App\Models\User;
     use HttpResponses;
-
-    // ...
 
     public function bet(Request $request, WalletService $walletService)
     {
