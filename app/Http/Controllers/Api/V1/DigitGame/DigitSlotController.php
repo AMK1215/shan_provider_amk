@@ -14,8 +14,6 @@ class DigitSlotController extends Controller
 {
     use HttpResponses;
 
-    
-    
     public function bet(Request $request, WalletService $walletService)
     {
         $user = Auth::user();
@@ -70,7 +68,7 @@ class DigitSlotController extends Controller
                 $user->refresh();
                 $data['before_balance'] = $user->balanceFloat + $data['bet_amount'] - $data['win_amount'];
                 $data['after_balance'] = $user->balanceFloat;
-                $results[] = $user->digitBets()->create($data);
+                $results[] = DigitBet::create($data);
             }
             DB::commit();
     
