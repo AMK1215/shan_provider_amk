@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 use App\Services\WalletService;
 use App\Enums\TransactionName;
 use Illuminate\Support\Facades\Auth;
-use App\Traits\HttpResponses;
 use Illuminate\Support\Facades\DB;
+use App\Traits\HttpResponses;
 use App\Models\DigitGame\DigitBet;
+
 class DigitSlotController extends Controller
 {
     use HttpResponses;
@@ -17,7 +18,7 @@ class DigitSlotController extends Controller
     public function bet(Request $request, WalletService $walletService)
     {
         $user = Auth::user();
-    
+
         // Validate input: array of bets
         $bets = $request->validate([
             'bets' => 'required|array|min:1',
@@ -34,54 +35,53 @@ class DigitSlotController extends Controller
             'bets.*.before_balance' => 'required|numeric',
             'bets.*.after_balance' => 'required|numeric',
         ])['bets'];
-    
+
+        // Check total bet vs player balance BEFORE any bet placed
+        $totalBetAmount = array_sum(array_column($bets, 'bet_amount'));
+        if ($user->balanceFloat < $totalBetAmount) {
+            return $this->error(null, "Insufficient balance for total bet: {$totalBetAmount} MMK", 400);
+        }
+
         $results = [];
-    
+
         DB::beginTransaction();
         try {
             foreach ($bets as $data) {
-                // Always refresh user after each bet (to get latest balance)
-                $user->refresh();
-    
-                // Check player balance
-                if ($user->balanceFloat < $data['bet_amount']) {
-                    // Rollback immediately if not enough balance
-                    DB::rollBack();
-                    return $this->error(null, 'Insufficient balance for bet: ' . $data['bet_amount'], 400);
-                }
-    
                 // Withdraw bet amount
                 $walletService->withdraw($user, $data['bet_amount'], TransactionName::DigitBet, [
                     'game' => 'digit_slot',
                     'desc' => 'Digit Bet',
                 ]);
-    
-                // Deposit win if any
+
+                // Payout if win
                 if ($data['win_amount'] > 0) {
                     $walletService->deposit($user, $data['win_amount'], TransactionName::GameWin, [
                         'game' => 'digit_slot',
                         'desc' => 'Win Payout',
                     ]);
                 }
-    
-                // Save bet record (again, refresh for latest wallet state)
-                $user->refresh();
-                $data['before_balance'] = $user->balanceFloat + $data['bet_amount'] - $data['win_amount'];
-                $data['after_balance'] = $user->balanceFloat;
+
+                // Always set user_id and member_account
+                $data['user_id'] = $user->id;
+                $data['member_account'] = $user->user_name ?? '';
+
                 $results[] = DigitBet::create($data);
             }
+
+            // Commit bets and wallet changes
             DB::commit();
-    
-            // Return latest user balance as well, for frontend refresh
+
+            // Refresh user to get latest balance
             $user->refresh();
+
             return $this->success([
                 'bets' => $results,
                 'balance' => $user->balanceFloat,
             ], 'All bets placed successfully');
+
         } catch (\Throwable $e) {
             DB::rollBack();
             return $this->error(null, "Bet failed: " . $e->getMessage(), 500);
         }
     }
-    
 }
