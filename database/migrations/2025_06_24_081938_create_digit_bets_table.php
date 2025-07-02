@@ -19,7 +19,7 @@ return new class extends Migration
         $table->string('bet_type');            // 'digit', 'big', 'small'
         $table->unsignedTinyInteger('digit')->nullable(); // Only for digit bets
         $table->decimal('bet_amount', 10, 2);
-        $table->decimal('multiplier', 10, 2);
+        $table->decimal('multiplier', 10, 2)->nullable();
         $table->unsignedTinyInteger('rolled_number');
         $table->decimal('win_amount', 10, 2);
         $table->decimal('profit', 10, 2);
