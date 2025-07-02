@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Controllers\Api\Player\GameLogController;
 use App\Http\Controllers\Api\V1\DigitGame\DigitBetController;
 use App\Http\Controllers\Api\Player\TransactionController;
+use App\Http\Controllers\Api\V1\DigitGame\DigitSlotController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -149,4 +150,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/digitbet', [DigitBetController::class, 'store']); // Endpoint for placing a bet
     Route::get('/digitbet/history', [DigitBetController::class, 'history']); // Endpoint for getting bet history
+    Route::post('/digit-slot/bet', [DigitSlotController::class, 'bet']);
 });
+
+

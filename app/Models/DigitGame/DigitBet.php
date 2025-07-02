@@ -4,6 +4,9 @@ namespace App\Models\DigitGame;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Product;
+use App\Models\GameType;
 
 class DigitBet extends Model
 {
@@ -24,6 +27,9 @@ class DigitBet extends Model
         'wager_code',
         'outcome',
         'game_type_id',
+        'before_balance',
+        'after_balance'
+
     ];
 
 
@@ -33,7 +39,7 @@ class DigitBet extends Model
         'win_amount' => 'decimal:2',
         'profit' => 'decimal:2',
     ];
-    
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -48,5 +54,5 @@ class DigitBet extends Model
     {
         return $this->belongsTo(GameType::class);
     }
-    
+
 }
