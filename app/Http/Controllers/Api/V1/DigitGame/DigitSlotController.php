@@ -64,6 +64,7 @@ class DigitSlotController extends Controller
                 // Always set user_id and member_account
                 $data['user_id'] = $user->id;
                 $data['member_account'] = $user->user_name ?? '';
+                $data['wager_code'] = Str::random(10);
 
                 $results[] = DigitBet::create($data);
             }
