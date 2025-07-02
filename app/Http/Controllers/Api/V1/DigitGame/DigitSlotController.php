@@ -9,7 +9,7 @@ use App\Enums\TransactionName;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\HttpResponses;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\DigitGame\DigitBet;
 class DigitSlotController extends Controller
 {
     use HttpResponses;
