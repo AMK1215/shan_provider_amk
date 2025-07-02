@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HttpResponses;
 use App\Models\DigitGame\DigitBet;
-
+use Illuminate\Support\Str;
 class DigitSlotController extends Controller
 {
     use HttpResponses;
