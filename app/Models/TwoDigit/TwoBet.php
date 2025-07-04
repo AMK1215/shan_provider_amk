@@ -96,4 +96,20 @@ class TwoBet extends Model
         // If you have a dedicated Agent model (e.g., App\Models\Agent)
         // return $this->belongsTo(Agent::class, 'agent_id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->game_date = Carbon::now('Asia/Yangon')->format('Y-m-d');
+            $model->game_time = Carbon::now('Asia/Yangon')->format('H:i:s');
+            $model->created_at = Carbon::now('Asia/Yangon');
+            $model->updated_at = Carbon::now('Asia/Yangon');
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = Carbon::now('Asia/Yangon');
+        });
+    }
 }
