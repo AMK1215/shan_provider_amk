@@ -16,17 +16,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// Removed: use App\Services\WalletService; // No longer needed
-// Removed: use App\Enums\DigitTransactionName; // No longer needed
-
 class TwoDPlayService
 {
-    // Removed constructor as WalletService is no longer injected
-    // public function __construct(WalletService $walletService)
-    // {
-    //     $this->walletService = $walletService;
-    // }
-
     /**
      * Handles the logic for placing a 2D bet using custom main_balance.
      *
@@ -42,11 +33,9 @@ class TwoDPlayService
         $user = Auth::user();
 
         if (! $user) {
-            // This should ideally be caught by middleware or auth checks before this service
             throw new \Exception('User not authenticated.');
         }
 
-        // Check if the current betting session is active
         $currentBettle = Bettle::where('status', true)->first();
         if (! $currentBettle) {
             throw new \Exception('Betting is currently closed. No active battle session found.');
@@ -59,12 +48,9 @@ class TwoDPlayService
         try {
             DB::beginTransaction();
 
-            // 1. Get user's personal limit (if any) and overall 2D limit
-            // Assuming 'two_d_limit' is a column directly on the User model for personal limit
             $userPersonalLimit = $user->two_d_limit ?? null;
             Log::info('User personal 2D limit: '.($userPersonalLimit ?? 'Not Set'));
 
-            // Get the overall default 2D limit (break limit)
             $overallTwoDLimit = TwoDLimit::orderBy('created_at', 'desc')->first();
             if (! $overallTwoDLimit) {
                 throw new ModelNotFoundException('Overall 2D limit (break) not set.');
@@ -72,59 +58,56 @@ class TwoDPlayService
             $overallBreakAmount = $overallTwoDLimit->two_d_limit;
             Log::info("Overall 2D break limit: {$overallBreakAmount}");
 
-            // 2. Check if user has sufficient funds using main_balance
             if ($user->main_balance < $totalBetAmount) {
                 throw new \Exception('Insufficient funds in your main balance.');
             }
 
-            // 3. Pre-check for over-limits (combining HeadClose and ChooseDigit checks)
             $overLimitDigits = $this->checkAllLimits($amounts, $sessionType, $gameDate, $overallBreakAmount, $userPersonalLimit);
             if (! empty($overLimitDigits)) {
                 // No DB::rollBack() here, as this is a pre-check before any DB writes
-                return $overLimitDigits; // Return the list of digits that are over limit
+                return $overLimitDigits;
             }
 
-            // Generate a unique slip number BEFORE starting the main transaction
+            // Generate a unique slip number ONCE for this entire batch of bets
             $slipNo = $this->generateUniqueSlipNumber();
+            Log::info("Generated Slip No: {$slipNo}");
 
-            // All checks passed, proceed with deducting balance and creating bets
+
             $beforeBalance = $user->main_balance;
 
             // Deduct total amount from user's main_balance
             $user->main_balance -= $totalBetAmount;
             $user->save(); // Save the updated balance
 
-            // Retrieve the balance after saving for the record
             $afterBalance = $user->main_balance;
 
             foreach ($amounts as $betDetail) {
                 $twoDigit = str_pad($betDetail['num'], 2, '0', STR_PAD_LEFT);
                 $subAmount = $betDetail['amount'];
 
-                // Get ChooseDigit, HeadClose (if applicable to record specific digit IDs)
                 $chooseDigit = ChooseDigit::where('choose_close_digit', $twoDigit)->first();
                 $headClose = HeadClose::where('head_close_digit', substr($twoDigit, 0, 1))->first();
 
                 // Create the TwoBet record
                 TwoBet::create([
                     'user_id' => $user->id,
-                    'member_name' => $user->user_name, // Keeping as per your migration, but still redundant
+                    'member_name' => $user->user_name,
                     'bettle_id' => $currentBettle->id,
                     'choose_digit_id' => $chooseDigit ? $chooseDigit->id : null,
                     'head_close_id' => $headClose ? $headClose->id : null,
-                    'agent_id' => $user->agent_id, // Assuming user has an agent_id
+                    'agent_id' => $user->agent_id,
                     'bet_number' => $twoDigit,
                     'bet_amount' => $subAmount,
-                    'total_bet_amount' => $totalBetAmount, // Store total for the batch here, or individual bet amount
-                    'session' => $sessionType, // Keeping as per your migration, but redundant
-                    'win_lose' => false, // Initial state
-                    'potential_payout' => 0, // Calculate this based on odds in real logic
-                    'bet_status' => false, // Initial state: pending
+                    'total_bet_amount' => $totalBetAmount, // This should be total for the *entire slip*
+                    'session' => $sessionType,
+                    'win_lose' => false,
+                    'potential_payout' => 0,
+                    'bet_status' => false,
                     'game_date' => $gameDate,
                     'game_time' => $gameTime,
-                    'slip_no' => $slipNo,
-                    'before_balance' => $beforeBalance, // Use beforeBalance from main_balance
-                    'after_balance' => $afterBalance,   // Use afterBalance from main_balance
+                    'slip_no' => $slipNo, // Use the single generated slip number for all bets in this batch
+                    'before_balance' => $beforeBalance,
+                    'after_balance' => $afterBalance,
                 ]);
             }
 
@@ -141,7 +124,7 @@ class TwoDPlayService
             DB::rollback();
             Log::error('Error in TwoDPlayService play method: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
-            return $e->getMessage(); // Return specific error message for debugging
+            return $e->getMessage();
         }
     }
 
@@ -180,14 +163,12 @@ class TwoDPlayService
             // Check if head digit is closed
             if (in_array($headDigitOfSelected, $closedHeadDigits)) {
                 $overLimitDigits[] = $twoDigit;
-
                 continue; // Move to next bet
             }
 
             // Check if full 2D digit is closed
             if (in_array($twoDigit, $closedTwoDigits)) {
                 $overLimitDigits[] = $twoDigit;
-
                 continue; // Move to next bet
             }
 
@@ -204,14 +185,9 @@ class TwoDPlayService
             // Check against overall 2D break limit
             if ($projectedTotalBetAmount > $overallBreakAmount) {
                 $overLimitDigits[] = $twoDigit;
-
                 continue; // Move to next bet
             }
 
-            // If userPersonalLimit is defined, check against it (more restrictive)
-            // This logic needs careful consideration: is userPersonalLimit a global break for the user,
-            // or specific to how much *they* can bet on a single number?
-            // Assuming it's how much *this user* can bet on *one specific digit*.
             $userBetAmountOnThisDigit = DB::table('two_bets')
                 ->where('user_id', Auth::id())
                 ->where('game_date', $gameDate)
@@ -223,7 +199,6 @@ class TwoDPlayService
 
             if ($userPersonalLimit !== null && $projectedUserBetAmount > $userPersonalLimit) {
                 $overLimitDigits[] = $twoDigit;
-
                 continue;
             }
         }
@@ -233,6 +208,8 @@ class TwoDPlayService
 
     /**
      * Generates a unique slip number.
+     * This method ensures the slip number is unique across all *committed* two_bets records.
+     * Since we generate it *before* the main transaction commits, the `exists()` check is reliable.
      */
     protected function generateUniqueSlipNumber(): string
     {
@@ -241,41 +218,50 @@ class TwoDPlayService
         
         do {
             $attempt++;
-            $slipNo = $this->generateSlipNumber();
+            // Generate the base slip number with the counter incremented
+            $baseSlipNo = $this->generateBaseSlipNumberWithCounter();
             
-            // Add microseconds to make it more unique
+            // Add microseconds to make it even more unique
             $microtime = microtime(true);
             $microseconds = sprintf('%06d', ($microtime - floor($microtime)) * 1000000);
-            $slipNo = $slipNo . '-' . $microseconds;
+            $slipNo = $baseSlipNo . '-' . $microseconds;
             
-            // Check if this slip number already exists
+            // Check if this slip number already exists in the database
+            // This check is outside the counter's transaction but inside the main play() transaction (before commit)
+            // It ensures uniqueness against already committed records.
             $exists = DB::table('two_bets')->where('slip_no', $slipNo)->exists();
             
             if (!$exists) {
                 return $slipNo;
             }
             
-            // If we've tried too many times, add a random component
+            // If we've tried too many times, add a random component as a last resort
             if ($attempt >= $maxRetries) {
                 $randomSuffix = sprintf('%04d', mt_rand(1000, 9999));
                 return $slipNo . '-' . $randomSuffix;
             }
             
+            // Wait a tiny bit before retrying to ensure microtime changes
+            usleep(100); // Sleep for 100 microseconds
+
         } while (true);
     }
     
     /**
-     * Generates a slip number using the counter.
+     * Generates the base slip number by incrementing the counter within a transaction.
+     * This ensures the counter increment is atomic.
      */
-    private function generateSlipNumber(): string
+    private function generateBaseSlipNumberWithCounter(): string
     {
         $currentDate = Carbon::now()->format('Ymd'); // e.g., 20250628
         $currentTime = Carbon::now()->format('His'); // e.g., 143005
         $customString = 'mk-2d';
 
-        // Use a database transaction to ensure atomicity
+        // Use a database transaction to ensure atomicity for the counter increment
         return DB::transaction(function () use ($currentDate, $currentTime, $customString) {
             // Get the current counter or create one if it doesn't exist
+            // Using `lockForUpdate()` ensures that concurrent requests will wait
+            // for the current transaction to finish before reading/updating the counter.
             $counter = SlipNumberCounter::lockForUpdate()->firstOrCreate(
                 ['id' => 1], 
                 ['current_number' => 0]
