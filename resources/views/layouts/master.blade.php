@@ -330,6 +330,48 @@
                                 </ul>
                             </li>
                         @endcan
+
+                        <!-- 2D -->
+
+                        @can('owner_access')
+                            <li
+                                class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-tools"></i>
+                                    <p>
+                                        2D
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.twod.settings') }}"
+                                            class="nav-link {{ Route::current()->getName() == 'admin.twod.settings' ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>2D Settings</p>
+                                        </a>
+                                    </li>
+                                    <!-- <li class="nav-item">
+                                        <a href="{{ route('admin.gametypes.index') }}"
+                                            class="nav-link {{ Route::current()->getName() == 'admin.gametypes.index' ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>GSCPLUS Provider</p>
+                                        </a>
+                                    </li> -->
+
+                                    <!-- <li class="nav-item">
+                                        <a href=""
+                                            class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>GSC GameType</p>
+                                        </a>
+                                    </li> -->
+                                </ul>
+                            </li>
+                        @endcan
+
+                        <!--  -->
+                        
                         <li
                             class="nav-item">
                             <a href="#" class="nav-link">

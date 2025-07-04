@@ -225,7 +225,7 @@ Route::group([
     Route::post('/game-lists/{id}/update-order', [GameListController::class, 'updateOrder'])->name('GameListOrderUpdate');
 
     // two digit start
-    Route::get('head-close-digit', [TwoDigitController::class, 'headCloseDigit'])->name('head-close-digit');
+    Route::get('twod/settings', [TwoDigitController::class, 'headCloseDigit'])->name('twod.settings');
     Route::get('choose-close-digit', [TwoDigitController::class, 'chooseCloseDigit'])->name('choose-close-digit');
     Route::post('head-close-digit/toggle-status', [TwoDigitController::class, 'toggleStatus'])->name('head-close-digit.toggle-status');
     Route::post('choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleStatus'])->name('choose-close-digit.toggle-status');
