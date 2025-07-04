@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\TwoDigit\TwoBetSlip;
+use App\Models\TwoDigit\TwoBetSlip; // Ensure this is correctly imported if you are using it
 
 class TwoDPlayService
 {
@@ -69,22 +69,9 @@ class TwoDPlayService
             }
 
             // Generate a unique slip number ONCE for this entire batch of bets
-            // $slipNo = $this->generateUniqueSlipNumber();
-            // Log::info("Generated Slip No for batch: {$slipNo}");
-
-            $currentDate = Carbon::now()->format('Y-m-d'); // Format the date and time as needed
-            $currentTime = Carbon::now()->format('H:i:s');
-            $customString = 'mk-2d';
-            
-            $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
-            // Increment the counter and get the new value
-            $newNumber = $counter->increment('current_number');
-            Log::info("New number: {$newNumber}");
-            $randomNumber = sprintf('%06d', $newNumber); 
-            Log::info("Random number: {$randomNumber}");
-
-            $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime;
-            Log::info("Slip No: {$slipNo}");
+            // This method now incorporates the counter increment and uniqueness check
+            $slipNo = $this->generateUniqueSlipNumber();
+            Log::info("Generated Slip No for batch: {$slipNo}");
 
             $beforeBalance = $user->main_balance;
 
@@ -94,7 +81,8 @@ class TwoDPlayService
 
             $afterBalance = $user->main_balance;
 
-            TwoBetSlip::create([
+            // Create the TwoBetSlip record first
+            $twoBetSlip = TwoBetSlip::create([
                 'slip_no' => $slipNo,
                 'user_id' => $user->id,
                 'total_bet_amount' => $totalBetAmount,
@@ -110,9 +98,8 @@ class TwoDPlayService
 
                 $chooseDigit = ChooseDigit::where('choose_close_digit', $twoDigit)->first();
                 $headClose = HeadClose::where('head_close_digit', substr($twoDigit, 0, 1))->first();
-                $slip = TwoBetSlip::where('slip_no', $slipNo)->first();
+                // Removed: $slip = TwoBetSlip::where('slip_no', $slipNo)->first(); // Not needed, use $twoBetSlip object
 
-            
                 TwoBet::create([
                     'user_id' => $user->id,
                     'member_name' => $user->user_name,
@@ -122,17 +109,15 @@ class TwoDPlayService
                     'agent_id' => $user->agent_id,
                     'bet_number' => $twoDigit,
                     'bet_amount' => $subAmount,
-                    //'total_bet_amount' => $totalBetAmount,
+                    // 'total_bet_amount' is now on TwoBetSlip, remove from individual TwoBet
                     'session' => $sessionType,
                     'win_lose' => false,
                     'potential_payout' => 0,
                     'bet_status' => false,
                     'game_date' => $gameDate,
                     'game_time' => $gameTime,
-                    'slip_id' => $slip->id,
-                    //'slip_no' => $slipNo, // Use the single generated slip number for all bets in this batch
-                    //'before_balance' => $beforeBalance,
-                    //'after_balance' => $afterBalance,
+                    'slip_id' => $twoBetSlip->id, // Link to the TwoBetSlip record
+                    // 'slip_no', 'before_balance', 'after_balance' are now on TwoBetSlip, remove from individual TwoBet
                 ]);
             }
 
@@ -191,6 +176,11 @@ class TwoDPlayService
                 continue;
             }
 
+            // Important: Now sum from two_bet_slips join two_bets
+            // To get accurate "total bet on a digit" for *all* bets, you still query two_bets
+            // However, if you are checking limits based on *individual* bets,
+            // the previous logic for totalBetAmountForTwoDigit and userBetAmountOnThisDigit holds.
+            // Assuming these limits are per digit across *all* bets, not just current slip.
             $totalBetAmountForTwoDigit = DB::table('two_bets')
                 ->where('game_date', $gameDate)
                 ->where('session', $sessionType)
@@ -238,9 +228,9 @@ class TwoDPlayService
             // and the desired date/time format.
             $slipNo = $this->generateBaseSlipNumberWithCounter();
             
-            // Check if this generated slip number already exists in the database.
+            // Check if this generated slip number already exists in the two_bet_slips table.
             // This check is crucial for ensuring uniqueness, especially under high concurrency.
-            $exists = DB::table('two_bets')->where('slip_no', $slipNo)->exists();
+            $exists = DB::table('two_bet_slips')->where('slip_no', $slipNo)->exists(); // IMPORTANT: Check two_bet_slips table
             
             if (!$exists) {
                 return $slipNo; // Found a unique slip number, return it
@@ -250,19 +240,15 @@ class TwoDPlayService
             Log::warning("Slip number collision detected (attempt {$attempt}): {$slipNo}");
 
             // If collision, wait briefly and retry.
-            // A small random sleep can help in high concurrency scenarios by allowing
-            // other transactions to commit and potentially free up the conflicting slip_no,
-            // or simply ensure the next counter increment is distinct.
             usleep(rand(100, 500)); // Sleep for 100-500 microseconds
 
-            // If max retries reached, it indicates a severe issue (e.g., counter not advancing,
-            // or extremely high and persistent collision rate).
+            // If max retries reached, it indicates a severe issue.
             if ($attempt >= $maxRetries) {
                 Log::critical("Failed to generate unique slip number after {$maxRetries} attempts. Last attempt: {$slipNo}");
                 throw new \Exception("Could not generate a unique slip number. Please try again.");
             }
             
-        } while (true); // Continue retrying until a unique number is found or max retries are hit
+        } while (true);
     }
     
     /**
@@ -274,16 +260,25 @@ class TwoDPlayService
     {
         $currentDate = Carbon::now()->format('Y-m-d'); // e.g., 2025-07-04
         $currentTime = Carbon::now()->format('H:i:s'); // e.g., 02:28:51
-        $customString = 'mk-2d'; // Your custom string as requested
+        $customString = 'mk-2d'; // Your custom string
 
-        $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
-        // Increment the counter and get the new value
-        $newNumber = $counter->increment('current_number');
-        $randomNumber = sprintf('%06d', $newNumber); // Use the returned value from increment
+        // IMPORTANT: Use a database transaction and `lockForUpdate()` to ensure atomicity.
+        return DB::transaction(function () use ($currentDate, $currentTime, $customString) {
+            // Get the current counter record or create it if it doesn't exist.
+            // `lockForUpdate()` prevents other transactions from reading/updating this row
+            // until this transaction commits, thus preventing race conditions on the counter.
+            $counter = SlipNumberCounter::lockForUpdate()->firstOrCreate(
+                ['id' => 1],
+                ['current_number' => 0]
+            );
             
-        $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime; // Combine date, string, and random number    
+            // Increment the counter and get the new value. This is now safe.
+            $newNumber = $counter->increment('current_number');
+            // Format the counter to be a 6-digit number with leading zeros.
+            $paddedCounter = sprintf('%06d', $newNumber);
 
-        // Assemble the slip number in the requested format.
-        return "{$slipNo}";
+            // Assemble the slip number in the requested format.
+            return "{$paddedCounter}-{$customString}-{$currentDate}-{$currentTime}";
+        });
     }
 }
