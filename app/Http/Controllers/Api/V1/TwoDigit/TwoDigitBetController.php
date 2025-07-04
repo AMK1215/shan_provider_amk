@@ -67,13 +67,15 @@ class TwoDigitBetController extends Controller
             if (is_string($result)) {
                 // If the service returns a string, it's an error message
                 // This covers 'Insufficient funds.', 'Resource not found.', or general exceptions
-                if ($result === 'Insufficient funds in your wallet.') {
+                if ($result === 'Insufficient funds in your main balance.') {
                     return $this->error('Insufficient Funds', 'လက်ကျန်ငွေ မလုံလောက်ပါ။', 400); // 400 Bad Request for client-side issue
                 } elseif ($result === 'Required resource (e.g., 2D Limit) not found.') {
                     return $this->error('Configuration Error', '2D limit configuration is missing. Please contact support.', 500);
                 } elseif ($result === 'Betting is currently closed. No active battle session found.') {
                     // Although checked above, defensive check in service is good.
                     return $this->error('Betting Closed', 'This 2D lottery Bettle is closed at this time. Welcome back next time!', 401);
+                } elseif ($result === 'Bet placed successfully.') {
+                    return $this->success(null, 'ထီအောင်မြင်စွာ ထိုးပြီးပါပြီ။');
                 } else {
                     // General service-side error
                     return $this->error('Betting Failed', $result, 400); // 400 or 500 depending on cause
@@ -85,9 +87,8 @@ class TwoDigitBetController extends Controller
 
                 return $this->error('Over Limit', $message, 400); // 400 Bad Request
             } else {
-                // If $result is not a string (error) or an array (over-limit digits), it's a success
-                // The service already handled the creation of TwoBet records and wallet deduction
-                return $this->success(null, 'ထီအောင်မြင်စွာ ထိုးပြီးပါပြီ။'); // Success message
+                // Defensive fallback: treat as error
+                return $this->error('Betting Failed', 'Unknown error occurred.', 400);
             }
 
         } catch (\Exception $e) {
