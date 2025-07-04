@@ -79,6 +79,7 @@ class TwoDPlayService
             $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
             // Increment the counter
             $counter->increment('current_number');
+            $counter->refresh(); // This will reload the model from the database
             $randomNumber = sprintf('%06d', $counter->current_number); 
 
             $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime;

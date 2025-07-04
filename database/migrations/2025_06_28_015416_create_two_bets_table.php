@@ -34,7 +34,7 @@ return new class extends Migration
             $table->string('bet_number'); // The 2-digit number (e.g., '05', '99')
             $table->decimal('bet_amount', 10, 2);
 
-            $table->decimal('total_bet_amount', 10, 2)->default(0);
+            //$table->decimal('total_bet_amount', 10, 2)->default(0);
             $table->enum('session', ['morning', 'evening']);
             $table->boolean('win_lose')->default(false);
             // 'potential_payout' for clarity if it's the winning amount
