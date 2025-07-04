@@ -84,6 +84,9 @@ class TwoDPlayService
                 return $overLimitDigits; // Return the list of digits that are over limit
             }
 
+            // Generate a unique slip number BEFORE starting the main transaction
+            $slipNo = $this->generateUniqueSlipNumber();
+
             // All checks passed, proceed with deducting balance and creating bets
             $beforeBalance = $user->main_balance;
 
@@ -93,9 +96,6 @@ class TwoDPlayService
 
             // Retrieve the balance after saving for the record
             $afterBalance = $user->main_balance;
-
-            // Generate a unique slip number for the entire transaction batch
-            $slipNo = $this->generateUniqueSlipNumber();
 
             foreach ($amounts as $betDetail) {
                 $twoDigit = str_pad($betDetail['num'], 2, '0', STR_PAD_LEFT);
@@ -236,12 +236,17 @@ class TwoDPlayService
      */
     protected function generateUniqueSlipNumber(): string
     {
-        $maxRetries = 5;
+        $maxRetries = 10;
         $attempt = 0;
         
         do {
             $attempt++;
             $slipNo = $this->generateSlipNumber();
+            
+            // Add microseconds to make it more unique
+            $microtime = microtime(true);
+            $microseconds = sprintf('%06d', ($microtime - floor($microtime)) * 1000000);
+            $slipNo = $slipNo . '-' . $microseconds;
             
             // Check if this slip number already exists
             $exists = DB::table('two_bets')->where('slip_no', $slipNo)->exists();
@@ -250,11 +255,10 @@ class TwoDPlayService
                 return $slipNo;
             }
             
-            // If we've tried too many times, add a microsecond to make it unique
+            // If we've tried too many times, add a random component
             if ($attempt >= $maxRetries) {
-                $microtime = microtime(true);
-                $microseconds = sprintf('%06d', ($microtime - floor($microtime)) * 1000000);
-                return $slipNo . '-' . $microseconds;
+                $randomSuffix = sprintf('%04d', mt_rand(1000, 9999));
+                return $slipNo . '-' . $randomSuffix;
             }
             
         } while (true);
