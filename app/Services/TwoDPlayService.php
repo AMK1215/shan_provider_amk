@@ -68,7 +68,6 @@ class TwoDPlayService
             }
 
             // Generate a unique slip number ONCE for this entire batch of bets
-            // It's crucial that this slip number is truly unique before we proceed
             $slipNo = $this->generateUniqueSlipNumber();
             Log::info("Generated Slip No for batch: {$slipNo}");
 
@@ -197,87 +196,79 @@ class TwoDPlayService
     }
 
     /**
-     * Generates a truly unique slip number by combining counter, microtime, and a random string.
+     * Generates a unique slip number by using an atomically incremented counter.
+     * It retries if a collision is detected, ensuring ultimate uniqueness.
      */
     protected function generateUniqueSlipNumber(): string
     {
-        $maxRetries = 20; // Increased max retries slightly
+        $maxRetries = 20; // Maximum attempts to generate a unique slip number
         $attempt = 0;
         
         do {
             $attempt++;
             
-            // Get base slip number which includes date, time, and atomic counter.
-            // This is the most critical part for sequential uniqueness.
-            $baseSlipNoWithCounter = $this->generateBaseSlipNumberWithCounter();
+            // Get the base slip number which includes the atomically incremented counter
+            // and the desired date/time format.
+            $slipNo = $this->generateBaseSlipNumberWithCounter();
             
-            // Append microtime for high granularity.
-            // Ensure microseconds are always 6 digits for consistent length.
-            $microtime = microtime(true);
-            $microseconds = sprintf('%06d', ($microtime - floor($microtime)) * 1000000);
-            
-            // Combine with a short, truly random string to virtually eliminate collisions.
-            // Using a strong random generator. bin2hex(random_bytes(2)) gives 4 hex chars.
-            $randomComponent = bin2hex(random_bytes(2)); // e.g., 'a1b3'
-            
-            $slipNo = "{$baseSlipNoWithCounter}-{$microseconds}-{$randomComponent}";
-            
-            // Check for existence in the database.
-            // This check is outside the counter's transaction but within the main play() transaction (before commit).
-            // It ensures uniqueness against *already committed* records.
-            // In case of very high concurrency and a rare collision *before* the commit, this will catch it.
+            // Check if this generated slip number already exists in the database.
+            // This check is crucial for ensuring uniqueness, especially under high concurrency.
             $exists = DB::table('two_bets')->where('slip_no', $slipNo)->exists();
             
             if (!$exists) {
-                return $slipNo;
+                return $slipNo; // Found a unique slip number, return it
             }
             
-            // Log if a collision was detected, so you can monitor frequency.
+            // If a collision was detected, log it for monitoring purposes.
             Log::warning("Slip number collision detected (attempt {$attempt}): {$slipNo}");
 
             // If collision, wait briefly and retry.
-            // Sleeping helps ensure microtime changes and gives other transactions a chance to commit.
+            // A small random sleep can help in high concurrency scenarios by allowing
+            // other transactions to commit and potentially free up the conflicting slip_no,
+            // or simply ensure the next counter increment is distinct.
             usleep(rand(100, 500)); // Sleep for 100-500 microseconds
 
-            // After several attempts, if still colliding, increase random component length or throw.
+            // If max retries reached, it indicates a severe issue (e.g., counter not advancing,
+            // or extremely high and persistent collision rate).
             if ($attempt >= $maxRetries) {
-                // This scenario should be extremely rare with the current generation method.
-                // If it happens, it indicates a severe concurrency bottleneck or system clock issue.
-                // You might consider throwing an exception here instead of forcing a retry.
                 Log::critical("Failed to generate unique slip number after {$maxRetries} attempts. Last attempt: {$slipNo}");
                 throw new \Exception("Could not generate a unique slip number. Please try again.");
             }
             
-        } while (true);
+        } while (true); // Continue retrying until a unique number is found or max retries are hit
     }
     
     /**
-     * Generates the base slip number by incrementing the counter within a transaction.
-     * This ensures the counter increment is atomic and isolated.
+     * Generates the base slip number by incrementing the counter within a database transaction.
+     * This ensures the counter increment is atomic and reliable.
+     * The format will be: NNNNNN-customString-YYYY-MM-DD-HH:MM:SS
      */
     private function generateBaseSlipNumberWithCounter(): string
     {
-        $currentDate = Carbon::now()->format('Ymd');
-        $currentTime = Carbon::now()->format('His'); // Time in seconds
+        $currentDate = Carbon::now()->format('Y-m-d'); // e.g., 2025-07-04
+        $currentTime = Carbon::now()->format('H:i:s'); // e.g., 02:28:51
+        $customString = 'shwebo-2d'; // Your custom string as requested
 
-        $customString = 'mk-2d';
-
-        // Use a database transaction and lock to ensure atomicity for the counter increment
+        // Use a database transaction and `lockForUpdate()` to ensure that the counter
+        // is incremented atomically and no other concurrent transaction can read/update
+        // the counter until this transaction completes. This is crucial for preventing
+        // duplicate counter values under high load.
         return DB::transaction(function () use ($currentDate, $currentTime, $customString) {
-            // lockForUpdate() acquires a shared lock for "update", which prevents other transactions
-            // from acquiring an exclusive lock on the same row until this transaction commits.
-            // For a single counter row, this effectively serializes access to it.
+            // Get the current counter record or create it if it doesn't exist.
+            // `lockForUpdate()` ensures that this row is locked for the duration of the transaction.
             $counter = SlipNumberCounter::lockForUpdate()->firstOrCreate(
                 ['id' => 1], 
                 ['current_number' => 0]
             );
             
             // Increment the counter and get the new value.
-            // This happens atomically within the locked transaction.
+            // This operation is safe due to the lock.
             $newNumber = $counter->increment('current_number');
+            // Format the counter to be a 6-digit number with leading zeros.
             $paddedCounter = sprintf('%06d', $newNumber);
 
-            return "{$customString}-{$currentDate}-{$currentTime}-{$paddedCounter}";
+            // Assemble the slip number in the requested format.
+            return "{$paddedCounter}-{$customString}-{$currentDate}-{$currentTime}";
         });
     }
 }
