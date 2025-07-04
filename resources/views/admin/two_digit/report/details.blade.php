@@ -37,7 +37,7 @@
                 </div>
             </div>
             <div class="col-sm-4 text-right">
-                <a href="{{ url()->previous() }}" class="btn btn-outline-secondary mt-2">
+                <a href="{{ route('admin.twod.bet-slip-list') }}" class="btn btn-outline-primary mt-2">
                     <i class="fa fa-arrow-left"></i> Back
                 </a>
             </div>
