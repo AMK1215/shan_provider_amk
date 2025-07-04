@@ -88,7 +88,8 @@
                                             @endif
                                         </td>
                                         <td>{{ \Carbon\Carbon::parse($bet->game_time)->setTimezone('Asia/Yangon')->format('H:i:s') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($bet->game_date . ' ' . $bet->game_time)->setTimezone('Asia/Yangon')->format('Y-m-d') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($bet->game_date)->setTimezone('Asia/Yangon')->format('Y-m-d') }}
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
