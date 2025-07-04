@@ -36,10 +36,8 @@ class TwoBet extends Model
         'bet_result',
         'game_date', // Adjusted based on previous suggestions
         'game_time', // Adjusted based on previous suggestions
-        'slip_no',
-        'before_balance',
-        'after_balance',
         'prize_sent',
+        'slip_id',
     ];
 
     // Cast properties for automatic type conversion
