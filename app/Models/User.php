@@ -14,6 +14,7 @@ use App\Models\Admin\Role;
 use App\Models\Admin\TopTenWithdraw;
 use App\Models\PlaceBet;
 use App\Models\TwoDigit\TwoBet;
+use App\Models\TwoDigit\TwoBetSlip;
 use Bavix\Wallet\Interfaces\Wallet;
 use Bavix\Wallet\Traits\HasWallet;
 use Bavix\Wallet\Traits\HasWalletFloat;
@@ -291,5 +292,10 @@ class User extends Authenticatable implements Wallet
     public function placedBetsAsAgent()
     {
         return $this->hasMany(TwoBet::class, 'agent_id');
+    }
+
+    public function twoBetSlips()
+    {
+        return $this->hasMany(TwoBetSlip::class, 'user_id');
     }
 }

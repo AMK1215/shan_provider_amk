@@ -91,6 +91,14 @@ class TwoDPlayService
 
             $afterBalance = $user->main_balance;
 
+            TwoBetSlip::create([
+                'slip_no' => $slipNo,
+                'user_id' => $user->id,
+                'total_bet_amount' => $totalBetAmount,
+                'session' => $sessionType,
+                'status' => 'pending',
+            ]);
+
             foreach ($amounts as $betDetail) {
                 $twoDigit = str_pad($betDetail['num'], 2, '0', STR_PAD_LEFT);
                 $subAmount = $betDetail['amount'];
@@ -108,16 +116,16 @@ class TwoDPlayService
                     'agent_id' => $user->agent_id,
                     'bet_number' => $twoDigit,
                     'bet_amount' => $subAmount,
-                    'total_bet_amount' => $totalBetAmount,
+                    //'total_bet_amount' => $totalBetAmount,
                     'session' => $sessionType,
                     'win_lose' => false,
                     'potential_payout' => 0,
                     'bet_status' => false,
                     'game_date' => $gameDate,
                     'game_time' => $gameTime,
-                    'slip_no' => $slipNo, // Use the single generated slip number for all bets in this batch
-                    'before_balance' => $beforeBalance,
-                    'after_balance' => $afterBalance,
+                    //'slip_no' => $slipNo, // Use the single generated slip number for all bets in this batch
+                    //'before_balance' => $beforeBalance,
+                    //'after_balance' => $afterBalance,
                 ]);
             }
 
