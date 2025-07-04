@@ -79,10 +79,12 @@ class TwoDPlayService
             $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
             // Increment the counter and get the new value
             $newNumber = $counter->increment('current_number');
+            Log::info("New number: {$newNumber}");
             $randomNumber = sprintf('%06d', $newNumber); 
+            Log::info("Random number: {$randomNumber}");
 
             $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime;
-
+            Log::info("Slip No: {$slipNo}");
 
             $beforeBalance = $user->main_balance;
 
