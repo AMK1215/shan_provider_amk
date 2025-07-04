@@ -234,5 +234,6 @@ Route::group([
     Route::post('two-d-limit/store', [TwoDigitController::class, 'storeTwoDLimit'])->name('two-d-limit.store');
     // 2d bet slip list
     Route::get('twod/bet-slip-list', [TwoDigitController::class, 'betSlipList'])->name('twod.bet-slip-list');
+    Route::get('twod/bet-slip-details/{slip_id}', [TwoDigitController::class, 'betSlipDetails'])->name('twod.bet-slip-details');
     // two digit end
 });

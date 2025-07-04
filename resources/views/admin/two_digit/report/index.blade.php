@@ -57,7 +57,7 @@
                                     <td>{{ ucfirst($slip->session) }}</td>
                                     <td>{{ $slip->created_at->format('Y-m-d H:i') }}</td>
                                     <td>
-                                        <a href="{{ route('two_bet_slip.show', $slip->id) }}" class="btn btn-sm btn-info" title="View Details">
+                                        <a href="{{ route('admin.twod.bet-slip-details', $slip->id) }}" class="btn btn-sm btn-info" title="View Details">
                                             <i class="fa fa-eye"></i>
                                         </a>
                                     </td>

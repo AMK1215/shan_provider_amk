@@ -64,6 +64,37 @@ public function betSlipList(Request $request)
     return view('admin.two_digit.report.index', compact('slips'));
 }
 
+public function betSlipDetails($slip_id)
+{
+    $user = auth()->user();
+
+    // Fetch the slip (with user/agent relationships if needed)
+    $slip = TwoBetSlip::with('user')->findOrFail($slip_id);
+
+    // Only allow owner, or the agent whose player placed this slip, or the player himself
+    if ($user->hasRole('Owner')) {
+        // Owner can see all
+    } elseif ($user->hasRole('Agent')) {
+        // Agent: Only see their own players' slips
+        $agentPlayerIds = $user->getAllDescendantPlayers()->pluck('id')->toArray();
+        if (!in_array($slip->user_id, $agentPlayerIds)) {
+            abort(403, 'Unauthorized');
+        }
+    } elseif ($user->id != $slip->user_id) {
+        // Player: Only own slips
+        abort(403, 'Unauthorized');
+    }
+
+    // Fetch all bets for this slip, with player info
+    $bets = TwoBet::where('slip_id', $slip->id)
+        ->with('user')
+        ->orderBy('id')
+        ->get();
+
+    // Return Blade partial for AJAX load
+    return view('admin.two_digit.report.detail', compact('bets', 'slip'));
+}
+
 
     // head close digit
     public function headCloseDigit()
