@@ -10,6 +10,8 @@ use App\Models\TwoDigit\TwoDLimit; // Import JsonResponse
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\TwoDigit\TwoBet;
+use App\Models\TwoDigit\TwoBetSlip;
 
 class TwoDigitController extends Controller
 {
