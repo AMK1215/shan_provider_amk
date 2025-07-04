@@ -68,8 +68,19 @@ class TwoDPlayService
             }
 
             // Generate a unique slip number ONCE for this entire batch of bets
-            $slipNo = $this->generateUniqueSlipNumber();
-            Log::info("Generated Slip No for batch: {$slipNo}");
+            // $slipNo = $this->generateUniqueSlipNumber();
+            // Log::info("Generated Slip No for batch: {$slipNo}");
+
+            $currentDate = Carbon::now()->format('Y-m-d'); // Format the date and time as needed
+            $currentTime = Carbon::now()->format('H:i:s');
+            $customString = 'mk-2d';
+            
+            $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
+            // Increment the counter
+            $counter->increment('current_number');
+            $randomNumber = sprintf('%06d', $counter->current_number); 
+
+            $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime;
 
 
             $beforeBalance = $user->main_balance;
@@ -87,6 +98,7 @@ class TwoDPlayService
                 $chooseDigit = ChooseDigit::where('choose_close_digit', $twoDigit)->first();
                 $headClose = HeadClose::where('head_close_digit', substr($twoDigit, 0, 1))->first();
 
+            
                 TwoBet::create([
                     'user_id' => $user->id,
                     'member_name' => $user->user_name,
