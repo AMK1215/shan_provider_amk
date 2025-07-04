@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\TwoDigit\TwoDigitBetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +97,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Player game logs
     Route::get('/player/game-logs', [GameLogController::class, 'index']);
     Route::get('user', [AuthController::class, 'getUser']);
+    // 2d route 
+    Route::post('/twod-bet', [TwoDigitBetController::class, 'store']);
 
 });
 
