@@ -351,13 +351,14 @@
                                             <p>2D Settings</p>
                                         </a>
                                     </li>
-                                    <!-- <li class="nav-item">
-                                        <a href="{{ route('admin.gametypes.index') }}"
-                                            class="nav-link {{ Route::current()->getName() == 'admin.gametypes.index' ? 'active' : '' }}">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>GSCPLUS Provider</p>
-                                        </a>
-                                    </li> -->
+
+                                        <li class="nav-item">
+                                            <a href="{{ route('admin.twod.bet-slip-list') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.twod.bet-slip-list' ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>2D Bet Slip List</p>
+                                            </a>
+                                        </li>
 
                                     <!-- <li class="nav-item">
                                         <a href=""

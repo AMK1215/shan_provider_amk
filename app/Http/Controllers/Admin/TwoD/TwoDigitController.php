@@ -13,6 +13,58 @@ use Illuminate\Support\Facades\Log;
 
 class TwoDigitController extends Controller
 {
+    // 2d report
+    public function index(Request $request)
+{
+    $session = $request->input('session'); // 'morning'/'evening'
+    $date = $request->input('date') ?? now()->toDateString();
+
+    $user = auth()->user();
+
+    if ($user->hasRole('Owner')) {
+        $bets = TwoBet::where('session', $session)
+            ->where('game_date', $date)
+            ->with(['user', 'agent'])
+            ->get();
+    } elseif ($user->hasRole('Agent')) {
+        $playerIds = $user->getAllDescendantPlayers()->pluck('id');
+        $bets = TwoBet::whereIn('user_id', $playerIds)
+            ->where('session', $session)
+            ->where('game_date', $date)
+            ->with('user')
+            ->get();
+    } else {
+        // Player
+        $bets = TwoBet::where('user_id', $user->id)
+            ->where('session', $session)
+            ->where('game_date', $date)
+            ->get();
+    }
+
+    return view('admin.two_digit.report.index', compact('bets'));
+}
+
+public function betSlipList(Request $request)
+{
+    $session = $request->input('session', 'morning'); // or get from dropdown
+    $date = $request->input('date', now()->toDateString());
+
+    $query = \App\Models\TwoDigit\TwoBetSlip::where('session', $session)
+        ->whereDate('created_at', $date);
+
+    // Optional: filter for agent/owner role
+    if (auth()->user()->hasRole('Agent')) {
+        // Only agent's players
+        $playerIds = auth()->user()->getAllDescendantPlayers()->pluck('id');
+        $query->whereIn('user_id', $playerIds);
+    }
+
+    $slips = $query->latest()->paginate(30); // Or get(), or datatables
+
+    return view('admin.two_digit.report.index', compact('slips'));
+}
+
+
     // head close digit
     public function headCloseDigit()
     {

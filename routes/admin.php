@@ -232,5 +232,7 @@ Route::group([
     Route::post('choose-close-digit/toggle-status', [TwoDigitController::class, 'toggleChooseDigitStatus'])->name('choose-close-digit.toggle-status');
     Route::post('battle/toggle-status', [TwoDigitController::class, 'toggleBattleStatus'])->name('battle.toggle-status');
     Route::post('two-d-limit/store', [TwoDigitController::class, 'storeTwoDLimit'])->name('two-d-limit.store');
+    // 2d bet slip list
+    Route::get('twod/bet-slip-list', [TwoDigitController::class, 'betSlipList'])->name('twod.bet-slip-list');
     // two digit end
 });
