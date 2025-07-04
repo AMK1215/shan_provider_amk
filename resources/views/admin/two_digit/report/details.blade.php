@@ -71,7 +71,7 @@
                                 @foreach($bets as $i => $bet)
                                     <tr>
                                         <td>{{ $i + 1 }}</td>
-                                        <td>{{ optional($bet->agent)->agent_name }}</td>
+                                        <td>{{ optional($bet->agent)->user_name }}</td>
                                         <td>{{ optional($bet->user)->user_name }}</td>
                                         <td>
                                             <span class="font-weight-bold text-primary">{{ $bet->bet_number }}</span>
