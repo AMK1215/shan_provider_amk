@@ -250,9 +250,9 @@ class TwoDPlayService
         $customString = 'mk-2d'; // Your custom string as requested
 
         $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
-        // Increment the counter
-        $counter->increment('current_number');
-        $randomNumber = sprintf('%06d', $counter->current_number); // Ensure it's a 6-digit number with leading zeros
+        // Increment the counter and get the new value
+        $newNumber = $counter->increment('current_number');
+        $randomNumber = sprintf('%06d', $newNumber); // Use the returned value from increment
             
         $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime; // Combine date, string, and random number    
 
