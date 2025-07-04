@@ -247,28 +247,16 @@ class TwoDPlayService
     {
         $currentDate = Carbon::now()->format('Y-m-d'); // e.g., 2025-07-04
         $currentTime = Carbon::now()->format('H:i:s'); // e.g., 02:28:51
-        $customString = 'shwebo-2d'; // Your custom string as requested
+        $customString = 'mk-2d'; // Your custom string as requested
 
-        // Use a database transaction and `lockForUpdate()` to ensure that the counter
-        // is incremented atomically and no other concurrent transaction can read/update
-        // the counter until this transaction completes. This is crucial for preventing
-        // duplicate counter values under high load.
-        return DB::transaction(function () use ($currentDate, $currentTime, $customString) {
-            // Get the current counter record or create it if it doesn't exist.
-            // `lockForUpdate()` ensures that this row is locked for the duration of the transaction.
-            $counter = SlipNumberCounter::lockForUpdate()->firstOrCreate(
-                ['id' => 1], 
-                ['current_number' => 0]
-            );
+        $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
+        // Increment the counter
+        $counter->increment('current_number');
+        $randomNumber = sprintf('%06d', $counter->current_number); // Ensure it's a 6-digit number with leading zeros
             
-            // Increment the counter and get the new value.
-            // This operation is safe due to the lock.
-            $newNumber = $counter->increment('current_number');
-            // Format the counter to be a 6-digit number with leading zeros.
-            $paddedCounter = sprintf('%06d', $newNumber);
+        $slipNo = $randomNumber.'-'.$customString.'-'.$currentDate.'-'.$currentTime; // Combine date, string, and random number    
 
-            // Assemble the slip number in the requested format.
-            return "{$paddedCounter}-{$customString}-{$currentDate}-{$currentTime}";
-        });
+        // Assemble the slip number in the requested format.
+        return "{$slipNo}";
     }
 }
