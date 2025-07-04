@@ -94,7 +94,7 @@ public function betSlipDetails($slip_id)
         ->get();
 
     // Return Blade partial for AJAX load
-    return view('admin.two_digit.report.detail', compact('bets', 'slip'));
+    return view('admin.two_digit.report.details', compact('bets', 'slip'));
 }
 
 
