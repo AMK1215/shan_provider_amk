@@ -236,16 +236,52 @@ class TwoDPlayService
      */
     protected function generateUniqueSlipNumber(): string
     {
+        $maxRetries = 5;
+        $attempt = 0;
+        
+        do {
+            $attempt++;
+            $slipNo = $this->generateSlipNumber();
+            
+            // Check if this slip number already exists
+            $exists = DB::table('two_bets')->where('slip_no', $slipNo)->exists();
+            
+            if (!$exists) {
+                return $slipNo;
+            }
+            
+            // If we've tried too many times, add a microsecond to make it unique
+            if ($attempt >= $maxRetries) {
+                $microtime = microtime(true);
+                $microseconds = sprintf('%06d', ($microtime - floor($microtime)) * 1000000);
+                return $slipNo . '-' . $microseconds;
+            }
+            
+        } while (true);
+    }
+    
+    /**
+     * Generates a slip number using the counter.
+     */
+    private function generateSlipNumber(): string
+    {
         $currentDate = Carbon::now()->format('Ymd'); // e.g., 20250628
         $currentTime = Carbon::now()->format('His'); // e.g., 143005
         $customString = 'mk-2d';
 
-        // Get the current counter or create one if it doesn't exist
-        $counter = SlipNumberCounter::firstOrCreate(['id' => 1], ['current_number' => 0]);
-        // Increment the counter
-        $counter->increment('current_number');
-        $randomNumber = sprintf('%06d', $counter->current_number); // Ensure it's a 6-digit number with leading zeros
+        // Use a database transaction to ensure atomicity
+        return DB::transaction(function () use ($currentDate, $currentTime, $customString) {
+            // Get the current counter or create one if it doesn't exist
+            $counter = SlipNumberCounter::lockForUpdate()->firstOrCreate(
+                ['id' => 1], 
+                ['current_number' => 0]
+            );
+            
+            // Increment the counter and get the new value
+            $newNumber = $counter->increment('current_number');
+            $randomNumber = sprintf('%06d', $newNumber);
 
-        return "{$customString}-{$currentDate}-{$currentTime}-{$randomNumber}";
+            return "{$customString}-{$currentDate}-{$currentTime}-{$randomNumber}";
+        });
     }
 }
