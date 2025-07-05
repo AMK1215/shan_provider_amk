@@ -324,18 +324,33 @@
                     <div class="col-4"> 
                         <h4 class="mb-3">Manage TwoD Result</h4>
                         <div class="horizontal-bar-group">
+                        @if($twoDResult)
                         <div class="digit-box-modern">
-                            <h6>TwoD Result</h6>
+                            <h6>Win Number</h6>
                             <p>{{ number_format($twoDResult->win_number, 0, '.', ',') }}</p>
                         </div>
                         <div class="digit-box-modern">
-                            <h6>TwoD Result</h6>
-                            <p>{{ number_format($twoDResult->session, 0, '.', ',') }}</p>
+                            <h6>Session</h6>
+                            <p>{{ ucfirst($twoDResult->session) }}</p>
                         </div>
                         <div class="digit-box-modern">
-                            <h6>TwoD Result</h6>
-                            <p>{{ number_format($twoDResult->result_date, 0, '.', ',') }}</p>
+                            <h6>Result Date</h6>
+                            <p>{{ $twoDResult->result_date }}</p>
                         </div>
+                        @else
+                        <div class="digit-box-modern">
+                            <h6>Win Number</h6>
+                            <p>No result yet</p>
+                        </div>
+                        <div class="digit-box-modern">
+                            <h6>Session</h6>
+                            <p>No result yet</p>
+                        </div>
+                        <div class="digit-box-modern">
+                            <h6>Result Date</h6>
+                            <p>No result yet</p>
+                        </div>
+                        @endif
 
                          </div>                      
                     </div>
