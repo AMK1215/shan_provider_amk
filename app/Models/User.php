@@ -9,6 +9,7 @@ use App\Models\Admin\Banner;
 use App\Models\Admin\BannerAds;
 use App\Models\Admin\BannerText;
 use App\Models\Admin\Permission;
+use App\Models\Admin\ReportTransaction;
 use App\Models\Admin\Promotion;
 use App\Models\Admin\Role;
 use App\Models\Admin\TopTenWithdraw;
@@ -297,5 +298,10 @@ class User extends Authenticatable implements Wallet
     public function twoBetSlips()
     {
         return $this->hasMany(TwoBetSlip::class, 'user_id');
+    }
+
+    public function reportTransactionsAsPlayer()
+    {
+        return $this->hasMany(ReportTransaction::class, 'user_id');
     }
 }

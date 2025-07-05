@@ -497,25 +497,30 @@
                                         </p>
                                     </a>
                                 </li> -->
-                                @can('senior_owner_access')
-                                    <li class="nav-item menu-open">
-                                        <a href=""
-                                            class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>
-                                                Del SeamlessTransaction
-                                            </p>
-                                        </a>
-                                    </li>
-                                    {{-- <li class="nav-item menu-open">
-                                    <a href=""
-                                        class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                            Del PlayerTransaction
-                                        </p>
-                                    </a>
-                                </li> --}}
+                                @can('owner_access')
+                                <li
+                                class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-tools"></i>
+                                    <p>
+                                        Shan Player Report
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    
+
+                                        <li class="nav-item">
+                                                <a href="{{ route('admin.shan.player.report') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.shan.player.report' ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Shan Player Report</p>
+                                            </a>
+                                        </li>
+
+                                    
+                                </ul>
+                            </li>
                                 @endcan
                             </ul>
                         </li>

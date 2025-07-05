@@ -237,4 +237,6 @@ Route::group([
     Route::get('twod/bet-slip-details/{slip_id}', [TwoDigitController::class, 'betSlipDetails'])->name('twod.bet-slip-details');
     Route::post('two-d-result/store', [TwoDigitController::class, 'storeTwoDResult'])->name('two-d-result.store');
     // two digit end
+    // shan player report
+    Route::get('/shan-player-report', [ShanPlayerReportController::class, 'index'])->name('shan.player.report');
 });
