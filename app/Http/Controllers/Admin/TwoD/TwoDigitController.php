@@ -108,8 +108,10 @@ public function betSlipDetails($slip_id)
         $battles = Bettle::orderBy('start_time', 'asc')->get();
         // get lasted first two d limit
         $twoDLimit = TwoDLimit::orderBy('created_at', 'desc')->first();
+        // get last two d result
+        $twoDResult = TwoDResult::orderBy('created_at', 'desc')->first();
 
-        return view('admin.two_digit.close_digit.index', compact('headCloseDigits', 'chooseCloseDigits', 'battles', 'twoDLimit'));
+        return view('admin.two_digit.close_digit.index', compact('headCloseDigits', 'chooseCloseDigits', 'battles', 'twoDLimit', 'twoDResult'));
     }
 
     // choose close digit

@@ -324,20 +324,25 @@
                     <div class="col-4"> 
                         <h4 class="mb-3">Manage TwoD Result</h4>
                         <div class="horizontal-bar-group">
-                        <form action="{{ route('admin.two-d-result.store') }}" method="POST">
-                            @csrf
-                            <div class="form-group">
-                                <label for="two_d_result">TwoD Result</label>
-                                <input type="text" class="form-control" id="two_d_result" name="two_d_result" placeholder="Enter TwoD Result">
-                            </div>
-                            <button type="submit" class="btn btn-success">Add TwoD Result</button>
-                        </form>
+                        <div class="digit-box-modern">
+                            <h6>TwoD Result</h6>
+                            <p>{{ number_format($twoDResult->win_number, 0, '.', ',') }}</p>
+                        </div>
+                        <div class="digit-box-modern">
+                            <h6>TwoD Result</h6>
+                            <p>{{ number_format($twoDResult->session, 0, '.', ',') }}</p>
+                        </div>
+                        <div class="digit-box-modern">
+                            <h6>TwoD Result</h6>
+                            <p>{{ number_format($twoDResult->result_date, 0, '.', ',') }}</p>
+                        </div>
+
                          </div>                      
                     </div>
 
                     </div>
-                    <div class="card-tools">
-                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#headCloseDigitModal">
+                    <div class="card-tools justify-content-center mr-4">
+                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#resultDigitModal">
                                     <i class="fas fa-plus text-white mr-2"></i>Add TwoD Result
                                 </button>
                             </div>        
@@ -421,6 +426,66 @@
             </div>
         </div>
     </section>
+
+    <!-- TwoD Result Modal -->
+    <div class="modal fade" id="resultDigitModal" tabindex="-1" role="dialog" aria-labelledby="resultDigitModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultDigitModalLabel">Add TwoD Result</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route('admin.two-d-result.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="two_d_result">TwoD Result</label>
+                            <input type="text" class="form-control @error('two_d_result') is-invalid @enderror" 
+                                   id="two_d_result" name="two_d_result" 
+                                   placeholder="Enter TwoD Result" required>
+                            @error('two_d_result')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="session">Session</label>
+                            <select class="form-control @error('session') is-invalid @enderror" 
+                                   id="session" name="session" required>
+                            @error('session')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="result_date">Result Date</label>
+                            <input type="date" class="form-control @error('result_date') is-invalid @enderror" 
+                                   id="result_date" name="result_date" required>    
+                        </div>
+                        <div class="form-group">
+                            <label for="result_time">Result Time</label>
+                            <input type="time" class="form-control @error('result_time') is-invalid @enderror" 
+                                   id="result_time" name="result_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="battle_id">Battle</label>
+                            <select class="form-control @error('battle_id') is-invalid @enderror" 
+                                   id="battle_id" name="battle_id" required>
+                            @error('battle_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Add TwoD Result</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
 
     <!-- Head Close Digit Modal -->
     <div class="modal fade" id="headCloseDigitModal" tabindex="-1" role="dialog" aria-labelledby="headCloseDigitModalLabel" aria-hidden="true">
