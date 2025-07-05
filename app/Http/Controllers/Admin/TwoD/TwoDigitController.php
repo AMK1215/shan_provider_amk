@@ -255,28 +255,32 @@ public function betSlipDetails($slip_id)
     
     public function storeTwoDResult(Request $request)
     {
+        \Log::info('storeTwoDResult called', ['request' => $request->all()]);
         $request->validate([
             'win_number' => 'required|integer',
             'session' => 'required|string',
             'result_date' => 'required|date',
             'result_time' => 'required|date_format:H:i',
-            'battle_id' => 'nullable|exists:battles,id',
+           
         ]);
     
         DB::transaction(function () use ($request) {
             // 1. Save the result
+            $bettle = Bettle::where('status', 1)->first();
             $twoDResult = TwoDResult::create([
                 'win_number' => $request->win_number,
                 'session' => $request->session,
                 'result_date' => $request->result_date,
                 'result_time' => $request->result_time,
-                'battle_id' => $request->battle_id,
+                'battle_id' => $bettle->id,
             ]);
+            Log::info('TwoDResult created', ['twoDResult' => $twoDResult]);
     
             // 2. Find all bets for session/date
             $allBets = TwoBet::where('session', $request->session)
                 ->where('game_date', $request->result_date)
                 ->get();
+            Log::info('Fetched bets', ['count' => $allBets->count()]);
     
             // 3. Process each bet
             foreach ($allBets as $bet) {
@@ -290,17 +294,20 @@ public function betSlipDetails($slip_id)
                     if ($player) {
                         $player->main_balance += $prize;
                         $player->save();
+                        Log::info('Prize added to player', ['user_id' => $player->id, 'prize' => $prize]);
                     }
     
                     // Update bet as win
                     $bet->win_lose = true;
                     $bet->potential_payout = $prize;
                     $bet->prize_sent = true;
+                    Log::info('Bet marked as win', ['bet_id' => $bet->id, 'prize' => $prize]);
                 } else {
                     // Update bet as lose
                     $bet->win_lose = false;
                     $bet->potential_payout = 0;
                     $bet->prize_sent = false;
+                    Log::info('Bet marked as lose', ['bet_id' => $bet->id]);
                 }
     
                 // Update all common fields
@@ -310,9 +317,10 @@ public function betSlipDetails($slip_id)
             }
     
             // 4. Update all slips for this session/date to completed
-            TwoBetSlip::where('session', $request->session)
+            $updated = TwoBetSlip::where('session', $request->session)
                 ->whereDate('created_at', $request->result_date)
                 ->update(['status' => 'completed']);
+            Log::info('Updated slips to completed', ['updated_count' => $updated]);
         });
     
         return redirect()->route('admin.head-close-digit')->with('success', 'TwoD Result added and winners paid.');
