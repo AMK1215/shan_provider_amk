@@ -357,13 +357,13 @@
 
                     </div>
                     <div class="card-tools justify-content-center mr-4">
-                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#resultDigitModal">
-                                    <i class="fas fa-plus text-white mr-2"></i>Add TwoD Result
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#resultDigitModal">
+                                    <i class="fas fa-plus text-white mr-2"></i>Add TwoD Result &nbsp; &nbsp; &nbsp; &nbsp;
                                 </button>
                             </div>        
                     <div class="card-tools">
                                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#headCloseDigitModal">
-                                    <i class="fas fa-plus text-white mr-2"></i>Add TwoD Limit (Break)
+                                    <i class="fas fa-plus text-white mr-2"></i> Add TwoD Limit (Break)
                                 </button>
                             </div>
                         </div>
