@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('report_transactions', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'settled_win', 'settled_loss'])->default('pending')->after('member_account');
-            $table->string('wager_code')->unique()->after('status');
+            $table->enum('settled_status', ['pending', 'settled_win', 'settled_loss'])->default('pending')->after('member_account');
+            $table->string('wager_code')->unique()->after('settled_status');
             
         });
     }

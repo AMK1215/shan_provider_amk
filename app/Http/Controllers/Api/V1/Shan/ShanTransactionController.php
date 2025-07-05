@@ -233,7 +233,7 @@ class ShanTransactionController extends Controller
             'after_balance' => $newBalance,
             'banker' => 0, // Indicate this is a player transaction
             'wager_code' => $wager_code,
-            'status' => $status,
+            'settled_status' => $status,
         ]);
 
         Log::info('ShanTransaction: Player transaction and report record completed', [
