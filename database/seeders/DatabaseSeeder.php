@@ -103,6 +103,7 @@ class DatabaseSeeder extends Seeder
             HeadCloseSeeder::class,
             ChooseDigitSeeder::class,
             BattleTableSeeder::class,
+            OperatorSeeder::class,
 
         ]);
     }
