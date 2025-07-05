@@ -19,7 +19,7 @@ class ReportTransaction extends Model
 
     public $timestamps = true;
 
-    protected $fillable = ['user_id', 'transaction_amount', 'bet_amount', 'valid_amount', 'status', 'banker', 'before_balance', 'after_balance'];
+    protected $fillable = ['user_id', 'agent_id', 'member_account', 'transaction_amount', 'bet_amount', 'valid_amount', 'status', 'banker', 'before_balance', 'after_balance'];
 
     protected $casts = [
 
@@ -48,5 +48,10 @@ class ReportTransaction extends Model
     public function getValidAmountAttribute($value)
     {
         return number_format($value, 2);
+    }
+
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
     }
 }

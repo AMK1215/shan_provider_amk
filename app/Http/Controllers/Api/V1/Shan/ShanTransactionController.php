@@ -215,6 +215,8 @@ class ShanTransactionController extends Controller
         // Record player's transaction in report_transactions table
         ReportTransaction::create([
             'user_id' => $player->id,
+            'agent_id' => $player->agent_id,
+            'member_account' => $player->user_name,
             'transaction_amount' => abs($playerData['amount_changed']), // Store as positive value
             'status' => $playerData['win_lose_status'],
             'bet_amount' => $playerData['bet_amount'],
@@ -226,6 +228,8 @@ class ShanTransactionController extends Controller
 
         Log::info('ShanTransaction: Player transaction and report record completed', [
             'player_id' => $player->id,
+            'agent_id' => $player->agent_id,
+            'member_account' => $player->user_name,
             'old_balance' => $oldBalance,
             'new_balance' => $newBalance,
             'amount_changed' => $playerData['amount_changed'],
