@@ -217,7 +217,7 @@ public function betSlipDetails($slip_id)
             return response()->json(['success' => true, 'message' => 'Battle status updated successfully.']);
 
         } catch (\Exception $e) {
-            \Log::error('Failed to toggle Battle status: '.$e->getMessage(), [
+            Log::error('Failed to toggle Battle status: '.$e->getMessage(), [
                 'battle_id' => $request->id,
                 'requested_status' => $request->status,
                 'exception' => $e->getTraceAsString(),
@@ -255,29 +255,30 @@ public function betSlipDetails($slip_id)
     
     public function storeTwoDResult(Request $request)
     {
-        \Log::info('storeTwoDResult called', ['request' => $request->all()]);
+        Log::info('storeTwoDResult called', ['request' => $request->all()]);
         $request->validate([
             'win_number' => 'required|integer',
             'session' => 'required|string',
             'result_date' => 'required|date',
-            'result_time' => 'required|date_format:H:i',
-           
+            'result_time' => 'required|date_format:H:i',   
         ]);
     
         DB::transaction(function () use ($request) {
-            // 1. Save the result
             $bettle = Bettle::where('status', 1)->first();
+            // Enforce result_time based on session
+            $session = $request->session;
+            $result_time = $session === 'morning' ? '12:00' : ($session === 'evening' ? '16:30' : $request->result_time);
             $twoDResult = TwoDResult::create([
                 'win_number' => $request->win_number,
-                'session' => $request->session,
+                'session' => $session,
                 'result_date' => $request->result_date,
-                'result_time' => $request->result_time,
+                'result_time' => $result_time,
                 'battle_id' => $bettle->id,
             ]);
             Log::info('TwoDResult created', ['twoDResult' => $twoDResult]);
     
             // 2. Find all bets for session/date
-            $allBets = TwoBet::where('session', $request->session)
+            $allBets = TwoBet::where('session', $session)
                 ->where('game_date', $request->result_date)
                 ->get();
             Log::info('Fetched bets', ['count' => $allBets->count()]);
@@ -317,7 +318,7 @@ public function betSlipDetails($slip_id)
             }
     
             // 4. Update all slips for this session/date to completed
-            $updated = TwoBetSlip::where('session', $request->session)
+            $updated = TwoBetSlip::where('session', $session)
                 ->whereDate('created_at', $request->result_date)
                 ->update(['status' => 'completed']);
             Log::info('Updated slips to completed', ['updated_count' => $updated]);

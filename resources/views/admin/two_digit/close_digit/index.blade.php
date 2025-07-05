@@ -491,19 +491,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <!-- <div class="form-group">
-                            <label for="battle_id">Battle</label>
-                            <select class="form-control @error('battle_id') is-invalid @enderror" 
-                                   id="battle_id" name="battle_id" required aria-required="true">
-                                <option value="">Select battle</option>
-                                @foreach($battles as $battle)
-                                    <option value="{{ $battle->id }}">{{ $battle->name ?? ($battle->start_time . ' - ' . $battle->end_time) }}</option>
-                                @endforeach
-                            </select>
-                            @error('battle_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div> -->
+                       
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -778,6 +766,24 @@ function toggleBattleStatus(element) {
             showMessageBox('Error: ' + error.message, 'error');
         });
     }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const sessionSelect = document.getElementById('session');
+    const timeInput = document.getElementById('result_time');
+    function setTimeBySession() {
+        if (sessionSelect.value === 'morning') {
+            timeInput.value = '12:00';
+        } else if (sessionSelect.value === 'evening') {
+            timeInput.value = '16:30';
+        } else {
+            timeInput.value = '';
+        }
+    }
+    if (sessionSelect && timeInput) {
+        sessionSelect.addEventListener('change', setTimeBySession);
+        setTimeBySession(); // set on load
+    }
+});
 </script>
 
 @if (session()->has('success'))
