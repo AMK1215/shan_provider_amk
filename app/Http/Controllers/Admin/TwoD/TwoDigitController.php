@@ -257,19 +257,20 @@ public function betSlipDetails($slip_id)
     {
         Log::info('storeTwoDResult called', ['request' => $request->all()]);
         $request->validate([
-            'win_number' => 'required|integer',
+            'two_d_result' => 'required|integer',
             'session' => 'required|string',
             'result_date' => 'required|date',
             'result_time' => 'required|date_format:H:i',   
         ]);
+        $win_number = $request->two_d_result;
     
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request, $win_number) {
             $bettle = Bettle::where('status', 1)->first();
             // Enforce result_time based on session
             $session = $request->session;
             $result_time = $session === 'morning' ? '12:00' : ($session === 'evening' ? '16:30' : $request->result_time);
             $twoDResult = TwoDResult::create([
-                'win_number' => $request->win_number,
+                'win_number' => $win_number,
                 'session' => $session,
                 'result_date' => $request->result_date,
                 'result_time' => $result_time,
@@ -285,7 +286,7 @@ public function betSlipDetails($slip_id)
     
             // 3. Process each bet
             foreach ($allBets as $bet) {
-                $isWinner = $bet->bet_number == $request->win_number;
+                $isWinner = $bet->bet_number == $win_number;
     
                 if ($isWinner) {
                     $prize = $bet->bet_amount * 80;
@@ -313,7 +314,7 @@ public function betSlipDetails($slip_id)
     
                 // Update all common fields
                 $bet->bet_status = true; // settled
-                $bet->bet_result = $request->win_number;
+                $bet->bet_result = $win_number;
                 $bet->save();
             }
     
