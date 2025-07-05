@@ -39,7 +39,10 @@ class ShanTransactionController extends Controller
            // 'wager_code' => 'required|string|max:50' // unique idempotency key
         ]);
 
-        $wager_code = Str::random(10);
+        // Generate a unique wager_code
+        do {
+            $wager_code = Str::random(10);
+        } while (ReportTransaction::where('wager_code', $wager_code)->exists());
 
         // Step 2: Idempotency check (for both banker & players)
         if (

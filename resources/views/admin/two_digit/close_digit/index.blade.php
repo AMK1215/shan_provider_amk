@@ -353,7 +353,7 @@
                                         <span class="text-light">No result yet</span>
                                     @endif
                                 </p>
-                            </div>
+                        </div>
                         </div>
                         <div class="d-flex justify-content-center mt-3">
                             <button type="button" class="btn btn-success mx-2 px-4 py-2" data-toggle="modal" data-target="#headCloseDigitModal">
@@ -362,81 +362,81 @@
                             <button type="button" class="btn btn-primary mx-2 px-4 py-2" data-toggle="modal" data-target="#resultDigitModal">
                                 <i class="fas fa-plus text-white mr-2"></i> Add TwoD Result
                             </button>
+                         </div>                      
+                    </div>
+
+                            </div>
+                        </div>
+                        <div class="card-body justify-content-center">
+                            <!-- Flex UI for Head Close Digits -->
+                            <div class="head-digits-container">
+                                <h5 class="mb-3">Toggle Head Close Digits Status</h5>
+                                <div class="digits-flex-container">
+                                    @foreach($headCloseDigits as $digit)
+                                        <div class="digit-item {{ $digit->status ? 'active' : 'inactive' }}" data-id="{{ $digit->id }}">
+                                            <div class="digit-number">{{ $digit->head_close_digit }}</div>
+                                            <div class="digit-toggle">
+                                                <label class="switch">
+                                                    <input type="checkbox" 
+                                                           class="status-toggle" 
+                                                           data-id="{{ $digit->id }}"
+                                                           {{ $digit->status ? 'checked' : '' }}>
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                            <div class="digit-status">
+                                                <span class="status-text {{ $digit->status ? 'text-success' : 'text-danger' }}">
+                                                    {{ $digit->status ? 'ON' : 'OFF' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                           
+
+                            <div class="horizontal-bar">
+                                @foreach($headCloseDigits as $digit)
+                                    <div class="digit-box">
+                                        {{ $digit->head_close_digit }}
+                                    </div>
+                                @endforeach
+                        </div>
+                            </div>
                         </div>
                     </div>
 
-                    </div>
-                    </div>
-                    <div class="card-body justify-content-center">
-                        <!-- Flex UI for Head Close Digits -->
-                        <div class="head-digits-container">
-                            <h5 class="mb-3">Toggle Head Close Digits Status</h5>
-                            <div class="digits-flex-container">
-                                @foreach($headCloseDigits as $digit)
-                                    <div class="digit-item {{ $digit->status ? 'active' : 'inactive' }}" data-id="{{ $digit->id }}">
-                                        <div class="digit-number">{{ $digit->head_close_digit }}</div>
-                                        <div class="digit-toggle">
-                                            <label class="switch">
-                                                <input type="checkbox" 
-                                                       class="status-toggle" 
-                                                       data-id="{{ $digit->id }}"
-                                                       {{ $digit->status ? 'checked' : '' }}>
-                                                <span class="slider round"></span>
-                                            </label>
-                                        </div>
-                                        <div class="digit-status">
-                                            <span class="status-text {{ $digit->status ? 'text-success' : 'text-danger' }}">
-                                                {{ $digit->status ? 'ON' : 'OFF' }}
-                                            </span>
-                                        </div>
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Choose Close Digit</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="choose-digit-section">
+                                <div class="choose-digit-title">Choose Close Digit</div>
+                               
+
+                                <div class="horizontal-bar-group">
+                        @foreach($chooseCloseDigits->chunk(10) as $chunk)
+                            <div class="horizontal-bar-modern">
+                                @foreach($chunk as $digit)
+                                    <div class="digit-box-modern {{ $digit->status ? 'active' : 'inactive' }}"
+                                        data-id="{{ $digit->id }}"
+                                        data-status="{{ $digit->status }}"
+                                        onclick="toggleChooseDigitStatus(this)"
+                                        title="Click to toggle status">
+                                        <span class="digit-label">{{ $digit->choose_close_digit }}</span>
+                                        <span class="toggle-indicator">
+                                            <span class="toggle-dot"></span>
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
-                        </div>
-
-                       
-
-                        <div class="horizontal-bar">
-                            @foreach($headCloseDigits as $digit)
-                                <div class="digit-box">
-                                    {{ $digit->head_close_digit }}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h3 class="card-title">Choose Close Digit</h3>
-                </div>
-                <div class="card-body">
-                    <div class="choose-digit-section">
-                        <div class="choose-digit-title">Choose Close Digit</div>
-                       
-
-                        <div class="horizontal-bar-group">
-                @foreach($chooseCloseDigits->chunk(10) as $chunk)
-                    <div class="horizontal-bar-modern">
-                        @foreach($chunk as $digit)
-                            <div class="digit-box-modern {{ $digit->status ? 'active' : 'inactive' }}"
-                                data-id="{{ $digit->id }}"
-                                data-status="{{ $digit->status }}"
-                                onclick="toggleChooseDigitStatus(this)"
-                                title="Click to toggle status">
-                                <span class="digit-label">{{ $digit->choose_close_digit }}</span>
-                                <span class="toggle-indicator">
-                                    <span class="toggle-dot"></span>
-                                </span>
-                            </div>
                         @endforeach
                     </div>
-                @endforeach
-            </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
         </div>
     </section>
