@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\TwoDigit\TwoBet;
 use App\Models\TwoDigit\TwoBetSlip;
 use App\Models\TwoDigit\TwoDResult;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class TwoDigitController extends Controller
 {
@@ -248,6 +250,72 @@ public function betSlipDetails($slip_id)
         return view('admin.two_digit.bet.index', compact('twoDBets'));
     }
 
-    // store two d bet
-
+    // store two d bet result
+    
+    
+    public function storeTwoDResult(Request $request)
+    {
+        $request->validate([
+            'win_number' => 'required|integer',
+            'session' => 'required|string',
+            'result_date' => 'required|date',
+            'result_time' => 'required|date_format:H:i',
+            'battle_id' => 'nullable|exists:battles,id',
+        ]);
+    
+        DB::transaction(function () use ($request) {
+            // 1. Save the result
+            $twoDResult = TwoDResult::create([
+                'win_number' => $request->win_number,
+                'session' => $request->session,
+                'result_date' => $request->result_date,
+                'result_time' => $request->result_time,
+                'battle_id' => $request->battle_id,
+            ]);
+    
+            // 2. Find all bets for session/date
+            $allBets = TwoBet::where('session', $request->session)
+                ->where('game_date', $request->result_date)
+                ->get();
+    
+            // 3. Process each bet
+            foreach ($allBets as $bet) {
+                $isWinner = $bet->bet_number == $request->win_number;
+    
+                if ($isWinner) {
+                    $prize = $bet->bet_amount * 80;
+    
+                    // Update player wallet (users table, main_balance)
+                    $player = User::find($bet->user_id);
+                    if ($player) {
+                        $player->main_balance += $prize;
+                        $player->save();
+                    }
+    
+                    // Update bet as win
+                    $bet->win_lose = true;
+                    $bet->potential_payout = $prize;
+                    $bet->prize_sent = true;
+                } else {
+                    // Update bet as lose
+                    $bet->win_lose = false;
+                    $bet->potential_payout = 0;
+                    $bet->prize_sent = false;
+                }
+    
+                // Update all common fields
+                $bet->bet_status = true; // settled
+                $bet->bet_result = $request->win_number;
+                $bet->save();
+            }
+    
+            // 4. Update all slips for this session/date to completed
+            TwoBetSlip::where('session', $request->session)
+                ->whereDate('created_at', $request->result_date)
+                ->update(['status' => 'completed']);
+        });
+    
+        return redirect()->route('admin.head-close-digit')->with('success', 'TwoD Result added and winners paid.');
+    }
+    
 }
