@@ -323,45 +323,39 @@
 
                     <div class="col-4"> 
                         <h4 class="mb-3">Manage TwoD Result</h4>
-                        <div class="row justify-content-center align-items-end">
-                            <div class="col-md-3 col-12 mb-3 mb-md-0">
-                                <div class="digit-box-modern text-center py-4 px-2 h-100" style="background: #1a1a2e; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                                    <h6 class="text-secondary mb-2">Win Number</h6>
-                                    <p class="font-weight-bold display-4 mb-0" style="color: #00ffb3;">
-                                        @if($twoDResult)
-                                            {{ number_format($twoDResult->win_number, 0, '.', ',') }}
-                                        @else
-                                            <span class="text-light">No result yet</span>
-                                        @endif
-                                    </p>
-                                </div>
+                        <div class="d-flex flex-wrap justify-content-center align-items-end gap-3 mb-3">
+                            <div class="digit-box-modern text-center py-4 px-2 mx-2 mb-2" style="background: #1a1a2e; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 200px; min-width: 160px; flex: 1 1 180px;">
+                                <h6 class="text-secondary mb-2">Win Number</h6>
+                                <p class="font-weight-bold h3 mb-0" style="color: #00ffb3; word-break: break-all;">
+                                    @if($twoDResult)
+                                        {{ number_format($twoDResult->win_number, 0, '.', ',') }}
+                                    @else
+                                        <span class="text-light">No result yet</span>
+                                    @endif
+                                </p>
                             </div>
-                            <div class="col-md-3 col-12 mb-3 mb-md-0">
-                                <div class="digit-box-modern text-center py-4 px-2 h-100" style="background: #16213e; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                                    <h6 class="text-secondary mb-2">Session</h6>
-                                    <p class="font-weight-bold display-4 mb-0" style="color: #fddb3a;">
-                                        @if($twoDResult)
-                                            {{ ucfirst($twoDResult->session) }}
-                                        @else
-                                            <span class="text-light">No result yet</span>
-                                        @endif
-                                    </p>
-                                </div>
+                            <div class="digit-box-modern text-center py-4 px-2 mx-2 mb-2" style="background: #16213e; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 200px; min-width: 160px; flex: 1 1 180px;">
+                                <h6 class="text-secondary mb-2">Session</h6>
+                                <p class="font-weight-bold h3 mb-0" style="color: #fddb3a; word-break: break-all;">
+                                    @if($twoDResult)
+                                        {{ ucfirst($twoDResult->session) }}
+                                    @else
+                                        <span class="text-light">No result yet</span>
+                                    @endif
+                                </p>
                             </div>
-                            <div class="col-md-3 col-12">
-                                <div class="digit-box-modern text-center py-4 px-2 h-100" style="background: #0f3460; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                                    <h6 class="text-secondary mb-2">Result Date</h6>
-                                    <p class="font-weight-bold display-4 mb-0" style="color: #e94560;">
-                                        @if($twoDResult)
-                                            {{ $twoDResult->result_date }}
-                                        @else
-                                            <span class="text-light">No result yet</span>
-                                        @endif
-                                    </p>
-                                </div>
+                            <div class="digit-box-modern text-center py-4 px-2 mx-2 mb-2" style="background: #0f3460; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 200px; min-width: 160px; flex: 1 1 180px;">
+                                <h6 class="text-secondary mb-2">Result Date</h6>
+                                <p class="font-weight-bold h3 mb-0" style="color: #e94560; word-break: break-all;">
+                                    @if($twoDResult)
+                                        {{ $twoDResult->result_date }}
+                                    @else
+                                        <span class="text-light">No result yet</span>
+                                    @endif
+                                </p>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-center mt-4 gap-2">
+                        <div class="d-flex flex-wrap justify-content-center mt-3 gap-2">
                             <button type="button" class="btn btn-success mx-2 px-4 py-2" data-toggle="modal" data-target="#headCloseDigitModal">
                                 <i class="fas fa-plus text-white mr-2"></i> Add TwoD Limit (Break)
                             </button>
@@ -448,7 +442,7 @@
     </section>
 
     <!-- TwoD Result Modal -->
-    <div class="modal fade" id="resultDigitModal" tabindex="-1" role="dialog" aria-labelledby="resultDigitModalLabel" aria-hidden="true">
+    <div class="modal fade" id="resultDigitModal" tabindex="-1" role="dialog" aria-labelledby="resultDigitModalLabel" aria-modal="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -457,14 +451,14 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="{{ route('admin.two-d-result.store') }}" method="POST">
+                <form action="{{ route('admin.two-d-result.store') }}" method="POST" autocomplete="off">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="two_d_result">TwoD Result</label>
                             <input type="text" class="form-control @error('two_d_result') is-invalid @enderror" 
                                    id="two_d_result" name="two_d_result" 
-                                   placeholder="Enter TwoD Result" required>
+                                   placeholder="Enter TwoD Result" required aria-required="true">
                             @error('two_d_result')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -472,7 +466,11 @@
                         <div class="form-group">
                             <label for="session">Session</label>
                             <select class="form-control @error('session') is-invalid @enderror" 
-                                   id="session" name="session" required>
+                                   id="session" name="session" required aria-required="true">
+                                <option value="">Select session</option>
+                                <option value="morning">Morning</option>
+                                <option value="evening">Evening</option>
+                            </select>
                             @error('session')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -480,17 +478,28 @@
                         <div class="form-group">
                             <label for="result_date">Result Date</label>
                             <input type="date" class="form-control @error('result_date') is-invalid @enderror" 
-                                   id="result_date" name="result_date" required>    
+                                   id="result_date" name="result_date" required aria-required="true">    
+                            @error('result_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="form-group">
                             <label for="result_time">Result Time</label>
                             <input type="time" class="form-control @error('result_time') is-invalid @enderror" 
-                                   id="result_time" name="result_time" required>
+                                   id="result_time" name="result_time" required aria-required="true">
+                            @error('result_time')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="form-group">
                             <label for="battle_id">Battle</label>
                             <select class="form-control @error('battle_id') is-invalid @enderror" 
-                                   id="battle_id" name="battle_id" required>
+                                   id="battle_id" name="battle_id" required aria-required="true">
+                                <option value="">Select battle</option>
+                                @foreach($battles as $battle)
+                                    <option value="{{ $battle->id }}">{{ $battle->name ?? ($battle->start_time . ' - ' . $battle->end_time) }}</option>
+                                @endforeach
+                            </select>
                             @error('battle_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -508,7 +517,7 @@
     
 
     <!-- Head Close Digit Modal -->
-    <div class="modal fade" id="headCloseDigitModal" tabindex="-1" role="dialog" aria-labelledby="headCloseDigitModalLabel" aria-hidden="true">
+    <div class="modal fade" id="headCloseDigitModal" tabindex="-1" role="dialog" aria-labelledby="headCloseDigitModalLabel" aria-modal="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -517,19 +526,18 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="{{ route('admin.two-d-limit.store') }}" method="POST">
+                <form action="{{ route('admin.two-d-limit.store') }}" method="POST" autocomplete="off">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="head_close_digit">TwoD Limit (Break)</label>
+                            <label for="two_d_limit">TwoD Limit (Break)</label>
                             <input type="number" class="form-control @error('two_d_limit') is-invalid @enderror" 
-                                   id="head_close_digit" name="two_d_limit" 
-                                placeholder="Enter 2D Limit (Break)" required>
+                                   id="two_d_limit" name="two_d_limit" 
+                                   placeholder="Enter 2D Limit (Break)" required aria-required="true">
                             @error('two_d_limit')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
