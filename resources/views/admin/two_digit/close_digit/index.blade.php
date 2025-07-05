@@ -336,7 +336,12 @@
                     </div>
 
                     </div>
-                            <div class="card-tools">
+                    <div class="card-tools">
+                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#headCloseDigitModal">
+                                    <i class="fas fa-plus text-white mr-2"></i>Add TwoD Result
+                                </button>
+                            </div>        
+                    <div class="card-tools">
                                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#headCloseDigitModal">
                                     <i class="fas fa-plus text-white mr-2"></i>Add TwoD Limit (Break)
                                 </button>
