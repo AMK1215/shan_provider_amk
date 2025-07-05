@@ -491,7 +491,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="battle_id">Battle</label>
                             <select class="form-control @error('battle_id') is-invalid @enderror" 
                                    id="battle_id" name="battle_id" required aria-required="true">
@@ -503,7 +503,7 @@
                             @error('battle_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> -->
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
