@@ -8,6 +8,7 @@ use App\Models\TwoDigit\HeadClose; // Assuming ChooseDigit model is in App\Model
 use App\Models\User; // Assuming HeadClose model is in App\Models\TwoDigit
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class TwoBet extends Model
 {
