@@ -47,11 +47,11 @@
 
                                     <td>{{ $report->member_account }}</td>
                                     <td>{{ $report->agent->user_name ?? 'N/A' }}</td>
-                                    <td>{{ number_format($report->valid_amount, 2) }}</td>
-                                    <td>{{ number_format($report->bet_amount, 2) }}</td>
-                                    <td>{{ number_format($report->transaction_amount, 2) }}</td>
-                                    <td>{{ number_format($report->before_balance, 2) }}</td>
-                                    <td>{{ number_format($report->after_balance, 2) }}</td>
+                                    <td>{{ number_format(is_numeric($report->valid_amount) ? $report->valid_amount : 0, 2) }}</td>
+                                    <td>{{ number_format(is_numeric($report->bet_amount) ? $report->bet_amount : 0, 2) }}</td>
+                                    <td>{{ number_format(is_numeric($report->transaction_amount) ? $report->transaction_amount : 0, 2) }}</td>
+                                    <td>{{ number_format(is_numeric($report->before_balance) ? $report->before_balance : 0, 2) }}</td>
+                                    <td>{{ number_format(is_numeric($report->after_balance) ? $report->after_balance : 0, 2) }}</td>
                                     <td>
                                         <span class="badge badge-{{ $report->settled_status == 'settled_win' ? 'success' : ($report->settled_status == 'settled_loss' ? 'danger' : 'secondary') }}">
                                             {{ ucfirst(str_replace('settled_', '', $report->settled_status)) }}
