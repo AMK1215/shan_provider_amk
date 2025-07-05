@@ -212,6 +212,14 @@ class ShanTransactionController extends Controller
         $player->refresh();
         $newBalance = $player->wallet->balanceFloat; // Get balance after operation
 
+        $wager_code = 'SHAN-'.date('Ymd').'-'.str_pad($player->id, 4, '0', STR_PAD_LEFT);
+
+         // pending, settled, cancelled
+        if($playerData['win_lose_status'] == 1){
+            $status = 'settled_win';
+        }else{
+            $status = 'settled_loss';
+        }
         // Record player's transaction in report_transactions table
         ReportTransaction::create([
             'user_id' => $player->id,
@@ -224,6 +232,8 @@ class ShanTransactionController extends Controller
             'before_balance' => $oldBalance,
             'after_balance' => $newBalance,
             'banker' => 0, // Indicate this is a player transaction
+            'wager_code' => $wager_code,
+            'status' => $status,
         ]);
 
         Log::info('ShanTransaction: Player transaction and report record completed', [
