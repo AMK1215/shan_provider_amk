@@ -371,7 +371,41 @@
                             </li>
                         @endcan
 
-                        <!--  -->
+
+                        <!-- agent 2d -->
+                        @can('agent_access')
+                            <li
+                                class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-tools"></i>
+                                    <p>
+                                        2D
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    
+
+                                        <li class="nav-item">
+                                            <a href="{{ route('admin.twod.bet-slip-list') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.twod.bet-slip-list' ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>2D Bet Slip List</p>
+                                            </a>
+                                        </li>
+
+                                    <!-- <li class="nav-item">
+                                        <a href=""
+                                            class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>GSC GameType</p>
+                                        </a>
+                                    </li> -->
+                                </ul>
+                            </li>
+                        @endcan
+
+                        <!-- agent 2d -->
                         
                         <li
                             class="nav-item">
