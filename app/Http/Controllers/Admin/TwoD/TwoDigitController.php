@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\TwoDigit\TwoBet;
 use App\Models\TwoDigit\TwoBetSlip;
+use App\Models\TwoDigit\TwoDResult;
 
 class TwoDigitController extends Controller
 {
