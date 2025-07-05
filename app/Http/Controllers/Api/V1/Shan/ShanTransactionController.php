@@ -27,7 +27,7 @@ class ShanTransactionController extends Controller
 
     public function ShanTransactionCreate(Request $request): JsonResponse
     {
-        // Step 1: Validate
+        // 1. Validate
         $validated = $request->validate([
             'banker' => 'required|array',
             'banker.player_id' => 'required|string',
@@ -36,10 +36,14 @@ class ShanTransactionController extends Controller
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
             'players.*.win_lose_status' => 'required|integer|in:0,1'
-           // 'wager_code' => 'required|string|max:50' // unique idempotency key
+            // Do NOT send amount_changed from client!
         ]);
 
-        // Generate a unique wager_code
+        // 2. Generate a unique wager_code for idempotency (1 round, 1 code only)
+        // do {
+        //     $wager_code = Str::random(10);
+        // } while (ReportTransaction::where('wager_code', $wager_code)->exists());
+
         do {
             $wager_code = Str::random(10);
         } while (ReportTransaction::where('wager_code', $wager_code)->exists());
@@ -56,12 +60,12 @@ class ShanTransactionController extends Controller
         try {
             DB::beginTransaction();
 
-            // BANKER
+            // ---- BANKER ----
             $banker = User::where('user_name', $validated['banker']['player_id'])->firstOrFail();
             $bankerOldBalance = $banker->wallet->balanceFloat;
             $bankerAmountChange = $validated['banker']['amount'];
 
-            // amount_changed = all player payout - all player bet (or your logic)
+            // Banker wallet update
             if ($bankerAmountChange > 0) {
                 $this->walletService->deposit(
                     $banker,
@@ -103,7 +107,7 @@ class ShanTransactionController extends Controller
                 'balance' => $banker->wallet->balanceFloat,
             ];
 
-            // PLAYERS
+            // ---- PLAYERS ----
             foreach ($validated['players'] as $playerData) {
                 $player = User::where('user_name', $playerData['player_id'])->first();
                 if (!$player) continue;
@@ -112,10 +116,11 @@ class ShanTransactionController extends Controller
                 $betAmount = $playerData['bet_amount'];
                 $winLose = $playerData['win_lose_status'];
 
-                // amount_changed = betAmount or -betAmount
+                // Server-calculated amount_changed:
+                // - If player won:   amount_changed = +betAmount (deposit)
+                // - If player lost:  amount_changed = -betAmount (withdraw)
                 $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
 
-                // Wallet
                 if ($amountChanged > 0) {
                     $this->walletService->deposit(
                         $player,
@@ -142,7 +147,6 @@ class ShanTransactionController extends Controller
 
                 $player->refresh();
 
-                // DB
                 ReportTransaction::create([
                     'user_id' => $player->id,
                     'agent_id' => $player->agent_id,
@@ -165,7 +169,6 @@ class ShanTransactionController extends Controller
             }
 
             DB::commit();
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('ShanTransaction: Transaction failed', [

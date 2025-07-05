@@ -269,3 +269,15 @@ class ShanTransactionController extends Controller
         ]);
     }
 }
+
+
+do {
+            $wager_code = Str::random(10);
+        } while (ReportTransaction::where('wager_code', $wager_code)->exists());
+
+        // Step 2: Idempotency check (for both banker & players)
+        if (
+            ReportTransaction::where('wager_code', $wager_code)->exists()
+        ) {
+            return $this->error('Duplicate transaction!', 'This round already settled.', 409);
+        }
