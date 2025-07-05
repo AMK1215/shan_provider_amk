@@ -28,10 +28,13 @@
                             <tr>
                                 <th>#</th>
                                 <th>Slip No</th>
-                                <th>User</th>
-                                <th>Bet Amount</th>
-                                <th>Before Balance</th>
-                                <th>After Balance</th>
+                                <th>PlayerID</th>
+                                <th>AgentID</th>
+                                <th>ValidAmount</th>
+                                <th>BetAmount</th>
+                                <th>Payout</th>
+                                <th>BeforeBalance</th>
+                                <th>AfterBalance</th>
                                 <th>Status</th>
                                 <th>Created At</th>
                             </tr>
@@ -41,8 +44,12 @@
                                 <tr>
                                     <td>{{ $loop->iteration + ($reports->currentPage() - 1) * $reports->perPage() }}</td>
                                     <td>{{ $report->wager_code }}</td>
+
                                     <td>{{ $report->member_account }}</td>
-                                    <td>{{ number_format($report->bet_amount ?? $report->transaction_amount, 2) }}</td>
+                                    <td>{{ $report->agent->user_name ?? 'N/A' }}</td>
+                                    <td>{{ number_format($report->valid_amount, 2) }}</td>
+                                    <td>{{ number_format($report->bet_amount, 2) }}</td>
+                                    <td>{{ number_format($report->transaction_amount, 2) }}</td>
                                     <td>{{ number_format($report->before_balance, 2) }}</td>
                                     <td>{{ number_format($report->after_balance, 2) }}</td>
                                     <td>
