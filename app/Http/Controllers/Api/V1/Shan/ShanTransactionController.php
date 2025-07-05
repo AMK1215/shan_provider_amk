@@ -27,7 +27,7 @@ class ShanTransactionController extends Controller
 
     public function ShanTransactionCreate(Request $request): JsonResponse
     {
-        // 1. Validate
+        // Step 1: Validate
         $validated = $request->validate([
             'banker' => 'required|array',
             'banker.player_id' => 'required|string',
@@ -36,19 +36,15 @@ class ShanTransactionController extends Controller
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
             'players.*.win_lose_status' => 'required|integer|in:0,1'
-            // Do NOT send amount_changed from client!
+            // 'wager_code' => 'required|string|max:50' // optional, if you want to use idempotency key from client
         ]);
 
-        // 2. Generate a unique wager_code for idempotency (1 round, 1 code only)
-        // do {
-        //     $wager_code = Str::random(10);
-        // } while (ReportTransaction::where('wager_code', $wager_code)->exists());
-
+        // Generate a unique wager_code (idempotency for the round)
         do {
             $wager_code = Str::random(10);
         } while (ReportTransaction::where('wager_code', $wager_code)->exists());
 
-        // Step 2: Idempotency check (for both banker & players)
+        // Step 2: Idempotency check
         if (
             ReportTransaction::where('wager_code', $wager_code)->exists()
         ) {
@@ -60,12 +56,11 @@ class ShanTransactionController extends Controller
         try {
             DB::beginTransaction();
 
-            // ---- BANKER ----
+            // ...အထက်က validate နောက်မှာ...
             $banker = User::where('user_name', $validated['banker']['player_id'])->firstOrFail();
             $bankerOldBalance = $banker->wallet->balanceFloat;
-            $bankerAmountChange = $validated['banker']['amount'];
+            $bankerAmountChange = $validated['banker']['amount']; // Client ကပို့လာတာကို တိုက်ရိုက်သုံး
 
-            // Banker wallet update
             if ($bankerAmountChange > 0) {
                 $this->walletService->deposit(
                     $banker,
@@ -87,8 +82,11 @@ class ShanTransactionController extends Controller
                     ]
                 );
             }
+            // $bankerAmountChange == 0 ဆိုရင် ဘာမှမလုပ်
+
             $banker->refresh();
 
+            // Banker transaction log
             ReportTransaction::create([
                 'user_id' => $banker->id,
                 'agent_id' => $banker->agent_id ?? null,
@@ -107,7 +105,7 @@ class ShanTransactionController extends Controller
                 'balance' => $banker->wallet->balanceFloat,
             ];
 
-            // ---- PLAYERS ----
+            // Players
             foreach ($validated['players'] as $playerData) {
                 $player = User::where('user_name', $playerData['player_id'])->first();
                 if (!$player) continue;
@@ -116,9 +114,7 @@ class ShanTransactionController extends Controller
                 $betAmount = $playerData['bet_amount'];
                 $winLose = $playerData['win_lose_status'];
 
-                // Server-calculated amount_changed:
-                // - If player won:   amount_changed = +betAmount (deposit)
-                // - If player lost:  amount_changed = -betAmount (withdraw)
+                // amount_changed = betAmount or -betAmount (server တွင် auto တွက်)
                 $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
 
                 if ($amountChanged > 0) {
@@ -144,9 +140,9 @@ class ShanTransactionController extends Controller
                         ]
                     );
                 }
-
                 $player->refresh();
 
+                // DB log
                 ReportTransaction::create([
                     'user_id' => $player->id,
                     'agent_id' => $player->agent_id,
@@ -169,6 +165,7 @@ class ShanTransactionController extends Controller
             }
 
             DB::commit();
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('ShanTransaction: Transaction failed', [
