@@ -355,7 +355,7 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="d-flex flex-wrap justify-content-center mt-3 gap-2">
+                        <div class="d-flex justify-content-center mt-3">
                             <button type="button" class="btn btn-success mx-2 px-4 py-2" data-toggle="modal" data-target="#headCloseDigitModal">
                                 <i class="fas fa-plus text-white mr-2"></i> Add TwoD Limit (Break)
                             </button>
