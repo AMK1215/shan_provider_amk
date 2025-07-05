@@ -321,6 +321,20 @@
                         </div>
                     </div>
 
+                    <div class="col-4"> 
+                        <h4 class="mb-3">Manage TwoD Result</h4>
+                        <div class="horizontal-bar-group">
+                        <form action="{{ route('admin.two-d-result.store') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="two_d_result">TwoD Result</label>
+                                <input type="text" class="form-control" id="two_d_result" name="two_d_result" placeholder="Enter TwoD Result">
+                            </div>
+                            <button type="submit" class="btn btn-success">Add TwoD Result</button>
+                        </form>
+                         </div>                      
+                    </div>
+
                     </div>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#headCloseDigitModal">
