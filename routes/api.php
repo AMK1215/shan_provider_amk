@@ -99,6 +99,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('user', [AuthController::class, 'getUser']);
     // 2d route 
     Route::post('/twod-bet', [TwoDigitBetController::class, 'store']);
+    // shan launch game
+    Route::post('shan-launch-game', [ShanLaunchGameController::class, 'launch']);
+
 
 });
 
@@ -116,7 +119,7 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
 
 Route::group(['prefix' => 'shan'], function () {
     Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
-    Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
+    //Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
 });
 
 Route::prefix('v1')->group(function () {

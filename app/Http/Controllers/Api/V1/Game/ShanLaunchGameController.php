@@ -35,6 +35,7 @@ class ShanLaunchGameController extends Controller
         }
 
         $player = Auth::user();
+        Log::info('ShanLaunchGameController: Player', ['player' => $player]);
         if (!$player) {
             Log::warning('ShanLaunchGameController: No authenticated user');
             return response()->json([
