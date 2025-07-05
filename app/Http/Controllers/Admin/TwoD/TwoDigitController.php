@@ -325,7 +325,7 @@ public function betSlipDetails($slip_id)
             Log::info('Updated slips to completed', ['updated_count' => $updated]);
         });
     
-        return redirect()->route('admin.head-close-digit')->with('success', 'TwoD Result added and winners paid.');
+        return redirect()->route('admin.twod.settings')->with('success', 'TwoD Result added and winners paid.');
     }
     
 }
