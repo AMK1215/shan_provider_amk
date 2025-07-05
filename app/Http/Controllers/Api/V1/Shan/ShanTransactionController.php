@@ -31,118 +31,60 @@ class ShanTransactionController extends Controller
         $validated = $request->validate([
             'banker' => 'required|array',
             'banker.player_id' => 'required|string',
-            'banker.amount' => 'required|numeric',
+            // 'banker.amount' => 'required|numeric', // <-- don't trust this field, ignore!
             'players' => 'required|array',
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
             'players.*.win_lose_status' => 'required|integer|in:0,1'
-            // 'wager_code' => 'required|string|max:50' // optional, if you want to use idempotency key from client
         ]);
 
-        // Generate a unique wager_code (idempotency for the round)
+        // Generate unique wager_code for idempotency
         do {
-            $wager_code = Str::random(10);
+            $wager_code = Str::random(12);
         } while (ReportTransaction::where('wager_code', $wager_code)->exists());
 
-        // Step 2: Idempotency check
-        if (
-            ReportTransaction::where('wager_code', $wager_code)->exists()
-        ) {
+        // Double-check: If wager_code is ever repeated, abort!
+        if (ReportTransaction::where('wager_code', $wager_code)->exists()) {
             return $this->error('Duplicate transaction!', 'This round already settled.', 409);
         }
 
         $results = [];
+        $totalPlayerNet = 0; // player net (win - lose) for this round
 
         try {
             DB::beginTransaction();
 
-            // ...အထက်က validate နောက်မှာ...
-            $banker = User::where('user_name', $validated['banker']['player_id'])->firstOrFail();
-            $bankerOldBalance = $banker->wallet->balanceFloat;
-            $bankerAmountChange = $validated['banker']['amount']; // Client ကပို့လာတာကို တိုက်ရိုက်သုံး
-
-            if ($bankerAmountChange > 0) {
-                $this->walletService->deposit(
-                    $banker,
-                    $bankerAmountChange,
-                    TransactionName::BankerDeposit,
-                    [
-                        'description' => 'Banker receive',
-                        'wager_code' => $wager_code
-                    ]
-                );
-            } elseif ($bankerAmountChange < 0) {
-                $this->walletService->withdraw(
-                    $banker,
-                    abs($bankerAmountChange),
-                    TransactionName::BankerWithdraw,
-                    [
-                        'description' => 'Banker payout',
-                        'wager_code' => $wager_code
-                    ]
-                );
-            }
-            // $bankerAmountChange == 0 ဆိုရင် ဘာမှမလုပ်
-
-            $banker->refresh();
-
-            // Banker transaction log
-            ReportTransaction::create([
-                'user_id' => $banker->id,
-                'agent_id' => $banker->agent_id ?? null,
-                'member_account' => $banker->user_name,
-                'transaction_amount' => abs($bankerAmountChange),
-                'before_balance' => $bankerOldBalance,
-                'after_balance' => $banker->wallet->balanceFloat,
-                'banker' => 1,
-                'status' => $bankerAmountChange >= 0 ? 1 : 0,
-                'wager_code' => $wager_code,
-                'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
-            ]);
-
-            $results[] = [
-                'player_id' => $banker->user_name,
-                'balance' => $banker->wallet->balanceFloat,
-            ];
-
-            // Players
+            // PLAYERS: Process each player, calculate total net win/loss
             foreach ($validated['players'] as $playerData) {
                 $player = User::where('user_name', $playerData['player_id'])->first();
                 if (!$player) continue;
 
                 $oldBalance = $player->wallet->balanceFloat;
                 $betAmount = $playerData['bet_amount'];
-                $winLose = $playerData['win_lose_status'];
+                $winLose = $playerData['win_lose_status']; // 1 = win, 0 = lose
 
-                // amount_changed = betAmount or -betAmount (server တွင် auto တွက်)
+                // Win = bet amount ထပ်တိုး, Lose = bet amount နုတ်
                 $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
+                $totalPlayerNet += $amountChanged;
 
+                // Wallet update
                 if ($amountChanged > 0) {
-                    $this->walletService->deposit(
-                        $player,
-                        $amountChanged,
-                        TransactionName::GameWin,
-                        [
-                            'description' => 'Win from Shan game',
-                            'wager_code' => $wager_code,
-                            'bet_amount' => $betAmount,
-                        ]
-                    );
+                    $this->walletService->deposit($player, $amountChanged, TransactionName::GameWin, [
+                        'description' => 'Win from Shan game',
+                        'wager_code' => $wager_code,
+                        'bet_amount' => $betAmount,
+                    ]);
                 } elseif ($amountChanged < 0) {
-                    $this->walletService->withdraw(
-                        $player,
-                        abs($amountChanged),
-                        TransactionName::GameLoss,
-                        [
-                            'description' => 'Loss in Shan game',
-                            'wager_code' => $wager_code,
-                            'bet_amount' => $betAmount,
-                        ]
-                    );
+                    $this->walletService->withdraw($player, abs($amountChanged), TransactionName::GameLoss, [
+                        'description' => 'Loss in Shan game',
+                        'wager_code' => $wager_code,
+                        'bet_amount' => $betAmount,
+                    ]);
                 }
+
                 $player->refresh();
 
-                // DB log
+                // Record transaction
                 ReportTransaction::create([
                     'user_id' => $player->id,
                     'agent_id' => $player->agent_id,
@@ -163,6 +105,44 @@ class ShanTransactionController extends Controller
                     'balance' => $player->wallet->balanceFloat,
                 ];
             }
+
+            // BANKER: Use the server-side calculated net of all player win/loss
+            $banker = User::where('user_name', $validated['banker']['player_id'])->firstOrFail();
+            $bankerOldBalance = $banker->wallet->balanceFloat;
+            $bankerAmountChange = -$totalPlayerNet; // Banker always opposite of player total net
+
+            if ($bankerAmountChange > 0) {
+                $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
+                    'description' => 'Banker receive (from all players)',
+                    'wager_code' => $wager_code
+                ]);
+            } elseif ($bankerAmountChange < 0) {
+                $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
+                    'description' => 'Banker payout (to all players)',
+                    'wager_code' => $wager_code
+                ]);
+            }
+            // If $bankerAmountChange == 0, do nothing
+
+            $banker->refresh();
+
+            ReportTransaction::create([
+                'user_id' => $banker->id,
+                'agent_id' => $banker->agent_id ?? null,
+                'member_account' => $banker->user_name,
+                'transaction_amount' => abs($bankerAmountChange),
+                'before_balance' => $bankerOldBalance,
+                'after_balance' => $banker->wallet->balanceFloat,
+                'banker' => 1,
+                'status' => $bankerAmountChange >= 0 ? 1 : 0,
+                'wager_code' => $wager_code,
+                'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
+            ]);
+
+            $results[] = [
+                'player_id' => $banker->user_name,
+                'balance' => $banker->wallet->balanceFloat,
+            ];
 
             DB::commit();
 
