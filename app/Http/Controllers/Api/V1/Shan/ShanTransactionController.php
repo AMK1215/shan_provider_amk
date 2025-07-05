@@ -70,6 +70,10 @@ class ShanTransactionController extends Controller
             ]);
 
             $bankerAmountChange = $validated['banker']['amount'];
+            
+            Log::info('ShanTransaction: Banker amount change', [
+                'banker_amount_change' => $bankerAmountChange,
+            ]);
 
             // Handle Banker Transaction using WalletService
             $bankerOldBalance = $banker->wallet->balanceFloat; // Get balance before operation
@@ -92,7 +96,9 @@ class ShanTransactionController extends Controller
             // Refresh banker model to get latest wallet balance after operation
             $banker->refresh();
             $bankerNewBalance = $banker->wallet->balanceFloat; // Get balance after operation
-
+            Log::info('ShanTransaction: Banker new balance', [
+                'banker_new_balance' => $bankerNewBalance,
+            ]);
             // Record banker's transaction
             $wager_code = Str::random(10);
             if($bankerAmountChange >= 0){
@@ -113,7 +119,11 @@ class ShanTransactionController extends Controller
                 'wager_code' => $wager_code,
                 'settled_status' => $status,
             ]);
-
+            Log::info('ShanTransaction: Banker transaction completed', [
+                'banker_id' => $banker->id,
+                'banker_username' => $banker->user_name,
+                'banker_new_balance' => $bankerNewBalance,
+            ]);
             $results[] = [
                 'player_id' => $banker->user_name,
                 'balance' => $bankerNewBalance,
