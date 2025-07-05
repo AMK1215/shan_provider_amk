@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Import the WalletService
 use Illuminate\Support\Facades\Log; // Assuming you have an Enum for transaction names
+use Illuminate\Support\Str;
 
 class ShanTransactionController extends Controller
 {
@@ -93,13 +94,24 @@ class ShanTransactionController extends Controller
             $bankerNewBalance = $banker->wallet->balanceFloat; // Get balance after operation
 
             // Record banker's transaction
+            $wager_code = Str::random(10);
+            if($bankerAmountChange >= 0){
+                $status = 'settled_win';
+            }else{
+                $status = 'settled_loss';
+            }
+
             ReportTransaction::create([
                 'user_id' => $banker->id,
+                'agent_id' => $banker->agent_id ?? null,
+                'member_account' => $banker->user_name,
                 'transaction_amount' => abs($bankerAmountChange), // Store as positive value
                 'before_balance' => $bankerOldBalance,
                 'after_balance' => $bankerNewBalance,
                 'banker' => 1, // Indicate this is a banker transaction
                 'status' => $bankerAmountChange >= 0 ? 1 : 0, // 1 if banker's balance increased/no change, 0 if decreased
+                'wager_code' => $wager_code,
+                'settled_status' => $status,
             ]);
 
             $results[] = [
@@ -212,7 +224,7 @@ class ShanTransactionController extends Controller
         $player->refresh();
         $newBalance = $player->wallet->balanceFloat; // Get balance after operation
 
-        $wager_code = 'SHAN-'.date('Ymd').'-'.str_pad($player->id, 4, '0', STR_PAD_LEFT);
+        $wager_code = Str::random(10);
 
          // pending, settled, cancelled
         if($playerData['win_lose_status'] == 1){
