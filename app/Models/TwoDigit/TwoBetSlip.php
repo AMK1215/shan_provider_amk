@@ -15,9 +15,13 @@ class TwoBetSlip extends Model
     protected $fillable = [
         'slip_no',
         'user_id',
+        'player_name',
+        'agent_id',
         'total_bet_amount',
         'session',
         'status',
+        'game_date',
+        'game_time',
         'before_balance',
         'after_balance',
     ];
@@ -25,6 +29,11 @@ class TwoBetSlip extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
     }
 
     // slip no

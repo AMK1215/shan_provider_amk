@@ -80,14 +80,22 @@ class TwoDPlayService
             $user->save();
 
             $afterBalance = $user->main_balance;
+            $playerName = $user->user_name;
+            $agentId = $user->agent_id;
+            $gameDate = Carbon::now()->format('Y-m-d');
+            $gameTime = Carbon::now()->format('H:i:s');
 
             // Create the TwoBetSlip record first
             $twoBetSlip = TwoBetSlip::create([
                 'slip_no' => $slipNo,
                 'user_id' => $user->id,
+                'player_name' => $playerName,
+                'agent_id' => $agentId,
                 'total_bet_amount' => $totalBetAmount,
                 'session' => $sessionType,
                 'status' => 'pending',
+                'game_date' => $gameDate,
+                'game_time' => $gameTime,
                 'before_balance' => $beforeBalance,
                 'after_balance' => $afterBalance,
             ]);
