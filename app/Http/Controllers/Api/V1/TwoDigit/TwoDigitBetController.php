@@ -10,6 +10,7 @@ use App\Traits\HttpResponses;
 use Illuminate\Http\Request; // Ensure Auth facade is used
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; // Import the service
+use App\Models\TwoDigit\TwoBetSlip;
 
 class TwoDigitBetController extends Controller
 {
