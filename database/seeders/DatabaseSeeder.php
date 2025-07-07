@@ -104,7 +104,7 @@ class DatabaseSeeder extends Seeder
             ChooseDigitSeeder::class,
             BattleTableSeeder::class,
             OperatorSeeder::class,
-
+            TwoDLimitSeeder::class,
         ]);
     }
 }
