@@ -97,5 +97,21 @@ class TwoDigitBetController extends Controller
 
             return $this->error('Server Error', 'An unexpected error occurred. Please try again later.', 500);
         }
+
+        
+    }
+
+    // slip no
+    public function myBetSlips(Request $request)
+    {
+       // $user = $request->user();
+       $user = Auth::user();
+
+        $betSlips = TwoBetSlip::with('twoBets')
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return $this->success($betSlips, 'Your two-digit bet slips retrieved successfully.');
     }
 }
