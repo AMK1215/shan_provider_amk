@@ -27,10 +27,12 @@ class TwoBetSlip extends Model
         return $this->belongsTo(User::class);
     }
 
+    // slip no
     public function twoBets()
-    {
-        return $this->hasMany(TwoBet::class);
-    }
+{
+    return $this->hasMany(TwoBet::class, 'slip_id', 'id');
+}
+
     protected static function boot()
     {
         parent::boot();
