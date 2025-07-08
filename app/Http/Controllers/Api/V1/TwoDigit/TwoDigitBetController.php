@@ -184,10 +184,7 @@ class TwoDigitBetController extends Controller
         
         $betSlips = TwoBetSlip::with('twoBets')
             ->where('user_id', $user->id)
-            ->where(function($query) {
-                $query->where('status', 'pending')
-                      ->orWhere('status', 'completed');
-            })
+            ->where('status', 'pending')
             ->where('session', $session)
             ->where('game_date', $gameDate)
             ->orderByDesc('created_at')
