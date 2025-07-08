@@ -177,10 +177,10 @@ class TwoDigitBetController extends Controller
         $gameDate = $currentTime->format('Y-m-d');
         
         // Only show evening data during appropriate times
-        if ($currentTimeInMinutes < $eveningStartTime) {
-            // Before 12:04 PM - no evening data yet
-            return $this->success([], "No evening session data available yet.");
-        }
+        // if ($currentTimeInMinutes < $eveningStartTime) {
+        //     // Before 12:04 PM - no evening data yet
+        //     return $this->success([], "No evening session data available yet.");
+        // }
         
         $betSlips = TwoBetSlip::with('twoBets')
             ->where('user_id', $user->id)
