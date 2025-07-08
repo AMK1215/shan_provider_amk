@@ -149,6 +149,14 @@ class TwoDigitBetController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        \Log::info('Evening slips', [
+            'user_id' => $user->id,
+            'session' => $session,
+            'game_date' => $gameDate,
+            'count' => $betSlips->count(),
+            'ids' => $betSlips->pluck('id')
+        ]);
+
         return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");
     }
 
@@ -184,6 +192,14 @@ class TwoDigitBetController extends Controller
             ->where('game_date', $gameDate)
             ->orderByDesc('created_at')
             ->get();
+
+        Log::info('Evening slips', [
+            'user_id' => $user->id,
+            'session' => $session,
+            'game_date' => $gameDate,
+            'count' => $betSlips->count(),
+            'ids' => $betSlips->pluck('id')
+        ]);
 
         return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");    
     }  
