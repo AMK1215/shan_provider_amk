@@ -151,6 +151,42 @@ class TwoDigitBetController extends Controller
 
         return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");
     }
+
+    // evening session slip 
+    public function eveningSessionSlip(Request $request)
+    {
+        $user = Auth::user();
+        $currentTime = now();
+        $currentHour = (int) $currentTime->format('H');
+        $currentMinute = (int) $currentTime->format('i');
+        
+        // Evening session logic
+        $currentTimeInMinutes = ($currentHour * 60) + $currentMinute;
+        $eveningStartTime = (12 * 60) + 4; // 12:04 PM in minutes
+        $eveningDisplayEndTime = 18 * 60; // 6:00 PM in minutes
+        
+        $session = 'evening';
+        $gameDate = $currentTime->format('Y-m-d');
+        
+        // Only show evening data during appropriate times
+        if ($currentTimeInMinutes < $eveningStartTime) {
+            // Before 12:04 PM - no evening data yet
+            return $this->success([], "No evening session data available yet.");
+        }
+        
+        $betSlips = TwoBetSlip::with('twoBets')
+            ->where('user_id', $user->id)
+            ->where(function($query) {
+                $query->where('status', 'pending')
+                      ->orWhere('status', 'completed');
+            })
+            ->where('session', $session)
+            ->where('game_date', $gameDate)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");    
+    }  
 }
 
 /*
