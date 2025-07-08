@@ -111,35 +111,31 @@ class TwoDigitBetController extends Controller
         $currentMinute = (int) $currentTime->format('i');
         
         // Determine which session to show based on current time
-        // Morning session: 00:00 - 12:00 (until 12:00 PM)
-        // Evening session: 12:04 - 16:30 (from 12:04 PM to 4:30 PM)
+        // Morning session: 00:00 - 12:00 (actual session time)
+        // Evening session: 12:04 - 16:30 (actual session time)
+        
+        // Display times (extended for user experience):
+        // Morning data: Show until 1:00 PM
+        // Evening data: Show until 6:00 PM
         
         // Convert current time to minutes for easier comparison
         $currentTimeInMinutes = ($currentHour * 60) + $currentMinute;
-        $morningEndTime = 12 * 60; // 12:00 PM in minutes
+        $morningDisplayEndTime = 13 * 60; // 1:00 PM in minutes
         $eveningStartTime = (12 * 60) + 4; // 12:04 PM in minutes
-        $eveningEndTime = (16 * 60) + 30; // 4:30 PM in minutes
+        $eveningDisplayEndTime = 18 * 60; // 6:00 PM in minutes
         
-        if ($currentTimeInMinutes <= $morningEndTime) {
-            // Before or at 12:00 PM - show morning session
+        if ($currentTimeInMinutes <= $morningDisplayEndTime) {
+            // Before or at 1:00 PM - show morning session
             $session = 'morning';
             $gameDate = $currentTime->format('Y-m-d');
-        } elseif ($currentTimeInMinutes >= $eveningStartTime && $currentTimeInMinutes <= $eveningEndTime) {
-            // Between 12:04 PM and 4:30 PM - show evening session
+        } elseif ($currentTimeInMinutes >= $eveningStartTime && $currentTimeInMinutes <= $eveningDisplayEndTime) {
+            // Between 12:04 PM and 6:00 PM - show evening session
             $session = 'evening';
             $gameDate = $currentTime->format('Y-m-d');
         } else {
-            // Outside session hours (12:01-12:03 PM or after 4:30 PM)
-            // Show the most recent session data
-            if ($currentTimeInMinutes > $eveningEndTime) {
-                // After 4:30 PM - show today's evening session
-                $session = 'evening';
-                $gameDate = $currentTime->format('Y-m-d');
-            } else {
-                // Between 12:01-12:03 PM - show today's morning session
-                $session = 'morning';
-                $gameDate = $currentTime->format('Y-m-d');
-            }
+            // After 6:00 PM - show today's evening session (most recent)
+            $session = 'evening';
+            $gameDate = $currentTime->format('Y-m-d');
         }
 
         $betSlips = TwoBetSlip::with('twoBets')
@@ -153,3 +149,13 @@ class TwoDigitBetController extends Controller
         return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");
     }
 }
+
+/*
+ $betSlips = TwoBetSlip::with('twoBets')
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->where('session', $session)
+            ->where('game_date', $gameDate)
+            ->orderByDesc('created_at')
+            ->get();
+*/
