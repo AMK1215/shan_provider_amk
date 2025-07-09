@@ -15,6 +15,7 @@ use App\Models\TwoDigit\TwoBetSlip;
 use App\Models\TwoDigit\TwoDResult;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class TwoDigitController extends Controller
 {
@@ -327,5 +328,73 @@ public function betSlipDetails($slip_id)
     
         return redirect()->route('admin.twod.settings')->with('success', 'TwoD Result added and winners paid.');
     }
+
+
+    // daily leger 
+    
+
+public function dailyLedger(Request $request)
+{
+    $user = Auth::user();
+    $date = $request->input('date') ?? now()->format('Y-m-d');
+    $session = $request->input('session'); // 'morning' or 'evening'
+
+    $query = DB::table('two_bets')
+        ->select('bet_number', 'session', DB::raw('SUM(bet_amount) as total_amount'))
+        ->where('game_date', $date);
+
+    // 🔐 Restrict by agent if not owner
+    if ($user->type == \App\Enums\UserType::Agent || $user->type == \App\Enums\UserType::SubAgent) {
+        $query->where('agent_id', $user->id);
+    }
+
+    // Filter by session if provided
+    if (in_array($session, ['morning', 'evening'])) {
+        $query->where('session', $session);
+    }
+
+    $bets = $query->groupBy('bet_number', 'session')->get();
+
+    // Generate all numbers 00–99
+    $allNumbers = collect(range(0, 99))->map(function ($n) {
+        return str_pad($n, 2, '0', STR_PAD_LEFT);
+    });
+
+    if ($session === 'morning' || $session === 'evening') {
+        // Return single session
+        $result = $allNumbers->mapWithKeys(function ($num) use ($bets, $session) {
+            $amount = $bets->firstWhere('bet_number', $num && fn($b) => $b->session === $session)?->total_amount ?? 0;
+            return [$num => (float) $amount];
+        });
+
+        return view('admin.two_digit.ledger.index', compact('result'));
+
+        // return response()->json([
+        //     'date' => $date,
+        //     'session' => $session,
+        //     'data' => $result,
+        // ]);
+    }
+
+    // Return both sessions
+    $morning = $allNumbers->mapWithKeys(function ($num) use ($bets) {
+        $amount = $bets->first(fn ($b) => $b->bet_number === $num && $b->session === 'morning')?->total_amount ?? 0;
+        return [$num => (float) $amount];
+    });
+
+    $evening = $allNumbers->mapWithKeys(function ($num) use ($bets) {
+        $amount = $bets->first(fn ($b) => $b->bet_number === $num && $b->session === 'evening')?->total_amount ?? 0;
+        return [$num => (float) $amount];
+    });
+
+    return view('admin.two_digit.ledger.index', compact('morning', 'evening'));
+
+    // return response()->json([
+    //     'date' => $date,
+    //     'morning' => $morning,
+    //     'evening' => $evening,
+    // ]);
+}
+
     
 }

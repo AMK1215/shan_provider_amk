@@ -237,6 +237,9 @@ Route::group([
     Route::get('twod/bet-slip-list', [TwoDigitController::class, 'betSlipList'])->name('twod.bet-slip-list');
     Route::get('twod/bet-slip-details/{slip_id}', [TwoDigitController::class, 'betSlipDetails'])->name('twod.bet-slip-details');
     Route::post('two-d-result/store', [TwoDigitController::class, 'storeTwoDResult'])->name('two-d-result.store');
+    Route::get('twod/daily-ledger', [TwoDigitController::class, 'dailyLedger'])->name('twod.daily-ledger');
+    //Route::get('twod/daily-ledger-morning', [TwoDigitController::class, 'dailyLedgerMorning'])->name('twod.daily-ledger-morning');
+    //Route::get('twod/daily-ledger-evening', [TwoDigitController::class, 'dailyLedgerEvening'])->name('twod.daily-ledger-evening');
     // two digit end
     // shan player report
     Route::get('/shan-player-report', [ShanPlayerReportController::class, 'index'])->name('shan.player.report');

@@ -360,6 +360,14 @@
                                             </a>
                                         </li>
 
+                                        <li class="nav-item">
+                                            <a href="{{ route('admin.twod.daily-ledger') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.twod.daily-ledger' ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>2D Daily Ledger</p>
+                                            </a>
+                                        </li>
+
                                     <!-- <li class="nav-item">
                                         <a href=""
                                             class="nav-link">
@@ -393,6 +401,17 @@
                                                 <p>2D Bet Slip List</p>
                                             </a>
                                         </li>
+
+                                        <li class="nav-item">
+                                            <a href="{{ route('admin.twod.daily-ledger') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.twod.daily-ledger' ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>2D Daily Ledger</p>
+                                            </a>
+                                        </li>
+
+
+
 
                                     <!-- <li class="nav-item">
                                         <a href=""
