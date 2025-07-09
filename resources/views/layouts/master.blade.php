@@ -355,7 +355,7 @@
                                         <li class="nav-item">
                                             <a href="{{ route('admin.twod.bet-slip-list') }}"
                                                 class="nav-link {{ Route::current()->getName() == 'admin.twod.bet-slip-list' ? 'active' : '' }}">
-                                                <i class="far fa-circle nav-icon"></i>
+                                                <i class="fas fa-list-alt nav-icon"></i>
                                                 <p>2D Bet Slip List</p>
                                             </a>
                                         </li>
@@ -363,8 +363,16 @@
                                         <li class="nav-item">
                                             <a href="{{ route('admin.twod.daily-ledger') }}"
                                                 class="nav-link {{ Route::current()->getName() == 'admin.twod.daily-ledger' ? 'active' : '' }}">
-                                                <i class="far fa-circle nav-icon"></i>
+                                                <i class="fas fa-book nav-icon"></i>
                                                 <p>2D Daily Ledger</p>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="{{ route('admin.twod.daily-winners') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.twod.daily-winners' ? 'active' : '' }}">
+                                                <i class="fas fa-trophy nav-icon"></i>
+                                                <p>2D Daily Winners</p>
                                             </a>
                                         </li>
 
@@ -394,10 +402,10 @@
                                 <ul class="nav nav-treeview">
                                     
 
-                                        <li class="nav-item">
+                                <li class="nav-item">
                                             <a href="{{ route('admin.twod.bet-slip-list') }}"
                                                 class="nav-link {{ Route::current()->getName() == 'admin.twod.bet-slip-list' ? 'active' : '' }}">
-                                                <i class="far fa-circle nav-icon"></i>
+                                                <i class="fas fa-list-alt nav-icon"></i>
                                                 <p>2D Bet Slip List</p>
                                             </a>
                                         </li>
@@ -405,8 +413,16 @@
                                         <li class="nav-item">
                                             <a href="{{ route('admin.twod.daily-ledger') }}"
                                                 class="nav-link {{ Route::current()->getName() == 'admin.twod.daily-ledger' ? 'active' : '' }}">
-                                                <i class="far fa-circle nav-icon"></i>
+                                                <i class="fas fa-book nav-icon"></i>
                                                 <p>2D Daily Ledger</p>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="{{ route('admin.twod.daily-winners') }}"
+                                                class="nav-link {{ Route::current()->getName() == 'admin.twod.daily-winners' ? 'active' : '' }}">
+                                                <i class="fas fa-trophy nav-icon"></i>
+                                                <p>2D Daily Winners</p>
                                             </a>
                                         </li>
 

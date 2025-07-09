@@ -240,6 +240,7 @@ Route::group([
     Route::get('twod/daily-ledger', [TwoDigitController::class, 'dailyLedger'])->name('twod.daily-ledger');
     //Route::get('twod/daily-ledger-morning', [TwoDigitController::class, 'dailyLedgerMorning'])->name('twod.daily-ledger-morning');
     //Route::get('twod/daily-ledger-evening', [TwoDigitController::class, 'dailyLedgerEvening'])->name('twod.daily-ledger-evening');
+    Route::get('twod/daily-winners', [TwoDigitController::class, 'dailyWinners'])->name('twod.daily-winners');
     // two digit end
     // shan player report
     Route::get('/shan-player-report', [ShanPlayerReportController::class, 'index'])->name('shan.player.report');

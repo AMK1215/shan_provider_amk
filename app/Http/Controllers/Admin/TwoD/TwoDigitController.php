@@ -396,5 +396,154 @@ public function dailyLedger(Request $request)
     // ]);
 }
 
+// 2d winner 
+
+
+
+
+public function dailyWinners(Request $request)
+{
+    $user = Auth::user();
+    $date = $request->input('date') ?? now()->format('Y-m-d');
+    $session = $request->input('session'); // optional: 'morning' or 'evening'
+
+    $sessions = ['morning', 'evening'];
+
+    if ($session && !in_array($session, $sessions)) {
+        return response()->json(['message' => 'Invalid session'], 422);
+    }
+
+    // Return both sessions if no specific session is requested
+    if (!$session) {
+        $result = [];
+
+        foreach ($sessions as $s) {
+            $res = DB::table('two_d_results')
+                ->where('result_date', $date)
+                ->where('session', $s)
+                ->first();
+
+            if ($res && $res->win_number) {
+                $query = DB::table('two_bets')
+                    ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
+                    ->where('game_date', $date)
+                    ->where('session', $s)
+                    ->where('bet_number', $res->win_number)
+                    ->where('win_lose', true);
+
+                // Restrict by agent if not owner
+                if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
+                    $query->where('agent_id', $user->id);
+                }
+
+                $winners = $query->groupBy('bet_number')->get();
+
+                $result[$s] = [
+                    'win_digit' => $res->win_number,
+                    'winners' => $winners,
+                ];
+            } else {
+                $result[$s] = ['message' => 'No result found'];
+            }
+        }
+
+        return view('admin.two_digit.winner.index', [
+            'date' => $date,
+            'session' => $session ?? null,
+            'result' => $result ?? null,
+            'win_digit' => $winDigit ?? null,
+            'winners' => $winners ?? null,
+        ]);
+        
+        // return response()->json([
+        //     'date' => $date,
+        //     'result' => $result, // ✅ Both sessions
+        // ]);
+    }
+
+    // ✅ Return only one session
+    $result = DB::table('two_d_results')
+        ->where('result_date', $date)
+        ->where('session', $session)
+        ->first();
+
+    if (!$result || !$result->win_number) {
+        return response()->json(['message' => 'Winning result not found for this session/date'], 404);
+    }
+
+    $winDigit = $result->win_number;
+
+    $query = DB::table('two_bets')
+        ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
+        ->where('game_date', $date)
+        ->where('session', $session)
+        ->where('bet_number', $winDigit)
+        ->where('win_lose', true);
+
+    // 🔒 Restrict by agent
+    if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
+        $query->where('agent_id', $user->id);
+    }
+
+    $winners = $query->groupBy('bet_number')->get();
+
+    return view('admin.two_digit.winner.index', [
+        'date' => $date,
+        'results' => $result // associative array with keys 'morning', 'evening'
+    ]);
+    
+}
+
+
+// public function dailyWinners(Request $request)
+// {
+//     $user = Auth::user();
+//     $date = $request->input('date') ?? now()->format('Y-m-d');
+//     $session = $request->input('session'); // 'morning' or 'evening'
+
+//     if (!in_array($session, ['morning', 'evening'])) {
+//         return response()->json(['message' => 'Invalid session'], 422);
+//     }
+
+//     // ✅ Get win digit from two_d_results
+//     $result = DB::table('two_d_results')
+//         ->where('result_date', $date)
+//         ->where('session', $session)
+//         ->first();
+
+//     if (!$result || !$result->win_number) {
+//         return response()->json(['message' => 'Winning result not found for this session/date'], 404);
+//     }
+
+//     $winDigit = $result->win_number;
+
+//     $query = DB::table('two_bets')
+//         ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
+//         ->where('game_date', $date)
+//         ->where('session', $session)
+//         ->where('bet_number', $winDigit)
+//         ->where('win_lose', true);
+
+//     // 🔒 Restrict by agent
+//     if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
+//         $query->where('agent_id', $user->id);
+//     }
+
+//     $winners = $query->groupBy('bet_number')->get();
+
+//     return view('admin.two_digit.winner.index', compact('winners'));
+
+//      // Return both sessions
+
+
+//     // return response()->json([
+//     //     'date' => $date,
+//     //     'session' => $session,
+//     //     'win_digit' => $winDigit,
+//     //     'winners' => $winners,
+//     // ]);
+// }
+
+
     
 }
