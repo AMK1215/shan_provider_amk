@@ -102,6 +102,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/twod-bet-slips', [TwoDigitBetController::class, 'myBetSlips']);
     // evening-twod-bet-slips
     Route::get('/evening-twod-bet-slips', [TwoDigitBetController::class, 'eveningSessionSlip']);
+    Route::get('/two-d-daily-winners', [TwoDigitBetController::class, 'dailyWinners']);
     // shan launch game
     Route::post('shan-launch-game', [ShanLaunchGameController::class, 'launch']);
 

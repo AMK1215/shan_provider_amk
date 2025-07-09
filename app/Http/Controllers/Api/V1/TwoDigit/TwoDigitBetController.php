@@ -11,6 +11,7 @@ use Illuminate\Http\Request; // Ensure Auth facade is used
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; // Import the service
 use App\Models\TwoDigit\TwoBetSlip;
+use Illuminate\Support\Facades\DB;
 
 class TwoDigitBetController extends Controller
 {
@@ -203,6 +204,86 @@ class TwoDigitBetController extends Controller
 
         return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");    
     }  
+
+
+    // winner list 
+    
+
+public function dailyWinners(Request $request)
+{
+    $user = Auth::user();
+
+    // ✅ Allow only authenticated player
+    if ($user->type !== \App\Enums\UserType::Player) {
+        return $this->error(null, 'Only players can access winner list.', 403);
+    }
+
+    $date = $request->input('date') ?? now()->format('Y-m-d');
+    $session = $request->input('session'); // optional
+
+    if ($session && !in_array($session, ['morning', 'evening'])) {
+        return $this->error(null, 'Invalid session.', 422);
+    }
+
+    // ✅ Single session provided
+    if ($session) {
+        $result = DB::table('two_d_results')
+            ->where('result_date', $date)
+            ->where('session', $session)
+            ->first();
+
+        if (!$result || !$result->win_number) {
+            return $this->error(null, 'No result found for given session and date.', 404);
+        }
+
+        // ✅ Fetch all player winners (by win_digit)
+        $winners = DB::table('two_bets')
+            ->where('game_date', $date)
+            ->where('session', $session)
+            ->where('bet_number', $result->win_number)
+            ->where('win_lose', true)
+            ->select('member_name', 'bet_amount', DB::raw('bet_amount * 80 as win_amount'))
+            ->get();
+
+        return $this->success([
+            'date' => $result->result_date,
+            'session' => $result->session,
+            'win_digit' => $result->win_number,
+            'winners' => $winners,
+        ], '2D winner list retrieved');
+    }
+
+    // ✅ Default case: show latest 3 sessions with winners
+    $recentResults = DB::table('two_d_results')
+        ->orderByDesc('result_date')
+        ->orderByDesc('session')
+        ->limit(3)
+        ->get();
+
+    $data = [];
+
+    foreach ($recentResults as $res) {
+        $winners = DB::table('two_bets')
+            ->where('game_date', $res->result_date)
+            ->where('session', $res->session)
+            ->where('bet_number', $res->win_number)
+            ->where('win_lose', true)
+            ->select('member_name', 'bet_amount', DB::raw('bet_amount * 80 as win_amount'))
+            ->get();
+
+        $data[] = [
+            'date' => $res->result_date,
+            'session' => $res->session,
+            'win_digit' => $res->win_number,
+            'winners' => $winners,
+        ];
+    }
+
+    return $this->success([
+        'latest_results' => $data
+    ], 'Latest 2D winners (with winners list)');
+}
+
 }
 
 /*
