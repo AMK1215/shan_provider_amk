@@ -214,9 +214,9 @@ public function dailyWinners(Request $request)
     $user = Auth::user();
 
     // ✅ Allow only authenticated player
-    if ($user->type !== \App\Enums\UserType::Player) {
-        return $this->error(null, 'Only players can access winner list.', 403);
-    }
+    // if ($user->type !== \App\Enums\UserType::Player) {
+    //     return $this->error(null, 'Only players can access winner list.', 403);
+    // }
 
     $date = $request->input('date') ?? now()->format('Y-m-d');
     $session = $request->input('session'); // optional
