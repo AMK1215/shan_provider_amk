@@ -257,7 +257,7 @@ public function dailyWinners(Request $request)
     $recentResults = DB::table('two_d_results')
         ->orderByDesc('result_date')
         ->orderByDesc('session')
-        ->limit(3)
+        ->limit(10)
         ->get();
 
     $data = [];
