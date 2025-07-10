@@ -126,6 +126,12 @@ Route::group(['prefix' => 'shan'], function () {
     //Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
 });
 
+// provider shan api
+Route::group(['prefix' => 'provider/shan'], function () {
+    Route::post('getbalance', [ShankomeeGetBalanceController::class, 'shangetbalance']);
+    Route::post('launch-game', [ShankomeeLaunchGameController::class, 'LaunchGame']);
+});
+
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
         Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
