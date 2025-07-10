@@ -105,6 +105,7 @@ class DatabaseSeeder extends Seeder
             BattleTableSeeder::class,
             OperatorSeeder::class,
             TwoDLimitSeeder::class,
+            ShanProductSeeder::class,
         ]);
     }
 }
