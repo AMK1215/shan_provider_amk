@@ -17,6 +17,12 @@ class ShankomeeGetBalanceController extends Controller
 {
     public function shangetbalance(Request $request)
     {
+        Log::info('Shankomee GetBalance: Request received', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'payload' => $request->all(),
+        ]);
+
         // 1. Validate input structure
         $validator = Validator::make($request->all(), [
             'batch_requests' => 'required|array|min:1',
@@ -30,6 +36,10 @@ class ShankomeeGetBalanceController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Shankomee GetBalance: Validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'payload' => $request->all(),
+            ]);
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Validation error',
@@ -37,34 +47,61 @@ class ShankomeeGetBalanceController extends Controller
             ], 422);
         }
 
+        Log::info('Shankomee GetBalance: Validation passed');
+
         // 2. Check operator_code in database
         $operator = Operator::where('code', $request->operator_code)
                             ->where('active', true)
                             ->first();
 
         if (!$operator) {
+            Log::warning('Shankomee GetBalance: Invalid operator_code', [
+                'operator_code' => $request->operator_code,
+            ]);
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Invalid or inactive operator_code',
             ], 403);
         }
 
+        Log::info('Shankomee GetBalance: Operator found', [
+            'operator_code' => $request->operator_code,
+            'operator_id' => $operator->id,
+        ]);
+
         // 3. Signature check using operator's secret_key from DB
         $secret_key = $operator->secret_key;
         $expectedSign = md5($request->operator_code . $request->request_time . 'getbalance' . $secret_key);
 
+        Log::info('Shankomee GetBalance: Signature verification', [
+            'provided_sign' => $request->sign,
+            'expected_sign' => $expectedSign,
+            'operator_code' => $request->operator_code,
+            'request_time' => $request->request_time,
+        ]);
+
         if ($request->sign !== $expectedSign) {
+            Log::warning('Shankomee GetBalance: Invalid signature', [
+                'provided_sign' => $request->sign,
+                'expected_sign' => $expectedSign,
+            ]);
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Signature invalid',
             ], 403);
         }
 
+        Log::info('Shankomee GetBalance: Signature verification passed');
+
         // 4. Validate product_codes from DB
         $allowed_product_codes = Product::where('status', 'ACTIVATED')
                                       ->where('game_list_status', true)
                                       ->pluck('product_code')
                                       ->toArray();
+
+        Log::info('Shankomee GetBalance: Allowed product codes', [
+            'allowed_codes' => $allowed_product_codes,
+        ]);
 
         $callbackUrl = $operator->callback_url ?? 'https://delightmyanmar99.pro/api/shan/balance';
 
@@ -123,6 +160,10 @@ class ShankomeeGetBalanceController extends Controller
         ];
     }
 
+    Log::info('Shankomee GetBalance: Response sent', [
+        'results' => $results,
+    ]);
+
     return response()->json([
         'status' => 'success',
         'data' => $results
@@ -132,6 +173,12 @@ class ShankomeeGetBalanceController extends Controller
 
     public function LaunchGame(Request $request)
     {
+        Log::info('Shankomee LaunchGame: Request received', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'payload' => $request->all(),
+        ]);
+
         // Validate input
         $validator = Validator::make($request->all(), [
             'member_account' => 'required|string|max:50',
@@ -139,12 +186,18 @@ class ShankomeeGetBalanceController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Shankomee LaunchGame: Validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'payload' => $request->all(),
+            ]);
             return response()->json([
                 'status'  => 'fail',
                 'message' => 'Validation error',
                 'errors'  => $validator->errors()
             ], 422);
         }
+
+        Log::info('Shankomee LaunchGame: Validation passed');
 
         $operator_code = $request->operator_code;
         $member_account = $request->member_account;
@@ -153,12 +206,17 @@ class ShankomeeGetBalanceController extends Controller
         $secret_key = config('seamless_key.secret_key'); // or get from DB for the operator
         $sign = md5($operator_code . $request_time . 'getbalance' . $secret_key);
 
+        // Get user balance from database first
+        $user = User::where('user_name', $member_account)->first();
+        $userBalance = $user ? ($user->balanceFloat ?? 0) : 0;
+
         // Prepare GetBalance API request payload
         $getBalancePayload = [
             'batch_requests' => [
                 [
                     'member_account' => $member_account,
                     'product_code'   => 1002, // or as required
+                    'balance'        => $userBalance, // Add the balance field
                 ]
             ],
             'operator_code' => $operator_code,
@@ -167,17 +225,18 @@ class ShankomeeGetBalanceController extends Controller
             'sign'          => $sign,
         ];
 
+        Log::info('Shankomee LaunchGame: Internal API call payload', [
+            'member_account' => $member_account,
+            'payload' => $getBalancePayload,
+            'user_balance' => $userBalance,
+        ]);
+
         // Call your own GetBalance API (internal call)
         $getBalanceApiUrl = url('https://luckymillion.pro/api/provider/shan/ShanGetBalances'); // or full URL if needed
 
         $response = Http::post($getBalanceApiUrl, $getBalancePayload);
 
-        // if (!$response->successful()) {
-        //     return response()->json([
-        //         'status' => 'fail',
-        //         'message' => 'Unable to get balance',
-        //     ], 500);
-        // }
+       
 
         if (!$response->successful()) {
             Log::error('Failed to get balance from internal API', [
@@ -213,6 +272,12 @@ class ShankomeeGetBalanceController extends Controller
 
         // Build launch game URL
         $launchGameUrl = 'https://goldendragon7.pro/?user_name=' . urlencode($member_account) . '&balance=' . $balance;
+
+        Log::info('Shankomee LaunchGame: Response sent', [
+            'member_account' => $member_account,
+            'balance' => $balance,
+            'launch_game_url' => $launchGameUrl,
+        ]);
 
         return response()->json([
             'status' => 'success',
