@@ -240,7 +240,7 @@ public function betSlipDetails($slip_id)
         ]);
         Log::info($twoDLimit);
 
-        return redirect()->route('admin.head-close-digit')->with('success', 'TwoD Limit (Break) added successfully.');
+        return redirect()->route('admin.twod.settings')->with('success', 'TwoD Limit (Break) added successfully.');
     }
 
     // two d bet
