@@ -172,7 +172,20 @@ class ShankomeeGetBalanceController extends Controller
 
         $response = Http::post($getBalanceApiUrl, $getBalancePayload);
 
+        // if (!$response->successful()) {
+        //     return response()->json([
+        //         'status' => 'fail',
+        //         'message' => 'Unable to get balance',
+        //     ], 500);
+        // }
+
         if (!$response->successful()) {
+            Log::error('Failed to get balance from internal API', [
+                'url' => $getBalanceApiUrl,
+                'payload' => $getBalancePayload,
+                'response_status' => $response->status(),
+                'response_body' => $response->body(),
+            ]);
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Unable to get balance',
@@ -192,7 +205,7 @@ class ShankomeeGetBalanceController extends Controller
             $member = User::create([
                 'user_name' => $member_account,
                 'name' => $member_account,
-                'type' => 'player',
+                'type' => '40',
                 'status' => 1,
                 'is_changed_password' => 1,
             ]);
