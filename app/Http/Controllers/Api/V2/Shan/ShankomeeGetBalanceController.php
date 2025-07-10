@@ -66,7 +66,7 @@ class ShankomeeGetBalanceController extends Controller
                                       ->pluck('product_code')
                                       ->toArray();
 
-        $callbackUrl = $operator->callback_url ?? 'https://a1yoma.online/api/shan/balance';
+        $callbackUrl = $operator->callback_url ?? 'https://delightmyanmar99.pro/api/shan/balance';
 
     $results = [];
     foreach ($request->batch_requests as $item) {
@@ -83,7 +83,7 @@ class ShankomeeGetBalanceController extends Controller
             $status = 'user_not_found';
         } else {
             // User exists, get balance from database
-            $databaseBalance = $user->max_score ?? 0;
+            $databaseBalance = $user->balanceFloat ?? 0;
             $callbackBalance = $item['balance'] ?? 0;
             
             Log::info('Shankomee callback: Balance comparison', [

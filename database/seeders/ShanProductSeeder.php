@@ -33,6 +33,26 @@ class ShanProductSeeder extends Seeder
             ]
         );
 
-        $this->command->info("ShanKomee product with code '100200' seeded successfully.");
+        // Create or update the ShanKomee product with code 100100
+        Product::updateOrCreate(
+            ['product_code' => '100100'], // Condition to find the record
+            [
+                'provider' => 'ShanKomee',
+                'currency' => 'MMK',
+                'status' => 'ACTIVATED',
+                'provider_id' => 101,
+                'provider_product_id' => 100100,
+                'product_name' => 'shan_komee_basic',
+                'game_type' => 'CARD_GAME',
+                'product_title' => 'ShanKomee Basic',
+                'short_name' => 'SKM_B',
+                'order' => 2,
+                'game_list_status' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        $this->command->info("ShanKomee products with codes '100100' and '100200' seeded successfully.");
     }
 } 
