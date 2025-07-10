@@ -168,7 +168,7 @@ class ShankomeeGetBalanceController extends Controller
         ];
 
         // Call your own GetBalance API (internal call)
-        $getBalanceApiUrl = url('/api/provider/shan/ShanGetBalances'); // or full URL if needed
+        $getBalanceApiUrl = url('https://luckymillion.pro/api/provider/shan/ShanGetBalances'); // or full URL if needed
 
         $response = Http::post($getBalanceApiUrl, $getBalancePayload);
 
