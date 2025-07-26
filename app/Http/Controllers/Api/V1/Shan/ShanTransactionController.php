@@ -111,29 +111,17 @@ class ShanTransactionController extends Controller
                 ];
             }
 
-            // BANKER: Use the server-side calculated net of all player win/loss
-            $banker = User::where('user_name', $validated['banker']['player_id'])->first();
-            
-            // Create banker if doesn't exist
+            // BANKER: Use the system wallet (admin user) as banker instead of individual banker users
+            $banker = User::adminUser();
             if (!$banker) {
-                $banker = User::create([
-                    'user_name' => $validated['banker']['player_id'],
-                    'name' => $validated['banker']['player_id'],
-                    'password' => Hash::make('shankomee'), // Default password for banker
-                    'type' => '40', // Banker type
-                    'status' => 1,
-                    'is_changed_password' => 1,
-                ]);
-                
-                Log::info('ShanTransaction: Created banker user', [
-                    'banker_id' => $banker->user_name,
-                ]);
-            } else {
-                Log::info('ShanTransaction: Found existing banker user', [
-                    'banker_id' => $banker->user_name,
-                    'balance' => $banker->wallet->balanceFloat,
-                ]);
+                Log::error('ShanTransaction: System wallet (admin user) not found');
+                return $this->error('System wallet not found', 'Banker (system wallet) not configured', 500);
             }
+            
+            Log::info('ShanTransaction: Using system wallet as banker', [
+                'banker_id' => $banker->user_name,
+                'balance' => $banker->wallet->balanceFloat,
+            ]);
             $bankerOldBalance = $banker->wallet->balanceFloat;
             $bankerAmountChange = -$totalPlayerNet; // Banker always opposite of player total net
 
@@ -176,6 +164,7 @@ class ShanTransactionController extends Controller
                 'wager_code' => $wager_code,
                 'total_player_net' => $totalPlayerNet,
                 'banker_amount_change' => $bankerAmountChange,
+                'system_wallet_balance' => $banker->wallet->balanceFloat,
                 'results' => $results,
             ]);
 
