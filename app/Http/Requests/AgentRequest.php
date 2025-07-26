@@ -28,6 +28,10 @@ class AgentRequest extends FormRequest
             'password' => 'required|min:6',
             'amount' => 'nullable|numeric',
             'referral_code' => ['required', 'unique:users,referral_code'],
+            'shan_agent_code' => ['required', 'string', 'unique:users,shan_agent_code'],
+            'shan_agent_name' => ['required', 'string'],
+            'shan_secret_key' => ['required', 'string'],
+            'shan_callback_url' => ['required', 'string'],
         ];
     }
 }

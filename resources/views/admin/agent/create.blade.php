@@ -21,7 +21,7 @@
                 <div class="card-header">
                     <div class="card-title col-12">
                         <h5 class="d-inline fw-bold">
-                            Create Agent
+                            Create ShanKomee Agent
                         </h5>
                         <a href="{{ route('admin.agent.index') }}" class="btn btn-primary d-inline float-right">
                             <i class="fas fa-arrow-left mr-2"></i> Back
@@ -63,6 +63,34 @@
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="form-group">
+                                    <label>Shan Agent Code<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="shan_agent_code" value="{{ old('shan_agent_code') }}">
+                                    @error('shan_agent_code')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="form-group">
+                                    <label>Shan Agent Name<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="shan_agent_name" value="{{ old('shan_agent_name') }}">
+                                    @error('shan_agent_name')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="form-group">
+                                    <label>Shan Secret Key<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="shan_secret_key" value="{{ $shan_secret_key }}">
+                                    @error('shan_secret_key')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="form-group">
+                                    <label>Shan Callback URL<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="shan_callback_url" value="{{ old('shan_callback_url') }}">
+                                    @error('shan_callback_url')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                             <div class="col-lg-12 offset-lg-0 col-md-6 offset-md-3 col-sm-8 offset-sm-2 col-10 offset-1">
                                 <div class="form-group">
@@ -93,4 +121,6 @@
         </div>
     </section>
 @endsection
+
+
 

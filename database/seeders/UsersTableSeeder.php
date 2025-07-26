@@ -19,11 +19,11 @@ class UsersTableSeeder extends Seeder
         // Create owner with large initial capital
         $owner = $this->createUser(
             UserType::Owner,
-            'Owner',
-            'OWNER001',
+            'ShanKomee',
+            'ShanKomeeProvider',
             '09123456789',
             null,
-            'OWNER'.Str::random(6)
+            'ShanKomeeProvider'.Str::random(6)
         );
         $walletService->deposit($owner, 500_000_00000000, TransactionName::CapitalDeposit);
 
@@ -42,11 +42,11 @@ class UsersTableSeeder extends Seeder
         for ($i = 1; $i <= 2; $i++) {
             $agent = $this->createUser(
                 UserType::Agent,
-                "Agent $i",
-                'AGENT'.str_pad($i, 3, '0', STR_PAD_LEFT),
+                "ShanKomee Agent $i",
+                'ShanKomeeAgent'.str_pad($i, 3, '0', STR_PAD_LEFT),
                 '091123456'.str_pad($i, 2, '0', STR_PAD_LEFT),
                 $owner->id,
-                'AGENT'.Str::random(6)
+                'ShanKomeeAgent'.Str::random(6)
             );
             // Random initial balance between 1.5M to 2.5M
             $initialBalance = rand(1, 2) * 100_000;
@@ -56,11 +56,11 @@ class UsersTableSeeder extends Seeder
             for ($k = 1; $k <= 4; $k++) {
                 $player = $this->createUser(
                     UserType::Player,
-                    "Player $i-$k",
-                    'PLAYER'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
+                    "ShanKomee Player $i-$k",
+                    'ShanKomeePlayer'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     '091111111'.str_pad($i, 1, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     $agent->id,
-                    'PLAYER'.Str::random(6)
+                    'ShanKomeePlayer'.Str::random(6)
                 );
                 // Fixed initial balance of 10,000
                 $initialBalance = 10000;
@@ -81,7 +81,7 @@ class UsersTableSeeder extends Seeder
             'name' => $name,
             'user_name' => $user_name,
             'phone' => $phone,
-            'password' => Hash::make('gscplus'),
+            'password' => Hash::make('shankomee'),
             'agent_id' => $parent_id,
             'status' => 1,
             'is_changed_password' => 1,

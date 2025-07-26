@@ -62,10 +62,10 @@ class User extends Authenticatable implements Wallet
         'site_name',
         'site_link',
         'main_balance',
-        'limit',
-        'limit3',
-        'cor',
-        'cor3',
+        'shan_agent_code',
+        'shan_agent_name',
+        'shan_secret_key',
+        'shan_callback_url'
     ];
 
     /**

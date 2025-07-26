@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Str;
 
 class AgentController extends Controller
 {
@@ -131,8 +132,15 @@ class AgentController extends Controller
         $agent_name = $this->generateRandomString();
         $paymentTypes = PaymentType::all();
         $referral_code = $this->generateReferralCode();
+        $shan_secret_key = $this->generateShanSecretKey();
 
-        return view('admin.agent.create', compact('agent_name', 'paymentTypes', 'referral_code'));
+        return view('admin.agent.create', compact('agent_name', 'paymentTypes', 'referral_code', 'shan_secret_key'));
+    }
+
+    // generate ShanSecretkey string 15 
+    private function generateShanSecretKey()
+    {
+        return Str::random(15);
     }
 
     /**
@@ -163,6 +171,10 @@ class AgentController extends Controller
                 'password' => Hash::make($inputs['password']),
                 'agent_id' => Auth::id(),
                 'type' => UserType::Agent->value,
+                'shan_agent_code' => $inputs['shan_agent_code'],
+                'shan_agent_name' => $inputs['shan_agent_name'],
+                'shan_secret_key' => $inputs['shan_secret_key'],
+                'shan_callback_url' => $inputs['shan_callback_url'],
             ]
         );
 
@@ -216,7 +228,11 @@ class AgentController extends Controller
             ->with('successMessage', 'Agent created successfully')
             ->with('password', $request->password)
             ->with('username', $agent->user_name)
-            ->with('amount', $transfer_amount);
+            ->with('amount', $transfer_amount)
+            ->with('shan_agent_code', $inputs['shan_agent_code'])
+            ->with('shan_agent_name', $inputs['shan_agent_name'])
+            ->with('shan_secret_key', $inputs['shan_secret_key'])
+            ->with('shan_callback_url', $inputs['shan_callback_url']);
     }
 
     /**

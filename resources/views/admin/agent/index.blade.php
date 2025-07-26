@@ -191,6 +191,10 @@
         var username = @json(session('username'));
         var password = @json(session('password'));
         var amount = @json(session('amount'));
+        var shan_agent_code = @json(session('shan_agent_code'));
+        var shan_agent_name = @json(session('shan_agent_name'));
+        var shan_secret_key = @json(session('shan_secret_key'));
+        var shan_callback_url = @json(session('shan_callback_url'));
 
         @if (session()->has('successMessage'))
             toastr.success(successMessage +
@@ -200,6 +204,10 @@
             data-username="${username}"
             data-password="${password}"
             data-amount="${amount}"
+            data-shan_agent_code="${shan_agent_code}"
+            data-shan_agent_name="${shan_agent_name}"
+            data-shan_secret_key="${shan_secret_key}"
+            data-shan_callback_url="${shan_callback_url}"
             onclick="copyToClipboard(this)">Copy</button>
     </div>`, {
                     allowHtml: true
@@ -210,8 +218,12 @@
             var username = $(button).data('username');
             var password = $(button).data('password');
             var amount = $(button).data('amount');
+            var shan_agent_code = $(button).data('shan_agent_code');
+            var shan_agent_name = $(button).data('shan_agent_name');
+            var shan_secret_key = $(button).data('shan_secret_key');
+            var shan_callback_url = $(button).data('shan_callback_url');
 
-            var textToCopy = "Username: " + username + "\nPassword: " + password + "\nAmount: " + amount;
+            var textToCopy = "Username: " + username + "\nPassword: " + password + "\nAmount: " + amount + "\nShan Agent Code: " + shan_agent_code + "\nShan Agent Name: " + shan_agent_name + "\nShan Secret Key: " + shan_secret_key + "\nShan Callback URL: " + shan_callback_url;
 
             navigator.clipboard.writeText(textToCopy).then(function() {
                 toastr.success("Credentials copied to clipboard!");
@@ -221,3 +233,5 @@
         }
     </script>
 @endsection
+
+
