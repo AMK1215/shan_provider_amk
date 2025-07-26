@@ -203,8 +203,31 @@ class ShankomeeGetBalanceController extends Controller
         $member_account = $request->member_account;
         $currency = 'MMK';
         $request_time = time();
-        $secret_key = config('seamless_key.secret_key'); // or get from DB for the operator
+        
+        // Get operator from database to use its secret_key
+        $operator = Operator::where('code', $operator_code)
+                            ->where('active', true)
+                            ->first();
+        
+        if (!$operator) {
+            Log::warning('Shankomee LaunchGame: Invalid operator_code', [
+                'operator_code' => $operator_code,
+            ]);
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Invalid or inactive operator_code',
+            ], 403);
+        }
+        
+        $secret_key = $operator->secret_key;
         $sign = md5($operator_code . $request_time . 'getbalance' . $secret_key);
+        
+        Log::info('Shankomee LaunchGame: Signature generation', [
+            'operator_code' => $operator_code,
+            'request_time' => $request_time,
+            'secret_key' => $secret_key,
+            'generated_sign' => $sign,
+        ]);
 
         // Get user balance from database first
         $user = User::where('user_name', $member_account)->first();
@@ -215,7 +238,7 @@ class ShankomeeGetBalanceController extends Controller
             'batch_requests' => [
                 [
                     'member_account' => $member_account,
-                    'product_code'   => 100200, // or as required
+                    'product_code'   => 100100, // Use the same product_code as in the example
                     'balance'        => $userBalance, // Add the balance field
                 ]
             ],
@@ -232,11 +255,15 @@ class ShankomeeGetBalanceController extends Controller
         ]);
 
         // Call your own GetBalance API (internal call)
-        $getBalanceApiUrl = url('https://luckymillion.pro/api/provider/shan/ShanGetBalances'); // or full URL if needed
+        $getBalanceApiUrl = url('/api/provider/shan/ShanGetBalances'); // Use relative URL for internal call
 
         $response = Http::post($getBalanceApiUrl, $getBalancePayload);
 
-       
+        Log::info('Shankomee LaunchGame: Internal API response', [
+            'url' => $getBalanceApiUrl,
+            'status_code' => $response->status(),
+            'response_body' => $response->body(),
+        ]);
 
         if (!$response->successful()) {
             Log::error('Failed to get balance from internal API', [
