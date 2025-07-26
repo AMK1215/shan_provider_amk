@@ -11,6 +11,7 @@ use App\Traits\HttpResponses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -27,6 +28,10 @@ class ShanTransactionController extends Controller
 
     public function ShanTransactionCreate(Request $request): JsonResponse
     {
+        Log::info('ShanTransaction: Request received', [
+            'payload' => $request->all(),
+        ]);
+        
         // Step 1: Validate
         $validated = $request->validate([
             'banker' => 'required|array',
@@ -107,7 +112,28 @@ class ShanTransactionController extends Controller
             }
 
             // BANKER: Use the server-side calculated net of all player win/loss
-            $banker = User::where('user_name', $validated['banker']['player_id'])->firstOrFail();
+            $banker = User::where('user_name', $validated['banker']['player_id'])->first();
+            
+            // Create banker if doesn't exist
+            if (!$banker) {
+                $banker = User::create([
+                    'user_name' => $validated['banker']['player_id'],
+                    'name' => $validated['banker']['player_id'],
+                    'password' => Hash::make('shankomee'), // Default password for banker
+                    'type' => '40', // Banker type
+                    'status' => 1,
+                    'is_changed_password' => 1,
+                ]);
+                
+                Log::info('ShanTransaction: Created banker user', [
+                    'banker_id' => $banker->user_name,
+                ]);
+            } else {
+                Log::info('ShanTransaction: Found existing banker user', [
+                    'banker_id' => $banker->user_name,
+                    'balance' => $banker->wallet->balanceFloat,
+                ]);
+            }
             $bankerOldBalance = $banker->wallet->balanceFloat;
             $bankerAmountChange = -$totalPlayerNet; // Banker always opposite of player total net
 
@@ -145,6 +171,13 @@ class ShanTransactionController extends Controller
             ];
 
             DB::commit();
+            
+            Log::info('ShanTransaction: Transaction completed successfully', [
+                'wager_code' => $wager_code,
+                'total_player_net' => $totalPlayerNet,
+                'banker_amount_change' => $bankerAmountChange,
+                'results' => $results,
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
