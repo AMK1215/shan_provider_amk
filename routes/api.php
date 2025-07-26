@@ -98,14 +98,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Player game logs
     Route::get('/player/game-logs', [GameLogController::class, 'index']);
     Route::get('user', [AuthController::class, 'getUser']);
-    // 2d route 
-    Route::post('/twod-bet', [TwoDigitBetController::class, 'store']);
-    Route::get('/twod-bet-slips', [TwoDigitBetController::class, 'myBetSlips']);
-    // evening-twod-bet-slips
-    Route::get('/evening-twod-bet-slips', [TwoDigitBetController::class, 'eveningSessionSlip']);
-    Route::get('/two-d-daily-winners', [TwoDigitBetController::class, 'dailyWinners']);
-    // shan launch game
-    Route::post('shan-launch-game', [ShanLaunchGameController::class, 'launch']);
+   
 
 
 });

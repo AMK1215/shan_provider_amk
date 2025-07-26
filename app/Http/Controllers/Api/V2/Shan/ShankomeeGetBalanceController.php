@@ -103,7 +103,7 @@ class ShankomeeGetBalanceController extends Controller
             'allowed_codes' => $allowed_product_codes,
         ]);
 
-        $callbackUrl = $operator->callback_url ?? 'https://delightmyanmar99.pro/api/shan/balance';
+        $callbackUrl = $operator->callback_url ?? 'https://ponewine20x.xyz/api/shan/balance';
 
     $results = [];
     foreach ($request->batch_requests as $item) {
@@ -215,7 +215,7 @@ class ShankomeeGetBalanceController extends Controller
             'batch_requests' => [
                 [
                     'member_account' => $member_account,
-                    'product_code'   => 1002, // or as required
+                    'product_code'   => 100200, // or as required
                     'balance'        => $userBalance, // Add the balance field
                 ]
             ],
