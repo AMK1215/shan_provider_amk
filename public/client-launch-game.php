@@ -24,6 +24,7 @@ class ClientLaunchGame {
      * @param int $gameData['product_code'] Product code
      * @param string $gameData['game_type'] Game type
      * @param string $gameData['member_account'] Member account
+     * @param float $gameData['balance'] User balance
      * @param string|null $gameData['nickname'] Optional nickname
      * @return array Response with game URL
      * @throws Exception
@@ -34,6 +35,7 @@ class ClientLaunchGame {
             'product_code' => $gameData['product_code'],
             'game_type' => $gameData['game_type'],
             'member_account' => $gameData['member_account'],
+            'balance' => $gameData['balance'],
         ];
         
         if (isset($gameData['nickname'])) {
@@ -47,15 +49,17 @@ class ClientLaunchGame {
      * Launch a slot game
      * 
      * @param string $memberAccount Member account
+     * @param float $balance User balance
      * @param int $productCode Product code (default: 1007)
      * @param string|null $nickname Optional nickname
      * @return array Response with game URL
      */
-    public function launchSlotGame($memberAccount, $productCode = 1007, $nickname = null) {
+    public function launchSlotGame($memberAccount, $balance, $productCode = 1007, $nickname = null) {
         return $this->launchGame([
             'product_code' => $productCode,
             'game_type' => 'slot',
             'member_account' => $memberAccount,
+            'balance' => $balance,
             'nickname' => $nickname
         ]);
     }
@@ -64,15 +68,17 @@ class ClientLaunchGame {
      * Launch a live casino game
      * 
      * @param string $memberAccount Member account
+     * @param float $balance User balance
      * @param int $productCode Product code (default: 1221)
      * @param string|null $nickname Optional nickname
      * @return array Response with game URL
      */
-    public function launchLiveGame($memberAccount, $productCode = 1221, $nickname = null) {
+    public function launchLiveGame($memberAccount, $balance, $productCode = 1221, $nickname = null) {
         return $this->launchGame([
             'product_code' => $productCode,
             'game_type' => 'live',
             'member_account' => $memberAccount,
+            'balance' => $balance,
             'nickname' => $nickname
         ]);
     }
@@ -81,15 +87,17 @@ class ClientLaunchGame {
      * Launch a table game
      * 
      * @param string $memberAccount Member account
+     * @param float $balance User balance
      * @param int $productCode Product code (default: 1040)
      * @param string|null $nickname Optional nickname
      * @return array Response with game URL
      */
-    public function launchTableGame($memberAccount, $productCode = 1040, $nickname = null) {
+    public function launchTableGame($memberAccount, $balance, $productCode = 1040, $nickname = null) {
         return $this->launchGame([
             'product_code' => $productCode,
             'game_type' => 'table',
             'member_account' => $memberAccount,
+            'balance' => $balance,
             'nickname' => $nickname
         ]);
     }
@@ -98,15 +106,17 @@ class ClientLaunchGame {
      * Launch a fishing game
      * 
      * @param string $memberAccount Member account
+     * @param float $balance User balance
      * @param int $productCode Product code (default: 1046)
      * @param string|null $nickname Optional nickname
      * @return array Response with game URL
      */
-    public function launchFishingGame($memberAccount, $productCode = 1046, $nickname = null) {
+    public function launchFishingGame($memberAccount, $balance, $productCode = 1046, $nickname = null) {
         return $this->launchGame([
             'product_code' => $productCode,
             'game_type' => 'fishing',
             'member_account' => $memberAccount,
+            'balance' => $balance,
             'nickname' => $nickname
         ]);
     }
@@ -164,16 +174,16 @@ $gameClient = new ClientLaunchGame([
 
 try {
     // Launch different types of games
-    $result = $gameClient->launchSlotGame('AG10726478', 1007, 'TestShanAgent');
+    $result = $gameClient->launchSlotGame('AG10726478', 8000, 1007, 'TestShanAgent');
     echo "Slot game launched: " . $result['url'] . "\n";
     
-    $result = $gameClient->launchLiveGame('AG10726478', 1221, 'TestShanAgent');
+    $result = $gameClient->launchLiveGame('AG10726478', 8000, 1221, 'TestShanAgent');
     echo "Live game launched: " . $result['url'] . "\n";
     
-    $result = $gameClient->launchTableGame('AG10726478', 1040, 'TestShanAgent');
+    $result = $gameClient->launchTableGame('AG10726478', 8000, 1040, 'TestShanAgent');
     echo "Table game launched: " . $result['url'] . "\n";
     
-    $result = $gameClient->launchFishingGame('AG10726478', 1046, 'TestShanAgent');
+    $result = $gameClient->launchFishingGame('AG10726478', 8000, 1046, 'TestShanAgent');
     echo "Fishing game launched: " . $result['url'] . "\n";
     
     // Or launch with custom parameters
@@ -181,6 +191,7 @@ try {
         'product_code' => 1007,
         'game_type' => 'slot',
         'member_account' => 'AG10726478',
+        'balance' => 8000,
         'nickname' => 'TestShanAgent'
     ]);
     echo "Custom game launched: " . $result['url'] . "\n";

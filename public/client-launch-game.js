@@ -20,6 +20,7 @@ class ClientLaunchGame {
      * @param {string} gameData.product_code - Product code
      * @param {string} gameData.game_type - Game type
      * @param {string} gameData.member_account - Member account
+     * @param {number} gameData.balance - User balance
      * @param {string} [gameData.nickname] - Optional nickname
      * @returns {Promise<Object>} - Response with game URL
      */
@@ -28,13 +29,14 @@ class ClientLaunchGame {
             // Show loading state
             this.onLoading(true);
 
-            const payload = {
-                agent_code: this.agentCode,
-                product_code: gameData.product_code,
-                game_type: gameData.game_type,
-                member_account: gameData.member_account,
-                ...(gameData.nickname && { nickname: gameData.nickname })
-            };
+                    const payload = {
+            agent_code: this.agentCode,
+            product_code: gameData.product_code,
+            game_type: gameData.game_type,
+            member_account: gameData.member_account,
+            balance: gameData.balance,
+            ...(gameData.nickname && { nickname: gameData.nickname })
+        };
 
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
@@ -64,15 +66,17 @@ class ClientLaunchGame {
     /**
      * Launch a slot game
      * @param {string} memberAccount - Member account
+     * @param {number} balance - User balance
      * @param {number} productCode - Product code
      * @param {string} [nickname] - Optional nickname
      * @returns {Promise<Object>} - Response with game URL
      */
-    async launchSlotGame(memberAccount, productCode = 1007, nickname = null) {
+    async launchSlotGame(memberAccount, balance, productCode = 1007, nickname = null) {
         return this.launchGame({
             product_code: productCode,
             game_type: 'slot',
             member_account: memberAccount,
+            balance,
             nickname
         });
     }
@@ -80,15 +84,17 @@ class ClientLaunchGame {
     /**
      * Launch a live casino game
      * @param {string} memberAccount - Member account
+     * @param {number} balance - User balance
      * @param {number} productCode - Product code
      * @param {string} [nickname] - Optional nickname
      * @returns {Promise<Object>} - Response with game URL
      */
-    async launchLiveGame(memberAccount, productCode = 1221, nickname = null) {
+    async launchLiveGame(memberAccount, balance, productCode = 1221, nickname = null) {
         return this.launchGame({
             product_code: productCode,
             game_type: 'live',
             member_account: memberAccount,
+            balance,
             nickname
         });
     }
@@ -96,15 +102,17 @@ class ClientLaunchGame {
     /**
      * Launch a table game
      * @param {string} memberAccount - Member account
+     * @param {number} balance - User balance
      * @param {number} productCode - Product code
      * @param {string} [nickname] - Optional nickname
      * @returns {Promise<Object>} - Response with game URL
      */
-    async launchTableGame(memberAccount, productCode = 1040, nickname = null) {
+    async launchTableGame(memberAccount, balance, productCode = 1040, nickname = null) {
         return this.launchGame({
             product_code: productCode,
             game_type: 'table',
             member_account: memberAccount,
+            balance,
             nickname
         });
     }
@@ -112,15 +120,17 @@ class ClientLaunchGame {
     /**
      * Launch a fishing game
      * @param {string} memberAccount - Member account
+     * @param {number} balance - User balance
      * @param {number} productCode - Product code
      * @param {string} [nickname] - Optional nickname
      * @returns {Promise<Object>} - Response with game URL
      */
-    async launchFishingGame(memberAccount, productCode = 1046, nickname = null) {
+    async launchFishingGame(memberAccount, balance, productCode = 1046, nickname = null) {
         return this.launchGame({
             product_code: productCode,
             game_type: 'fishing',
             member_account: memberAccount,
+            balance,
             nickname
         });
     }
@@ -180,16 +190,17 @@ const gameClient = new ClientLaunchGame({
 });
 
 // Launch different types of games
-gameClient.launchSlotGame('AG10726478', 1007, 'TestShanAgent');
-gameClient.launchLiveGame('AG10726478', 1221, 'TestShanAgent');
-gameClient.launchTableGame('AG10726478', 1040, 'TestShanAgent');
-gameClient.launchFishingGame('AG10726478', 1046, 'TestShanAgent');
+gameClient.launchSlotGame('AG10726478', 8000, 1007, 'TestShanAgent');
+gameClient.launchLiveGame('AG10726478', 8000, 1221, 'TestShanAgent');
+gameClient.launchTableGame('AG10726478', 8000, 1040, 'TestShanAgent');
+gameClient.launchFishingGame('AG10726478', 8000, 1046, 'TestShanAgent');
 
 // Or launch with custom parameters
 gameClient.launchGame({
     product_code: 1007,
     game_type: 'slot',
     member_account: 'AG10726478',
+    balance: 8000,
     nickname: 'TestShanAgent'
 });
 */ 
