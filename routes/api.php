@@ -66,6 +66,9 @@ Route::prefix('v1/api/seamless')->group(function () {
 
 Route::post('/transactions', [ShanTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
 
+// Client launch game endpoint (no authentication required)
+Route::post('/client/launch-game', [LaunchGameController::class, 'launchGameForClient']);
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/seamless/launch-game', [LaunchGameController::class, 'launchGame']);
 
