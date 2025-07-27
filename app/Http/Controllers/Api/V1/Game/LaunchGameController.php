@@ -76,13 +76,19 @@ class LaunchGameController extends Controller
        $balance = $request->balance;
 
         // Build launch game URL with Shan provider configuration
+        // $launchGameUrl = sprintf(
+        //     'https://ponewine20x.xyz/?user_name=%s&balance=%s&product_code=%s&game_type=%s&agent_code=%s',
+        //     urlencode($memberAccount),
+        //     $balance,
+        //     $validatedData['product_code'],
+        //     $validatedData['game_type'],
+        //     $validatedData['agent_code']
+        // );
+
         $launchGameUrl = sprintf(
-            'https://ponewine20x.xyz/?user_name=%s&balance=%s&product_code=%s&game_type=%s&agent_code=%s',
+            'https://goldendragon7.pro/?user_name=%s&balance=%s',
             urlencode($memberAccount),
-            $balance,
-            $validatedData['product_code'],
-            $validatedData['game_type'],
-            $validatedData['agent_code']
+            $balance
         );
 
         Log::info('Provider Launch Game URL generated', [
