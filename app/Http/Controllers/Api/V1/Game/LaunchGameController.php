@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str; // Make sure to use Http facade for making requests
+use App\Enums\UserType;
 
 class LaunchGameController extends Controller
 {
