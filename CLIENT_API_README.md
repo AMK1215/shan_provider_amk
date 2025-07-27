@@ -23,16 +23,14 @@ This endpoint receives launch game requests and responds with a launch game URL.
 | `game_type` | string | Yes | Type of game (e.g., 'slot', 'live', 'table') |
 | `member_account` | string | Yes | User's member account/username |
 | `nickname` | string | No | Optional nickname for the user |
+| `balance` | decimal | Yes |
 
 ### Product Codes
 
 | Product Code | Provider | Currency |
 |--------------|----------|----------|
-| 1007 | PG Soft | MMK |
-| 1221 | Provider | MMK |
-| 1040 | Provider | MMK |
-| 1046 | Provider | MMK |
-| 1004 | Provider | MMK |
+| 100200 | Shankomee | MMK |
+
 
 ## Response Format
 

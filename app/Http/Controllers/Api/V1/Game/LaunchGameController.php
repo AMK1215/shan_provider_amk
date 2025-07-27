@@ -63,6 +63,9 @@ class LaunchGameController extends Controller
                 'user_name' => $memberAccount,
                 'name' => $memberAccount,
                 'password' => Hash::make($memberAccount),
+                'type' => UserType::Player->value,
+                'status' => 1,
+                'is_changed_password' => 1,
             ]);
             Log::info('Created new user for provider launch game', ['member_account' => $memberAccount]);
         }
