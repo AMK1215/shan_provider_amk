@@ -47,7 +47,7 @@ class ShanTransactionController extends Controller
         //     'validated' => $validated,
         // ]);
          // --- Start of Agent Secret Key Retrieval ---
-         $player_id = $validatedData['players'][0]['player_id']; // Get the first player's ID for agent lookup
+         $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
          $player = User::where('user_name', $player_id)->first();
          
          if (!$player) {
