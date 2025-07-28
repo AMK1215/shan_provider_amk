@@ -74,6 +74,7 @@ class LaunchGameController extends Controller
                 'type' => UserType::Player->value,
                 'status' => 1,
                 'is_changed_password' => 1,
+                'shan_agent_code' => $validatedData['agent_code'],
             ]);
             Log::info('Created new user for provider launch game', ['member_account' => $memberAccount]);
             
