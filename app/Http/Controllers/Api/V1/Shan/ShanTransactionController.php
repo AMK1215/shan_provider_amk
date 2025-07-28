@@ -207,8 +207,7 @@ class ShanTransactionController extends Controller
                 'balance' => $banker->wallet->balanceFloat,
             ];
 
-            // client site player's balance update with call back url
-            $callback_url = $agent->shan_callback_url;
+           
 
             DB::commit();
             
