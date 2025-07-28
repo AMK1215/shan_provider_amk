@@ -78,6 +78,16 @@ class ShanTransactionController extends Controller
              'secret_key' => $secret_key // Be cautious logging actual secret keys in production
          ]);
 
+         // agent credit 
+         $agent_balance = $agent->wallet->balanceFloat;
+         if ($agent_balance < 0) {
+            return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
+         }
+
+         Log::info('Agent balance', [
+            'agent_balance' => $agent_balance,
+         ]);
+
         
                 
         // Generate unique wager_code for idempotency

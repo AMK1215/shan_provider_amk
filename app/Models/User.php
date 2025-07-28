@@ -192,7 +192,7 @@ class User extends Authenticatable implements Wallet
 
     public static function adminUser()
     {
-        return self::where('type', UserType::SystemWallet)->first();
+        return self::where('type', UserType::Agent)->first();
     }
 
     /**
