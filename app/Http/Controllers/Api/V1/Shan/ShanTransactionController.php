@@ -69,10 +69,10 @@ class ShanTransactionController extends Controller
          // Now you can access the secret key directly from the $agent object
          $secret_key = $agent->shan_secret_key;
 
-         if (!$secret_key) {
-             // This means the agent was found, but their secret_key field is null or empty
-             return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
-         }
+        //  if (!$secret_key) {
+        //      // This means the agent was found, but their secret_key field is null or empty
+        //      return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
+        //  }
          // --- End of Agent Secret Key Retrieval ---
 
          Log::info('Agent Secret Key Retrieved', [
