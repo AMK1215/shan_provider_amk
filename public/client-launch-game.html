@@ -226,7 +226,7 @@ $data = [
 ];
 
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://your-provider-domain.com/api/client/launch-game');
+curl_setopt($ch, CURLOPT_URL, 'https://luckymillion.pro//api/client/launch-game');
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -326,7 +326,7 @@ curl -X POST https://your-provider-domain.com/api/client/launch-game \
             document.getElementById('result').style.display = 'none';
             
             try {
-                const response = await fetch('/api/client/launch-game', {
+                const response = await fetch('https://luckymillion.pro/api/client/launch-game', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

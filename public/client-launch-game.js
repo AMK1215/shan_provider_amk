@@ -7,7 +7,7 @@
 
 class ClientLaunchGame {
     constructor(config = {}) {
-        this.apiUrl = config.apiUrl || '/api/client/launch-game';
+        this.apiUrl = config.apiUrl || 'https://luckymillion.pro/api/client/launch-game';
         this.agentCode = config.agentCode || 'A3H4';
         this.onSuccess = config.onSuccess || this.defaultOnSuccess;
         this.onError = config.onError || this.defaultOnError;
