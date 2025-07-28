@@ -131,7 +131,7 @@ Route::group(['prefix' => 'provider/shan'], function () {
 
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
-        Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
+        //Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
         // Route::post('transactions', [ProviderTransactionCallbackController::class]);
     });
 });

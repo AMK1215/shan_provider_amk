@@ -34,10 +34,10 @@ return new class extends Migration
             $table->string('site_name')->nullable();
             $table->string('site_link')->nullable();
             $table->string('type');
-            $table->string('shan_agent_code')->default('ABC123');
-            $table->string('shan_agent_name')->default('ShanKomee');
-            $table->string('shan_secret_key')->default('qwerabcdzxcvSSYYSS');
-            $table->string('shan_callback_url')->default('https://delightmyanmar99.pro');
+            $table->string('shan_agent_code')->nullable();
+            $table->string('shan_agent_name')->nullable();
+            $table->string('shan_secret_key')->nullable();
+            $table->string('shan_callback_url')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->foreign('agent_id')->references('id')->on('users')->onDelete('cascade');

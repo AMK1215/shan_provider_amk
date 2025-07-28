@@ -43,6 +43,43 @@ class ShanTransactionController extends Controller
             'players.*.win_lose_status' => 'required|integer|in:0,1'
         ]);
 
+        // Log::info('ShanTransaction: Validated data', [
+        //     'validated' => $validated,
+        // ]);
+         // --- Start of Agent Secret Key Retrieval ---
+         $player_id = $validatedData['players'][0]['player_id']; // Get the first player's ID for agent lookup
+         $player = User::where('user_name', $player_id)->first();
+         
+         if (!$player) {
+             return $this->error('Player not found', 'Player not found', 404);
+         }
+
+         $player_agent_code = $player->shan_agent_code; // Get the agent code associated with the player
+
+         // Find the agent using the shan_agent_code
+         $agent = User::where('shan_agent_code', $player_agent_code)
+                      ->first();
+
+         if (!$agent) {
+             return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
+         }
+
+         // Now you can access the secret key directly from the $agent object
+         $secret_key = $agent->shan_secret_key;
+
+         if (!$secret_key) {
+             // This means the agent was found, but their secret_key field is null or empty
+             return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
+         }
+         // --- End of Agent Secret Key Retrieval ---
+
+         Log::info('Agent Secret Key Retrieved', [
+             'agent_username' => $agent->user_name,
+             'secret_key' => $secret_key // Be cautious logging actual secret keys in production
+         ]);
+
+        
+                
         // Generate unique wager_code for idempotency
         do {
             $wager_code = Str::random(12);
