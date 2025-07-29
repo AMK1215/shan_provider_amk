@@ -276,9 +276,9 @@ class ShanTransactionController extends Controller
         // Optional: Ensure it's an actual agent role using ->where('type', User::AGENT_ROLE)
         $agent = User::where('shan_agent_code', $player_agent_code)->first();
 
-        if (!$agent) {
-            return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
-        }
+        // if (!$agent) {
+        //     return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
+        // }
 
         // Now you can access the secret key directly from the $agent object
         $secret_key = $agent->shan_secret_key;
@@ -303,9 +303,9 @@ class ShanTransactionController extends Controller
 
         // agent credit
         $agent_balance = $agent->wallet->balanceFloat;
-        if ($agent_balance < 0) {
-            return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
-        }
+        // if ($agent_balance < 0) {
+        //     return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
+        // }
 
         Log::info('Agent balance', [
             'agent_balance' => $agent_balance,
