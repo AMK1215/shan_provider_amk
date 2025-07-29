@@ -6,9 +6,9 @@ use App\Models\TwoDigit\Bettle; // Assuming your User model is in App\Models
 use App\Models\TwoDigit\ChooseDigit; // Assuming Bettle model is in App\Models\TwoDigit
 use App\Models\TwoDigit\HeadClose; // Assuming ChooseDigit model is in App\Models\TwoDigit
 use App\Models\User; // Assuming HeadClose model is in App\Models\TwoDigit
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class TwoBet extends Model
 {

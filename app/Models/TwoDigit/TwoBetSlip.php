@@ -2,16 +2,18 @@
 
 namespace App\Models\TwoDigit;
 
+use App\Models\TwoDigit\TwoBet;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
-use App\Models\TwoDigit\TwoBet;
-use Carbon\Carbon;
 
 class TwoBetSlip extends Model
 {
     use HasFactory;
+
     protected $table = 'two_bet_slips';
+
     protected $fillable = [
         'slip_no',
         'user_id',
@@ -38,9 +40,9 @@ class TwoBetSlip extends Model
 
     // slip no
     public function twoBets()
-{
-    return $this->hasMany(TwoBet::class, 'slip_id', 'id');
-}
+    {
+        return $this->hasMany(TwoBet::class, 'slip_id', 'id');
+    }
 
     protected static function boot()
     {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GSC PLUS | Dashboard</title>
+    <title>ShanKomeeProvider | Dashboard</title>
 
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -110,7 +110,7 @@
              <a href="{{ route('home') }}" class="brand-link">
             <img src="{{ asset('img/city_slot_logo.jpg') }}" alt="AdminLTE Logo"
                 class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">CitySlot</span>
+            <span class="brand-text font-weight-light">ShanKomeeProvider</span>
             </a> 
             <!-- Brand Logo -->
 
@@ -163,7 +163,7 @@
                             </li>
                         @endcan
                         @can('contact')
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.contact.index') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.contact.index' ? 'active' : '' }}">
                                     <i class="fas fa-address-book"></i>
@@ -171,10 +171,10 @@
                                         Contact
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                         @endcan
                         @can('bank')
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.bank.index') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.bank.index' ? 'active' : '' }}">
                                     <i class="fas fa-university"></i>
@@ -182,10 +182,10 @@
                                         Bank
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                         @endcan
                         @if(Auth::user()->hasPermission('process_withdraw'))
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.agent.withdraw') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.agent.withdraw' ? 'active' : '' }}">
                                     <i class="fas fa-comment-dollar"></i>
@@ -193,10 +193,10 @@
                                         WithDraw Request
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                         @endif
                         @if(Auth::user()->hasPermission('process_deposit') || Auth::user()->hasPermission('view_deposit_requests'))
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.agent.deposit') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.agent.deposit' ? 'active' : '' }}">
                                     <i class="fab fa-dochub"></i>
@@ -204,7 +204,7 @@
                                         Deposit Request
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                         @endif
                         @can('transfer_log')
                         <li class="nav-item">
@@ -219,7 +219,7 @@
                         @endcan
                        
                         @can('agent_access')
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.subacc.index') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.index' ? 'active' : '' }}">
                                     <i class="fas fa-user-plus"></i>
@@ -227,7 +227,7 @@
                                         Sub Agent Account
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                             <!-- <li class="nav-item">
                                 <a href="{{ route('admin.agent.profile', auth()->user()->id) }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.agent.profile' ? 'active' : '' }}">
@@ -250,7 +250,7 @@
                        
                         @endcan
                         @can('player_view')
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ route('admin.subacc.profile', auth()->user()->id) }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.profile' ? 'active' : '' }}">
                                     <i class="fas fa-user-plus"></i>
@@ -268,7 +268,7 @@
                                         PlayerList
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                             <!-- <li class="nav-item">
                                 <a href="{{ route('admin.subacc.tran.logs') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.tran.logs' ? 'active' : '' }}">
@@ -283,7 +283,7 @@
 
                         @can('player_view')
 
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                                 <a href="{{ route('admin.subacc.tran.logs') }}"
                                     class="nav-link {{ Route::current()->getName() == 'admin.subacc.tran.logs' ? 'active' : '' }}">
                                     <i class="fas fa-exchange-alt"></i>
@@ -291,7 +291,7 @@
                                     Transaction Log
                                     </p>
                                 </a>
-                            </li>
+                            </li> -->
                            
                         @endcan
                         @can('owner_access')
@@ -334,7 +334,7 @@
                         <!-- 2D -->
 
                         @can('owner_access')
-                            <li
+                            <!-- <li
                                 class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="fas fa-tools"></i>
@@ -376,21 +376,15 @@
                                             </a>
                                         </li>
 
-                                    <!-- <li class="nav-item">
-                                        <a href=""
-                                            class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>GSC GameType</p>
-                                        </a>
-                                    </li> -->
+                                    
                                 </ul>
-                            </li>
+                            </li> -->
                         @endcan
 
 
                         <!-- agent 2d -->
                         @can('agent_access')
-                            <li
+                            <!-- <li
                                 class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="fas fa-tools"></i>
@@ -425,19 +419,8 @@
                                                 <p>2D Daily Winners</p>
                                             </a>
                                         </li>
-
-
-
-
-                                    <!-- <li class="nav-item">
-                                        <a href=""
-                                            class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>GSC GameType</p>
-                                        </a>
-                                    </li> -->
                                 </ul>
-                            </li>
+                            </li> -->
                         @endcan
 
                         <!-- agent 2d -->
@@ -495,43 +478,7 @@
                             </a>
                         </li> -->
                         @endcan
-                                <!-- <li class="nav-item menu-open">
-                                    <a href=""
-                                        class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                            PoneWine Report
-                                        </p>
-                                    </a>
-                                </li>
-                                <li class="nav-item menu-open">
-                                    <a href=""
-                                        class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                           Shan Report
-                                        </p>
-                                    </a>
-                                </li> -->
-                                <!-- <li class="nav-item">
-                                    <a href=""
-                                        class="nav-link">
-                                        <i class="fab fa-dochub"></i>
-                                        <p>
-                                            Backup Report
-                                        </p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item menu-open">
-                                    <a href=""
-                                        class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                            Daily Report
-                                        </p>
-                                    </a>
-                                </li> -->
+                                
                                 @can('owner_access')
                                 <li
                                 class="nav-item">
@@ -577,21 +524,7 @@
             </a>
         </li>
 
-        <!-- <li class="nav-item">
-            <a href="{{ route('admin.winner_text.index') }}"
-               class="nav-link {{ Route::current()->getName() == 'admin.winner_text.index' ? 'active' : '' }}">
-                <i class="fas fa-trophy nav-icon"></i>
-                <p>WinnerText</p>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a href="{{ route('admin.top-10-withdraws.index') }}"
-               class="nav-link {{ Route::current()->getName() == 'admin.top-10-withdraws.index' ? 'active' : '' }}">
-                <i class="fas fa-list-ol nav-icon"></i>
-                <p>WithdrawTopTen</p>
-            </a>
-        </li> -->
+       
 
         <li class="nav-item">
             <a href="{{ route('admin.text.index') }}"
@@ -638,7 +571,7 @@
             @yield('content')
         </div>
         <footer class="main-footer">
-            <strong>Copyright &copy; 2025 <a href="">GSC PLUS</a>.</strong>
+            <strong>Copyright &copy; 2025 <a href="">ShanKomeeProvider</a>.</strong>
             All rights reserved.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Version</b> 3.2.2

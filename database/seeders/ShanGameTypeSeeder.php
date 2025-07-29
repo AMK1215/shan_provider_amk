@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\GameType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\GameType;
-
 
 class ShanGameTypeSeeder extends Seeder
 {
@@ -16,7 +15,7 @@ class ShanGameTypeSeeder extends Seeder
     {
         $gameTypes = [
             ['code' => 'SHAN', 'name' => 'Shankome', 'name_mm' => 'Shankomee', 'img' => 'jackpot.png', 'status' => 1, 'order' => '15'],
-            
+
         ];
 
         foreach ($gameTypes as $gameTypeData) {

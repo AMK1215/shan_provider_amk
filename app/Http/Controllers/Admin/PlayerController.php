@@ -119,7 +119,7 @@ class PlayerController extends Controller
                 if ($playerIds->contains($log->to_user_id)) {
                     return $log->to_user_id;
                 }
-                 // This case should theoretically not be hit if whereIn covers it
+                // This case should theoretically not be hit if whereIn covers it
             });
 
         // Step 5: Build users collection with aggregated stats and transfer logs

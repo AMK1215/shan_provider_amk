@@ -21,8 +21,8 @@ class ShanPlayerReportController extends Controller
         // Date filter (optional)
         if ($request->filled('date_from') && $request->filled('date_to')) {
             $reportsQuery->whereBetween('created_at', [
-                $request->input('date_from') . ' 00:00:00',
-                $request->input('date_to') . ' 23:59:59'
+                $request->input('date_from').' 00:00:00',
+                $request->input('date_to').' 23:59:59',
             ]);
         }
 

@@ -26,15 +26,15 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\PushBetDataController;
 use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionControllerAlias;
 use App\Http\Controllers\Api\V1\PromotionController;
+use App\Http\Controllers\Api\V1\Shan\ShanApiTransactionController;
 use App\Http\Controllers\Api\V1\Shan\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\Shan\ShanTransactionController;
+use App\Http\Controllers\Api\V1\TwoDigit\TwoDigitBetController;
 use App\Http\Controllers\Api\V1\Wallet\WalletController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
+use App\Http\Controllers\Api\V2\Shan\ShankomeeGetBalanceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\TwoDigit\TwoDigitBetController;
-use App\Http\Controllers\Api\V2\Shan\ShankomeeGetBalanceController;
-use App\Http\Controllers\Api\V1\Shan\ShanApiTransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,8 +102,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Player game logs
     Route::get('/player/game-logs', [GameLogController::class, 'index']);
     Route::get('user', [AuthController::class, 'getUser']);
-   
-
 
 });
 
@@ -121,7 +119,7 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
 
 Route::group(['prefix' => 'shan'], function () {
     Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
-    //Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
+    // Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
 });
 
 // provider shan api
@@ -132,7 +130,7 @@ Route::group(['prefix' => 'provider/shan'], function () {
 
 Route::prefix('v1')->group(function () {
     Route::prefix('game')->group(function () {
-        //Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
+        // Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
         // Route::post('transactions', [ProviderTransactionCallbackController::class]);
     });
 });

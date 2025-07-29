@@ -115,7 +115,6 @@ class ProviderTransactionCallbackController extends Controller
      *
      * @throws \Exception If the player is not found.
      */
-    
 
     /**
      * Find the user by player ID.

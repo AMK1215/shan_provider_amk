@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1\Game;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Operator;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
-use App\Services\WalletService;
-use App\Enums\UserType;
 use App\Enums\TransactionName;
-use Illuminate\Support\Facades\Log;
+use App\Enums\UserType;
 use App\Helpers\InternalApiHelper;
+use App\Http\Controllers\Controller;
+use App\Models\Operator;
+use App\Models\User;
+use App\Services\WalletService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ShanLaunchGameController extends Controller
 {
@@ -23,10 +23,11 @@ class ShanLaunchGameController extends Controller
         // 1. Validate input
         $validator = Validator::make($request->all(), [
             'member_account' => 'required|string|max:50',
-            'operator_code'  => 'required|string',
+            'operator_code' => 'required|string',
         ]);
         if ($validator->fails()) {
             Log::warning('ShanLaunchGameController: Validation failed', ['errors' => $validator->errors()]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Validation error',
@@ -36,8 +37,9 @@ class ShanLaunchGameController extends Controller
 
         $player = Auth::user();
         Log::info('ShanLaunchGameController: Player', ['player' => $player]);
-        if (!$player) {
+        if (! $player) {
             Log::warning('ShanLaunchGameController: No authenticated user');
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Unauthorized',
@@ -45,14 +47,15 @@ class ShanLaunchGameController extends Controller
         }
 
         $memberAccount = $request->input('member_account');
-        $operatorCode  = $request->input('operator_code');
+        $operatorCode = $request->input('operator_code');
 
         // 2. Lookup operator (for callback_url and secret_key)
         $operator = Operator::where('code', $operatorCode)
             ->where('active', true)
             ->first();
-        if (!$operator) {
+        if (! $operator) {
             Log::warning('ShanLaunchGameController: Invalid operator code', ['operator_code' => $operatorCode]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Invalid operator code',
@@ -73,12 +76,12 @@ class ShanLaunchGameController extends Controller
             'user_id' => $player->id,
             'member_account' => $memberAccount,
             'operator_code' => $operatorCode,
-            'launch_game_url' => $launchGameUrl
+            'launch_game_url' => $launchGameUrl,
         ]);
 
         return response()->json([
             'status' => 'success',
-            'launch_game_url' => $launchGameUrl
+            'launch_game_url' => $launchGameUrl,
         ]);
     }
 }

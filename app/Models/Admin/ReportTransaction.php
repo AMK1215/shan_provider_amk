@@ -21,18 +21,18 @@ class ReportTransaction extends Model
 
     protected $fillable = [
         'user_id',
-         'agent_id', 
-         'member_account', 
-         'transaction_amount', 
-         'bet_amount', 
-         'valid_amount', 
-         'status', 
-         'banker', 
-         'before_balance', 
-         'after_balance', 
-         'wager_code', 
-         'settled_status'
-        ];
+        'agent_id',
+        'member_account',
+        'transaction_amount',
+        'bet_amount',
+        'valid_amount',
+        'status',
+        'banker',
+        'before_balance',
+        'after_balance',
+        'wager_code',
+        'settled_status',
+    ];
 
     protected $casts = [
 

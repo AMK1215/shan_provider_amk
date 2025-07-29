@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Api\V1\TwoDigit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TwoD\TwoDPlayRequest;
 use App\Models\TwoDigit\Bettle;
-use App\Services\TwoDPlayService;
-use App\Traits\HttpResponses;
-use Illuminate\Http\Request; // Ensure Auth facade is used
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // Import the service
 use App\Models\TwoDigit\TwoBetSlip;
+use App\Services\TwoDPlayService;
+use App\Traits\HttpResponses; // Ensure Auth facade is used
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // Import the service
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TwoDigitBetController extends Controller
 {
@@ -100,7 +100,6 @@ class TwoDigitBetController extends Controller
             return $this->error('Server Error', 'An unexpected error occurred. Please try again later.', 500);
         }
 
-        
     }
 
     // slip no
@@ -110,21 +109,21 @@ class TwoDigitBetController extends Controller
         $currentTime = now();
         $currentHour = (int) $currentTime->format('H');
         $currentMinute = (int) $currentTime->format('i');
-        
+
         // Determine which session to show based on current time
         // Morning session: 00:00 - 12:00 (actual session time)
         // Evening session: 12:04 - 16:30 (actual session time)
-        
+
         // Display times (extended for user experience):
         // Morning data: Show until 1:00 PM
         // Evening data: Show until 6:00 PM
-        
+
         // Convert current time to minutes for easier comparison
         $currentTimeInMinutes = ($currentHour * 60) + $currentMinute;
         $morningDisplayEndTime = 13 * 60; // 1:00 PM in minutes
         $eveningStartTime = (12 * 60) + 4; // 12:04 PM in minutes
         $eveningDisplayEndTime = 18 * 60; // 6:00 PM in minutes
-        
+
         if ($currentTimeInMinutes <= $morningDisplayEndTime) {
             // Before or at 1:00 PM - show morning session
             $session = 'morning';
@@ -141,9 +140,9 @@ class TwoDigitBetController extends Controller
 
         $betSlips = TwoBetSlip::with('twoBets')
             ->where('user_id', $user->id)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('status', 'pending')
-                      ->orWhere('status', 'completed');
+                    ->orWhere('status', 'completed');
             })
             ->where('session', $session)
             ->where('game_date', $gameDate)
@@ -155,39 +154,39 @@ class TwoDigitBetController extends Controller
             'session' => $session,
             'game_date' => $gameDate,
             'count' => $betSlips->count(),
-            'ids' => $betSlips->pluck('id')
+            'ids' => $betSlips->pluck('id'),
         ]);
 
         return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");
     }
 
-    // evening session slip 
+    // evening session slip
     public function eveningSessionSlip(Request $request)
     {
         $user = Auth::user();
         $currentTime = now();
         $currentHour = (int) $currentTime->format('H');
         $currentMinute = (int) $currentTime->format('i');
-        
+
         // Evening session logic
         $currentTimeInMinutes = ($currentHour * 60) + $currentMinute;
         $eveningStartTime = (12 * 60) + 4; // 12:04 PM in minutes
         $eveningDisplayEndTime = 18 * 60; // 6:00 PM in minutes
-        
+
         $session = 'evening';
         $gameDate = $currentTime->format('Y-m-d');
-        
+
         // Only show evening data during appropriate times
         // if ($currentTimeInMinutes < $eveningStartTime) {
         //     // Before 12:04 PM - no evening data yet
         //     return $this->success([], "No evening session data available yet.");
         // }
-        
+
         $betSlips = TwoBetSlip::with('twoBets')
             ->where('user_id', $user->id)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('status', 'pending')
-                      ->orWhere('status', 'completed');
+                    ->orWhere('status', 'completed');
             })
             ->where('session', $session)
             ->where('game_date', $gameDate)
@@ -199,91 +198,88 @@ class TwoDigitBetController extends Controller
             'session' => $session,
             'game_date' => $gameDate,
             'count' => $betSlips->count(),
-            'ids' => $betSlips->pluck('id')
+            'ids' => $betSlips->pluck('id'),
         ]);
 
-        return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");    
-    }  
-
-
-    // winner list 
-    
-
-public function dailyWinners(Request $request)
-{
-    $user = Auth::user();
-
-    // ✅ Allow only authenticated player
-    // if ($user->type !== \App\Enums\UserType::Player) {
-    //     return $this->error(null, 'Only players can access winner list.', 403);
-    // }
-
-    $date = $request->input('date') ?? now()->format('Y-m-d');
-    $session = $request->input('session'); // optional
-
-    if ($session && !in_array($session, ['morning', 'evening'])) {
-        return $this->error(null, 'Invalid session.', 422);
+        return $this->success($betSlips, "Your {$session} session two-digit bet slips retrieved successfully.");
     }
 
-    // ✅ Single session provided
-    if ($session) {
-        $result = DB::table('two_d_results')
-            ->where('result_date', $date)
-            ->where('session', $session)
-            ->first();
+    // winner list
 
-        if (!$result || !$result->win_number) {
-            return $this->error(null, 'No result found for given session and date.', 404);
+    public function dailyWinners(Request $request)
+    {
+        $user = Auth::user();
+
+        // ✅ Allow only authenticated player
+        // if ($user->type !== \App\Enums\UserType::Player) {
+        //     return $this->error(null, 'Only players can access winner list.', 403);
+        // }
+
+        $date = $request->input('date') ?? now()->format('Y-m-d');
+        $session = $request->input('session'); // optional
+
+        if ($session && ! in_array($session, ['morning', 'evening'])) {
+            return $this->error(null, 'Invalid session.', 422);
         }
 
-        // ✅ Fetch all player winners (by win_digit)
-        $winners = DB::table('two_bets')
-            ->where('game_date', $date)
-            ->where('session', $session)
-            ->where('bet_number', $result->win_number)
-            ->where('win_lose', true)
-            ->select('member_name', 'bet_amount', DB::raw('bet_amount * 80 as win_amount'))
+        // ✅ Single session provided
+        if ($session) {
+            $result = DB::table('two_d_results')
+                ->where('result_date', $date)
+                ->where('session', $session)
+                ->first();
+
+            if (! $result || ! $result->win_number) {
+                return $this->error(null, 'No result found for given session and date.', 404);
+            }
+
+            // ✅ Fetch all player winners (by win_digit)
+            $winners = DB::table('two_bets')
+                ->where('game_date', $date)
+                ->where('session', $session)
+                ->where('bet_number', $result->win_number)
+                ->where('win_lose', true)
+                ->select('member_name', 'bet_amount', DB::raw('bet_amount * 80 as win_amount'))
+                ->get();
+
+            return $this->success([
+                'date' => $result->result_date,
+                'session' => $result->session,
+                'win_digit' => $result->win_number,
+                'winners' => $winners,
+            ], '2D winner list retrieved');
+        }
+
+        // ✅ Default case: show latest 3 sessions with winners
+        $recentResults = DB::table('two_d_results')
+            ->orderByDesc('result_date')
+            ->orderByDesc('session')
+            ->limit(10)
             ->get();
+
+        $data = [];
+
+        foreach ($recentResults as $res) {
+            $winners = DB::table('two_bets')
+                ->where('game_date', $res->result_date)
+                ->where('session', $res->session)
+                ->where('bet_number', $res->win_number)
+                ->where('win_lose', true)
+                ->select('member_name', 'bet_amount', DB::raw('bet_amount * 80 as win_amount'))
+                ->get();
+
+            $data[] = [
+                'date' => $res->result_date,
+                'session' => $res->session,
+                'win_digit' => $res->win_number,
+                'winners' => $winners,
+            ];
+        }
 
         return $this->success([
-            'date' => $result->result_date,
-            'session' => $result->session,
-            'win_digit' => $result->win_number,
-            'winners' => $winners,
-        ], '2D winner list retrieved');
+            'latest_results' => $data,
+        ], 'Latest 2D winners (with winners list)');
     }
-
-    // ✅ Default case: show latest 3 sessions with winners
-    $recentResults = DB::table('two_d_results')
-        ->orderByDesc('result_date')
-        ->orderByDesc('session')
-        ->limit(10)
-        ->get();
-
-    $data = [];
-
-    foreach ($recentResults as $res) {
-        $winners = DB::table('two_bets')
-            ->where('game_date', $res->result_date)
-            ->where('session', $res->session)
-            ->where('bet_number', $res->win_number)
-            ->where('win_lose', true)
-            ->select('member_name', 'bet_amount', DB::raw('bet_amount * 80 as win_amount'))
-            ->get();
-
-        $data[] = [
-            'date' => $res->result_date,
-            'session' => $res->session,
-            'win_digit' => $res->win_number,
-            'winners' => $winners,
-        ];
-    }
-
-    return $this->success([
-        'latest_results' => $data
-    ], 'Latest 2D winners (with winners list)');
-}
-
 }
 
 /*

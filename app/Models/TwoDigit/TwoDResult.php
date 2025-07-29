@@ -2,14 +2,15 @@
 
 namespace App\Models\TwoDigit;
 
+use App\Models\TwoDigit\Battle;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-use App\Models\TwoDigit\Battle;
 
 class TwoDResult extends Model
 {
     use HasFactory;
+
     protected $table = 'two_d_results';
 
     protected $fillable = [
@@ -39,10 +40,4 @@ class TwoDResult extends Model
     {
         return $query->where('result_date', Carbon::today());
     }
-
-
-
-
-
-    
 }

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Operator;
+use Illuminate\Database\Seeder;
 
 class OperatorSeeder extends Seeder
 {

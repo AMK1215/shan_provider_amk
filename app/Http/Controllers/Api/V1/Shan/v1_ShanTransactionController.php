@@ -31,7 +31,7 @@ class ShanTransactionController extends Controller
         Log::info('ShanTransaction: Request received', [
             'payload' => $request->all(),
         ]);
-        
+
         // Step 1: Validate
         $validated = $request->validate([
             'banker' => 'required|array',
@@ -40,56 +40,54 @@ class ShanTransactionController extends Controller
             'players' => 'required|array',
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
-            'players.*.win_lose_status' => 'required|integer|in:0,1'
+            'players.*.win_lose_status' => 'required|integer|in:0,1',
         ]);
 
         // Log::info('ShanTransaction: Validated data', [
         //     'validated' => $validated,
         // ]);
-         // --- Start of Agent Secret Key Retrieval ---
-         $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
-         $player = User::where('user_name', $player_id)->first();
-         
-         if (!$player) {
-             return $this->error('Player not found', 'Player not found', 404);
-         }
+        // --- Start of Agent Secret Key Retrieval ---
+        $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
+        $player = User::where('user_name', $player_id)->first();
 
-         $player_agent_code = $player->shan_agent_code; // Get the agent code associated with the player
+        if (! $player) {
+            return $this->error('Player not found', 'Player not found', 404);
+        }
 
-         // Find the agent using the shan_agent_code
-         $agent = User::where('shan_agent_code', $player_agent_code)
-                      ->first();
+        $player_agent_code = $player->shan_agent_code; // Get the agent code associated with the player
 
-         if (!$agent) {
-             return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
-         }
+        // Find the agent using the shan_agent_code
+        $agent = User::where('shan_agent_code', $player_agent_code)
+            ->first();
 
-         // Now you can access the secret key directly from the $agent object
-         $secret_key = $agent->shan_secret_key;
+        if (! $agent) {
+            return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
+        }
 
-         if (!$secret_key) {
-             // This means the agent was found, but their secret_key field is null or empty
-             return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
-         }
-         // --- End of Agent Secret Key Retrieval ---
+        // Now you can access the secret key directly from the $agent object
+        $secret_key = $agent->shan_secret_key;
 
-         Log::info('Agent Secret Key Retrieved', [
-             'agent_username' => $agent->user_name,
-             'secret_key' => $secret_key // Be cautious logging actual secret keys in production
-         ]);
+        if (! $secret_key) {
+            // This means the agent was found, but their secret_key field is null or empty
+            return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
+        }
+        // --- End of Agent Secret Key Retrieval ---
 
-         // agent credit 
-         $agent_balance = $agent->wallet->balanceFloat;
-         if ($agent_balance < 0) {
+        Log::info('Agent Secret Key Retrieved', [
+            'agent_username' => $agent->user_name,
+            'secret_key' => $secret_key, // Be cautious logging actual secret keys in production
+        ]);
+
+        // agent credit
+        $agent_balance = $agent->wallet->balanceFloat;
+        if ($agent_balance < 0) {
             return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
-         }
+        }
 
-         Log::info('Agent balance', [
+        Log::info('Agent balance', [
             'agent_balance' => $agent_balance,
-         ]);
+        ]);
 
-        
-                
         // Generate unique wager_code for idempotency
         do {
             $wager_code = Str::random(12);
@@ -109,7 +107,9 @@ class ShanTransactionController extends Controller
             // PLAYERS: Process each player, calculate total net win/loss
             foreach ($validated['players'] as $playerData) {
                 $player = User::where('user_name', $playerData['player_id'])->first();
-                if (!$player) continue;
+                if (! $player) {
+                    continue;
+                }
 
                 $oldBalance = $player->wallet->balanceFloat;
                 $betAmount = $playerData['bet_amount'];
@@ -160,11 +160,12 @@ class ShanTransactionController extends Controller
 
             // BANKER: Use the system wallet (admin user) as banker instead of individual banker users
             $banker = User::adminUser();
-            if (!$banker) {
+            if (! $banker) {
                 Log::error('ShanTransaction: System wallet (admin user) not found');
+
                 return $this->error('System wallet not found', 'Banker (system wallet) not configured', 500);
             }
-            
+
             Log::info('ShanTransaction: Using system wallet as banker', [
                 'banker_id' => $banker->user_name,
                 'balance' => $banker->wallet->balanceFloat,
@@ -175,12 +176,12 @@ class ShanTransactionController extends Controller
             if ($bankerAmountChange > 0) {
                 $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
                     'description' => 'Banker receive (from all players)',
-                    'wager_code' => $wager_code
+                    'wager_code' => $wager_code,
                 ]);
             } elseif ($bankerAmountChange < 0) {
                 $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
                     'description' => 'Banker payout (to all players)',
-                    'wager_code' => $wager_code
+                    'wager_code' => $wager_code,
                 ]);
             }
             // If $bankerAmountChange == 0, do nothing
@@ -209,7 +210,7 @@ class ShanTransactionController extends Controller
             $callback_url = $agent->shan_callback_url;
 
             DB::commit();
-            
+
             Log::info('ShanTransaction: Transaction completed successfully', [
                 'wager_code' => $wager_code,
                 'total_player_net' => $totalPlayerNet,
@@ -224,6 +225,7 @@ class ShanTransactionController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return $this->error('Transaction failed', $e->getMessage(), 500);
         }
 

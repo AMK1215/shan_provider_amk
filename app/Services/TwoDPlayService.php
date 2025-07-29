@@ -8,14 +8,14 @@ use App\Models\TwoDigit\ChooseDigit;
 use App\Models\TwoDigit\HeadClose;
 use App\Models\TwoDigit\SlipNumberCounter;
 use App\Models\TwoDigit\TwoBet;
+use App\Models\TwoDigit\TwoBetSlip;
 use App\Models\TwoDigit\TwoDLimit;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Models\TwoDigit\TwoBetSlip; // Ensure this is correctly imported if you are using it
+use Illuminate\Support\Facades\Log; // Ensure this is correctly imported if you are using it
 
 class TwoDPlayService
 {
@@ -136,10 +136,12 @@ class TwoDPlayService
         } catch (ModelNotFoundException $e) {
             DB::rollback();
             Log::error('Resource not found in TwoDPlayService: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return 'Required resource (e.g., 2D Limit) not found.';
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error in TwoDPlayService play method: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return $e->getMessage();
         }
     }
@@ -176,11 +178,13 @@ class TwoDPlayService
 
             if (in_array($headDigitOfSelected, $closedHeadDigits)) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue;
             }
 
             if (in_array($twoDigit, $closedTwoDigits)) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue;
             }
 
@@ -199,6 +203,7 @@ class TwoDPlayService
 
             if ($projectedTotalBetAmount > $overallBreakAmount) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue;
             }
 
@@ -213,6 +218,7 @@ class TwoDPlayService
 
             if ($userPersonalLimit !== null && $projectedUserBetAmount > $userPersonalLimit) {
                 $overLimitDigits[] = $twoDigit;
+
                 continue;
             }
         }
@@ -228,22 +234,22 @@ class TwoDPlayService
     {
         $maxRetries = 20; // Maximum attempts to generate a unique slip number
         $attempt = 0;
-        
+
         do {
             $attempt++;
-            
+
             // Get the base slip number which includes the atomically incremented counter
             // and the desired date/time format.
             $slipNo = $this->generateBaseSlipNumberWithCounter();
-            
+
             // Check if this generated slip number already exists in the two_bet_slips table.
             // This check is crucial for ensuring uniqueness, especially under high concurrency.
             $exists = DB::table('two_bet_slips')->where('slip_no', $slipNo)->exists(); // IMPORTANT: Check two_bet_slips table
-            
-            if (!$exists) {
+
+            if (! $exists) {
                 return $slipNo; // Found a unique slip number, return it
             }
-            
+
             // If a collision was detected, log it for monitoring purposes.
             Log::warning("Slip number collision detected (attempt {$attempt}): {$slipNo}");
 
@@ -253,12 +259,12 @@ class TwoDPlayService
             // If max retries reached, it indicates a severe issue.
             if ($attempt >= $maxRetries) {
                 Log::critical("Failed to generate unique slip number after {$maxRetries} attempts. Last attempt: {$slipNo}");
-                throw new \Exception("Could not generate a unique slip number. Please try again.");
+                throw new \Exception('Could not generate a unique slip number. Please try again.');
             }
-            
+
         } while (true);
     }
-    
+
     /**
      * Generates the base slip number by incrementing the counter within a database transaction.
      * This ensures the counter increment is atomic and reliable.
@@ -279,7 +285,7 @@ class TwoDPlayService
                 ['id' => 1],
                 ['current_number' => 0]
             );
-            
+
             // Increment the counter and get the new value. This is now safe.
             $newNumber = $counter->increment('current_number');
             // Format the counter to be a 6-digit number with leading zeros.

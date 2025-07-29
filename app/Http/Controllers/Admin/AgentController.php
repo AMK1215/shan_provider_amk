@@ -23,9 +23,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Str;
 
 class AgentController extends Controller
 {
@@ -137,7 +137,7 @@ class AgentController extends Controller
         return view('admin.agent.create', compact('agent_name', 'paymentTypes', 'referral_code', 'shan_secret_key'));
     }
 
-    // generate ShanSecretkey string 15 
+    // generate ShanSecretkey string 15
     private function generateShanSecretKey()
     {
         return Str::random(15);

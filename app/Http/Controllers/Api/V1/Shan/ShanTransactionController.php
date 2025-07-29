@@ -8,16 +8,16 @@ use App\Models\Admin\ReportTransaction;
 use App\Models\User;
 use App\Services\WalletService;
 use App\Traits\HttpResponses;
+use DateTimeImmutable;
+use DateTimeZone;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException; // Import RequestException for specific error handling
-use DateTimeImmutable; // <--- ADD THIS LINE
-use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
+use Illuminate\Support\Facades\Hash; // Import RequestException for specific error handling
+use Illuminate\Support\Facades\Log; // <--- ADD THIS LINE
+use Illuminate\Support\Str;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 
 // class ShanTransactionController extends Controller
 // {
@@ -35,7 +35,7 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //         Log::info('ShanTransaction: Request received', [
 //             'payload' => $request->all(),
 //         ]);
-        
+
 //         // Step 1: Validate
 //         $validated = $request->validate([
 //             'banker' => 'required|array',
@@ -53,7 +53,7 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //          // --- Start of Agent Secret Key Retrieval ---
 //          $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
 //          $player = User::where('user_name', $player_id)->first();
-         
+
 //          if (!$player) {
 //              return $this->error('Player not found', 'Player not found', 404);
 //          }
@@ -82,7 +82,7 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //              'secret_key' => $secret_key // Be cautious logging actual secret keys in production
 //          ]);
 
-//          // agent credit 
+//          // agent credit
 //          $agent_balance = $agent->wallet->balanceFloat;
 //          if ($agent_balance < 0) {
 //             return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
@@ -92,8 +92,6 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //             'agent_balance' => $agent_balance,
 //          ]);
 
-        
-                
 //         // Generate unique wager_code for idempotency
 //         do {
 //             $wager_code = Str::random(12);
@@ -168,7 +166,7 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //                 Log::error('ShanTransaction: System wallet (admin user) not found');
 //                 return $this->error('System wallet not found', 'Banker (system wallet) not configured', 500);
 //             }
-            
+
 //             Log::info('ShanTransaction: Using system wallet as banker', [
 //                 'banker_id' => $banker->user_name,
 //                 'balance' => $banker->wallet->balanceFloat,
@@ -209,10 +207,8 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //                 'balance' => $banker->wallet->balanceFloat,
 //             ];
 
-           
-
 //             DB::commit();
-            
+
 //             Log::info('ShanTransaction: Transaction completed successfully', [
 //                 'wager_code' => $wager_code,
 //                 'total_player_net' => $totalPlayerNet,
@@ -311,7 +307,6 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //         Log::info('Agent balance', [
 //             'agent_balance' => $agent_balance,
 //         ]);
-
 
 //         // Generate unique wager_code for idempotency
 //         do {
@@ -542,7 +537,6 @@ use DateTimeZone;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
 //     }
 // }
 
-
 class ShanTransactionController extends Controller
 {
     use HttpResponses;
@@ -567,7 +561,7 @@ class ShanTransactionController extends Controller
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
             'players.*.win_lose_status' => 'required|integer|in:0,1',
-            //'game_type_id' => 'required|integer', // Ensure this is validated if used in callback
+            // 'game_type_id' => 'required|integer', // Ensure this is validated if used in callback
         ]);
 
         $player_id = $validated['players'][0]['player_id'];
@@ -621,7 +615,7 @@ class ShanTransactionController extends Controller
             // PLAYERS: Process each player, calculate total net win/loss
             foreach ($validated['players'] as $playerData) {
                 $player = User::where('user_name', $playerData['player_id'])->first();
-                if (!$player) {
+                if (! $player) {
                     throw new \RuntimeException("Player not found: {$playerData['player_id']}. Transaction aborted.");
                 }
 
@@ -645,17 +639,17 @@ class ShanTransactionController extends Controller
                 $player->refresh();
 
                 ReportTransaction::create([
-                    'user_id' => $player->id, 
-                    'agent_id' => $player->agent_id, 
+                    'user_id' => $player->id,
+                    'agent_id' => $player->agent_id,
                     'member_account' => $player->user_name,
                     'transaction_amount' => abs($amountChanged),
-                     'status' => $winLose, 'bet_amount' => $betAmount,
-                    'valid_amount' => $betAmount, 
+                    'status' => $winLose, 'bet_amount' => $betAmount,
+                    'valid_amount' => $betAmount,
                     'before_balance' => $oldBalance,
-                     'after_balance' => $player->wallet->balanceFloat,
+                    'after_balance' => $player->wallet->balanceFloat,
                     'banker' => 0,
-                     'wager_code' => $wager_code,
-                      'settled_status' => $winLose == 1 ? 'settled_win' : 'settled_loss',
+                    'wager_code' => $wager_code,
+                    'settled_status' => $winLose == 1 ? 'settled_win' : 'settled_loss',
                 ]);
 
                 // Add to results for the API response back to the game client
@@ -678,9 +672,10 @@ class ShanTransactionController extends Controller
             $bankerUserName = $validated['banker']['player_id'];
             $banker = User::where('user_name', $bankerUserName)->first();
 
-            if (!$banker) {
+            if (! $banker) {
                 // If the banker is not found, it's a critical error
                 Log::error('ShanTransaction: Banker user not found', ['banker_id' => $bankerUserName]);
+
                 return $this->error('Banker not found', 'Banker user not found in the system', 500);
             }
 
@@ -693,11 +688,11 @@ class ShanTransactionController extends Controller
 
             if ($bankerAmountChange > 0) {
                 $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
-                    'description' => 'Banker receive (from all players)', 'wager_code' => $wager_code
+                    'description' => 'Banker receive (from all players)', 'wager_code' => $wager_code,
                 ]);
             } elseif ($bankerAmountChange < 0) {
                 $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
-                    'description' => 'Banker payout (to all players)', 'wager_code' => $wager_code
+                    'description' => 'Banker payout (to all players)', 'wager_code' => $wager_code,
                 ]);
             }
 
@@ -719,7 +714,7 @@ class ShanTransactionController extends Controller
 
             DB::commit();
 
-            $callback_url = $callback_url_base . 'https://ponewine20x.xyz/api/shan/client/balance-update';
+            $callback_url = $callback_url_base.'https://ponewine20x.xyz/api/shan/client/balance-update';
 
             $callbackPayload = [
                 'wager_code' => $wager_code,
@@ -736,7 +731,7 @@ class ShanTransactionController extends Controller
             // $callbackPayload['signature'] = $signature;
 
             try {
-                $client = new Client();
+                $client = new Client;
                 $response = $client->post($callback_url, [
                     'json' => $callbackPayload,
                     'headers' => [
@@ -792,6 +787,7 @@ class ShanTransactionController extends Controller
             Log::error('ShanTransaction: Transaction failed', [
                 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString(),
             ]);
+
             return $this->error('Transaction failed', $e->getMessage(), 500);
         }
     }

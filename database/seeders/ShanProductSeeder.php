@@ -55,4 +55,4 @@ class ShanProductSeeder extends Seeder
 
         $this->command->info("ShanKomee products with codes '100100' and '100200' seeded successfully.");
     }
-} 
+}

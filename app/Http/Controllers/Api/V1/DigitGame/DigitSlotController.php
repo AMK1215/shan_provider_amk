@@ -5,15 +5,13 @@ namespace App\Http\Controllers\Api\V1\DigitGame;
 use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
 use App\Models\DigitGame\DigitBet;
+use App\Models\User;
 use App\Services\WalletService;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\User;
-
-
 
 class DigitSlotController extends Controller
 {

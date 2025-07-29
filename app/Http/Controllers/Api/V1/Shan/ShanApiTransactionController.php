@@ -8,16 +8,16 @@ use App\Models\Admin\ReportTransaction;
 use App\Models\User;
 use App\Services\WalletService;
 use App\Traits\HttpResponses;
+use DateTimeImmutable;
+use DateTimeZone;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use DateTimeImmutable;
-use DateTimeZone;
 
 class ShanApiTransactionController extends Controller
 {
@@ -43,21 +43,21 @@ class ShanApiTransactionController extends Controller
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
             'players.*.win_lose_status' => 'required|integer|in:0,1',
-            //'game_type_id' => 'required|integer',
+            // 'game_type_id' => 'required|integer',
         ]);
 
         $samplePlayerId = collect($validated['players'])
-                            ->firstWhere('player_id', '!=', $validated['banker']['player_id'])['player_id'] ?? null;
+            ->firstWhere('player_id', '!=', $validated['banker']['player_id'])['player_id'] ?? null;
 
         Log::info('Sample Player ID', ['samplePlayerId' => $samplePlayerId]);
 
-        if (!$samplePlayerId) {
+        if (! $samplePlayerId) {
             $samplePlayerId = $validated['banker']['player_id'];
         }
 
         $player = User::where('user_name', $samplePlayerId)->first();
 
-        if (!$player) {
+        if (! $player) {
             return $this->error('Player not found to determine agent', 'Player not found', 404);
         }
 
@@ -71,8 +71,6 @@ class ShanApiTransactionController extends Controller
 
         $secret_key = $agent->shan_secret_key;
         $callback_url_base = $agent->shan_callback_url;
-
-        
 
         // if (!$secret_key) {
         //     return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
@@ -110,7 +108,7 @@ class ShanApiTransactionController extends Controller
 
             foreach ($validated['players'] as $playerData) {
                 $participant = User::where('user_name', $playerData['player_id'])->first();
-                if (!$participant) {
+                if (! $participant) {
                     throw new \RuntimeException("Participant not found: {$playerData['player_id']}. Transaction aborted.");
                 }
 
@@ -157,8 +155,9 @@ class ShanApiTransactionController extends Controller
             $bankerUserName = $validated['banker']['player_id'];
             $banker = User::where('user_name', $bankerUserName)->first();
 
-            if (!$banker) {
+            if (! $banker) {
                 Log::error('ShanTransaction: Banker user not found', ['banker_id' => $bankerUserName]);
+
                 return $this->error('Banker not found', 'Banker user not found in the system', 500);
             }
 
@@ -182,21 +181,21 @@ class ShanApiTransactionController extends Controller
 
             if ($bankerAmountChange > 0) {
                 $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
-                    'description' => 'Banker receive (from non-banker players)', 'wager_code' => $wager_code
+                    'description' => 'Banker receive (from non-banker players)', 'wager_code' => $wager_code,
                 ]);
             } elseif ($bankerAmountChange < 0) {
                 $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
-                    'description' => 'Banker payout (to non-banker players)', 'wager_code' => $wager_code
+                    'description' => 'Banker payout (to non-banker players)', 'wager_code' => $wager_code,
                 ]);
             }
 
             $banker->refresh();
 
             $existingBankerReport = ReportTransaction::where('user_id', $banker->id)
-                                                    ->where('wager_code', $wager_code)
-                                                    ->where('banker', 1)
-                                                    ->first();
-            if (!$existingBankerReport) {
+                ->where('wager_code', $wager_code)
+                ->where('banker', 1)
+                ->first();
+            if (! $existingBankerReport) {
                 ReportTransaction::create([
                     'user_id' => $banker->id, 'agent_id' => $banker->agent_id ?? null, 'member_account' => $banker->user_name,
                     'transaction_amount' => abs($bankerAmountChange), 'before_balance' => $bankerOldBalance,
@@ -206,7 +205,7 @@ class ShanApiTransactionController extends Controller
                 ]);
             } else {
                 Log::info('ShanTransaction: Banker transaction already recorded in loop.', [
-                    'banker_id' => $banker->user_name, 'wager_code' => $wager_code
+                    'banker_id' => $banker->user_name, 'wager_code' => $wager_code,
                 ]);
             }
 
@@ -218,7 +217,7 @@ class ShanApiTransactionController extends Controller
                     break;
                 }
             }
-            if (!$bankerResultExists) {
+            if (! $bankerResultExists) {
                 $results[] = [
                     'player_id' => $banker->user_name,
                     'balance' => $banker->wallet->balanceFloat,
@@ -227,7 +226,7 @@ class ShanApiTransactionController extends Controller
 
             DB::commit();
 
-            $callback_url = $callback_url_base . 'https://ponewine20x.xyz/api/shan/client/balance-update';
+            $callback_url = $callback_url_base.'https://ponewine20x.xyz/api/shan/client/balance-update';
 
             $callbackPayload = [
                 'wager_code' => $wager_code,
@@ -244,7 +243,7 @@ class ShanApiTransactionController extends Controller
             $callbackPayload['signature'] = $signature;
 
             try {
-                $client = new Client();
+                $client = new Client;
                 $response = $client->post($callback_url, [
                     'json' => $callbackPayload,
                     'headers' => [
@@ -297,6 +296,7 @@ class ShanApiTransactionController extends Controller
             Log::error('ShanTransaction: Transaction failed', [
                 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString(),
             ]);
+
             return $this->error('Transaction failed', $e->getMessage(), 500);
         }
     }

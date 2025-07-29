@@ -45,6 +45,6 @@ class TestUsersSeeder extends Seeder
             ]
         );
 
-        $this->command->info("Test users PLAYER0101 and PLAYER0102 created successfully.");
+        $this->command->info('Test users PLAYER0101 and PLAYER0102 created successfully.');
     }
-} 
+}

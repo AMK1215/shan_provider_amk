@@ -6,101 +6,100 @@ use App\Http\Controllers\Controller;
 use App\Models\TwoDigit\Bettle;
 use App\Models\TwoDigit\ChooseDigit;
 use App\Models\TwoDigit\HeadClose;
-use App\Models\TwoDigit\TwoDLimit; // Import JsonResponse
+use App\Models\TwoDigit\TwoBet; // Import JsonResponse
+use App\Models\TwoDigit\TwoBetSlip;
+use App\Models\TwoDigit\TwoDLimit;
+use App\Models\TwoDigit\TwoDResult;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Models\TwoDigit\TwoBet;
-use App\Models\TwoDigit\TwoBetSlip;
-use App\Models\TwoDigit\TwoDResult;
-use Illuminate\Support\Facades\DB;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TwoDigitController extends Controller
 {
     // 2d report
     public function index(Request $request)
-{
-    $session = $request->input('session'); // 'morning'/'evening'
-    $date = $request->input('date') ?? now()->toDateString();
+    {
+        $session = $request->input('session'); // 'morning'/'evening'
+        $date = $request->input('date') ?? now()->toDateString();
 
-    $user = auth()->user();
+        $user = auth()->user();
 
-    if ($user->hasRole('Owner')) {
-        $bets = TwoBet::where('session', $session)
-            ->where('game_date', $date)
-            ->with(['user', 'agent'])
-            ->get();
-    } elseif ($user->hasRole('Agent')) {
-        $playerIds = $user->getAllDescendantPlayers()->pluck('id');
-        $bets = TwoBet::whereIn('user_id', $playerIds)
-            ->where('session', $session)
-            ->where('game_date', $date)
-            ->with('user')
-            ->get();
-    } else {
-        // Player
-        $bets = TwoBet::where('user_id', $user->id)
-            ->where('session', $session)
-            ->where('game_date', $date)
-            ->get();
+        if ($user->hasRole('Owner')) {
+            $bets = TwoBet::where('session', $session)
+                ->where('game_date', $date)
+                ->with(['user', 'agent'])
+                ->get();
+        } elseif ($user->hasRole('Agent')) {
+            $playerIds = $user->getAllDescendantPlayers()->pluck('id');
+            $bets = TwoBet::whereIn('user_id', $playerIds)
+                ->where('session', $session)
+                ->where('game_date', $date)
+                ->with('user')
+                ->get();
+        } else {
+            // Player
+            $bets = TwoBet::where('user_id', $user->id)
+                ->where('session', $session)
+                ->where('game_date', $date)
+                ->get();
+        }
+
+        return view('admin.two_digit.report.index', compact('bets'));
     }
 
-    return view('admin.two_digit.report.index', compact('bets'));
-}
+    public function betSlipList(Request $request)
+    {
+        $session = $request->input('session', 'morning'); // or get from dropdown
+        $date = $request->input('date', now()->toDateString());
 
-public function betSlipList(Request $request)
-{
-    $session = $request->input('session', 'morning'); // or get from dropdown
-    $date = $request->input('date', now()->toDateString());
+        $query = \App\Models\TwoDigit\TwoBetSlip::where('session', $session)
+            ->whereDate('created_at', $date);
 
-    $query = \App\Models\TwoDigit\TwoBetSlip::where('session', $session)
-        ->whereDate('created_at', $date);
+        // Optional: filter for agent/owner role
+        if (auth()->user()->hasRole('Agent')) {
+            // Only agent's players
+            $playerIds = auth()->user()->getAllDescendantPlayers()->pluck('id');
+            $query->whereIn('user_id', $playerIds);
+        }
 
-    // Optional: filter for agent/owner role
-    if (auth()->user()->hasRole('Agent')) {
-        // Only agent's players
-        $playerIds = auth()->user()->getAllDescendantPlayers()->pluck('id');
-        $query->whereIn('user_id', $playerIds);
+        $slips = $query->latest()->paginate(30); // Or get(), or datatables
+
+        return view('admin.two_digit.report.index', compact('slips'));
     }
 
-    $slips = $query->latest()->paginate(30); // Or get(), or datatables
+    public function betSlipDetails($slip_id)
+    {
+        $user = auth()->user();
 
-    return view('admin.two_digit.report.index', compact('slips'));
-}
+        // Fetch the slip (with user/agent relationships if needed)
+        $slip = TwoBetSlip::with('user')->findOrFail($slip_id);
 
-public function betSlipDetails($slip_id)
-{
-    $user = auth()->user();
-
-    // Fetch the slip (with user/agent relationships if needed)
-    $slip = TwoBetSlip::with('user')->findOrFail($slip_id);
-
-    // Only allow owner, or the agent whose player placed this slip, or the player himself
-    if ($user->hasRole('Owner')) {
-        // Owner can see all
-    } elseif ($user->hasRole('Agent')) {
-        // Agent: Only see their own players' slips
-        $agentPlayerIds = $user->getAllDescendantPlayers()->pluck('id')->toArray();
-        if (!in_array($slip->user_id, $agentPlayerIds)) {
+        // Only allow owner, or the agent whose player placed this slip, or the player himself
+        if ($user->hasRole('Owner')) {
+            // Owner can see all
+        } elseif ($user->hasRole('Agent')) {
+            // Agent: Only see their own players' slips
+            $agentPlayerIds = $user->getAllDescendantPlayers()->pluck('id')->toArray();
+            if (! in_array($slip->user_id, $agentPlayerIds)) {
+                abort(403, 'Unauthorized');
+            }
+        } elseif ($user->id != $slip->user_id) {
+            // Player: Only own slips
             abort(403, 'Unauthorized');
         }
-    } elseif ($user->id != $slip->user_id) {
-        // Player: Only own slips
-        abort(403, 'Unauthorized');
+
+        // Fetch all bets for this slip, with player info
+        $bets = TwoBet::where('slip_id', $slip->id)
+            ->with('user')
+            ->orderBy('id')
+            ->get();
+
+        // Return Blade partial for AJAX load
+        return view('admin.two_digit.report.details', compact('bets', 'slip'));
     }
-
-    // Fetch all bets for this slip, with player info
-    $bets = TwoBet::where('slip_id', $slip->id)
-        ->with('user')
-        ->orderBy('id')
-        ->get();
-
-    // Return Blade partial for AJAX load
-    return view('admin.two_digit.report.details', compact('bets', 'slip'));
-}
-
 
     // head close digit
     public function headCloseDigit()
@@ -252,8 +251,7 @@ public function betSlipDetails($slip_id)
     }
 
     // store two d bet result
-    
-    
+
     public function storeTwoDResult(Request $request)
     {
         Log::info('storeTwoDResult called', ['request' => $request->all()]);
@@ -261,10 +259,10 @@ public function betSlipDetails($slip_id)
             'two_d_result' => 'required|integer',
             'session' => 'required|string',
             'result_date' => 'required|date',
-            'result_time' => 'required|date_format:H:i',   
+            'result_time' => 'required|date_format:H:i',
         ]);
         $win_number = $request->two_d_result;
-    
+
         DB::transaction(function () use ($request, $win_number) {
             $bettle = Bettle::where('status', 1)->first();
             // Enforce result_time based on session
@@ -278,20 +276,20 @@ public function betSlipDetails($slip_id)
                 'battle_id' => $bettle->id,
             ]);
             Log::info('TwoDResult created', ['twoDResult' => $twoDResult]);
-    
+
             // 2. Find all bets for session/date
             $allBets = TwoBet::where('session', $session)
                 ->where('game_date', $request->result_date)
                 ->get();
             Log::info('Fetched bets', ['count' => $allBets->count()]);
-    
+
             // 3. Process each bet
             foreach ($allBets as $bet) {
                 $isWinner = $bet->bet_number == $win_number;
-    
+
                 if ($isWinner) {
                     $prize = $bet->bet_amount * 80;
-    
+
                     // Update player wallet (users table, main_balance)
                     $player = User::find($bet->user_id);
                     if ($player) {
@@ -299,7 +297,7 @@ public function betSlipDetails($slip_id)
                         $player->save();
                         Log::info('Prize added to player', ['user_id' => $player->id, 'prize' => $prize]);
                     }
-    
+
                     // Update bet as win
                     $bet->win_lose = true;
                     $bet->potential_payout = $prize;
@@ -312,238 +310,232 @@ public function betSlipDetails($slip_id)
                     $bet->prize_sent = false;
                     Log::info('Bet marked as lose', ['bet_id' => $bet->id]);
                 }
-    
+
                 // Update all common fields
                 $bet->bet_status = true; // settled
                 $bet->bet_result = $win_number;
                 $bet->save();
             }
-    
+
             // 4. Update all slips for this session/date to completed
             $updated = TwoBetSlip::where('session', $session)
                 ->whereDate('created_at', $request->result_date)
                 ->update(['status' => 'completed']);
             Log::info('Updated slips to completed', ['updated_count' => $updated]);
         });
-    
+
         return redirect()->route('admin.twod.settings')->with('success', 'TwoD Result added and winners paid.');
     }
 
+    // daily leger
 
-    // daily leger 
-    
+    public function dailyLedger(Request $request)
+    {
+        $user = Auth::user();
+        $date = $request->input('date') ?? now()->format('Y-m-d');
+        $session = $request->input('session'); // 'morning' or 'evening'
 
-public function dailyLedger(Request $request)
-{
-    $user = Auth::user();
-    $date = $request->input('date') ?? now()->format('Y-m-d');
-    $session = $request->input('session'); // 'morning' or 'evening'
+        $query = DB::table('two_bets')
+            ->select('bet_number', 'session', DB::raw('SUM(bet_amount) as total_amount'))
+            ->where('game_date', $date);
 
-    $query = DB::table('two_bets')
-        ->select('bet_number', 'session', DB::raw('SUM(bet_amount) as total_amount'))
-        ->where('game_date', $date);
+        // 🔐 Restrict by agent if not owner
+        if ($user->type == \App\Enums\UserType::Agent || $user->type == \App\Enums\UserType::SubAgent) {
+            $query->where('agent_id', $user->id);
+        }
 
-    // 🔐 Restrict by agent if not owner
-    if ($user->type == \App\Enums\UserType::Agent || $user->type == \App\Enums\UserType::SubAgent) {
-        $query->where('agent_id', $user->id);
-    }
+        // Filter by session if provided
+        if (in_array($session, ['morning', 'evening'])) {
+            $query->where('session', $session);
+        }
 
-    // Filter by session if provided
-    if (in_array($session, ['morning', 'evening'])) {
-        $query->where('session', $session);
-    }
+        $bets = $query->groupBy('bet_number', 'session')->get();
 
-    $bets = $query->groupBy('bet_number', 'session')->get();
+        // Generate all numbers 00–99
+        $allNumbers = collect(range(0, 99))->map(function ($n) {
+            return str_pad($n, 2, '0', STR_PAD_LEFT);
+        });
 
-    // Generate all numbers 00–99
-    $allNumbers = collect(range(0, 99))->map(function ($n) {
-        return str_pad($n, 2, '0', STR_PAD_LEFT);
-    });
+        if ($session === 'morning' || $session === 'evening') {
+            // Return single session
+            $result = $allNumbers->mapWithKeys(function ($num) use ($bets, $session) {
+                $amount = $bets->firstWhere('bet_number', $num && fn ($b) => $b->session === $session)?->total_amount ?? 0;
 
-    if ($session === 'morning' || $session === 'evening') {
-        // Return single session
-        $result = $allNumbers->mapWithKeys(function ($num) use ($bets, $session) {
-            $amount = $bets->firstWhere('bet_number', $num && fn($b) => $b->session === $session)?->total_amount ?? 0;
+                return [$num => (float) $amount];
+            });
+
+            return view('admin.two_digit.ledger.index', compact('result'));
+
+            // return response()->json([
+            //     'date' => $date,
+            //     'session' => $session,
+            //     'data' => $result,
+            // ]);
+        }
+
+        // Return both sessions
+        $morning = $allNumbers->mapWithKeys(function ($num) use ($bets) {
+            $amount = $bets->first(fn ($b) => $b->bet_number === $num && $b->session === 'morning')?->total_amount ?? 0;
+
             return [$num => (float) $amount];
         });
 
-        return view('admin.two_digit.ledger.index', compact('result'));
+        $evening = $allNumbers->mapWithKeys(function ($num) use ($bets) {
+            $amount = $bets->first(fn ($b) => $b->bet_number === $num && $b->session === 'evening')?->total_amount ?? 0;
+
+            return [$num => (float) $amount];
+        });
+
+        return view('admin.two_digit.ledger.index', compact('morning', 'evening'));
 
         // return response()->json([
         //     'date' => $date,
-        //     'session' => $session,
-        //     'data' => $result,
+        //     'morning' => $morning,
+        //     'evening' => $evening,
         // ]);
     }
 
-    // Return both sessions
-    $morning = $allNumbers->mapWithKeys(function ($num) use ($bets) {
-        $amount = $bets->first(fn ($b) => $b->bet_number === $num && $b->session === 'morning')?->total_amount ?? 0;
-        return [$num => (float) $amount];
-    });
+    // 2d winner
 
-    $evening = $allNumbers->mapWithKeys(function ($num) use ($bets) {
-        $amount = $bets->first(fn ($b) => $b->bet_number === $num && $b->session === 'evening')?->total_amount ?? 0;
-        return [$num => (float) $amount];
-    });
+    public function dailyWinners(Request $request)
+    {
+        $user = Auth::user();
+        $date = $request->input('date') ?? now()->format('Y-m-d');
+        $session = $request->input('session'); // optional: 'morning' or 'evening'
 
-    return view('admin.two_digit.ledger.index', compact('morning', 'evening'));
+        $sessions = ['morning', 'evening'];
 
-    // return response()->json([
-    //     'date' => $date,
-    //     'morning' => $morning,
-    //     'evening' => $evening,
-    // ]);
-}
-
-// 2d winner 
-
-
-
-
-public function dailyWinners(Request $request)
-{
-    $user = Auth::user();
-    $date = $request->input('date') ?? now()->format('Y-m-d');
-    $session = $request->input('session'); // optional: 'morning' or 'evening'
-
-    $sessions = ['morning', 'evening'];
-
-    if ($session && !in_array($session, $sessions)) {
-        return response()->json(['message' => 'Invalid session'], 422);
-    }
-
-    // Return both sessions if no specific session is requested
-    if (!$session) {
-        $result = [];
-
-        foreach ($sessions as $s) {
-            $res = DB::table('two_d_results')
-                ->where('result_date', $date)
-                ->where('session', $s)
-                ->first();
-
-            if ($res && $res->win_number) {
-                $query = DB::table('two_bets')
-                    ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
-                    ->where('game_date', $date)
-                    ->where('session', $s)
-                    ->where('bet_number', $res->win_number)
-                    ->where('win_lose', true);
-
-                // Restrict by agent if not owner
-                if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
-                    $query->where('agent_id', $user->id);
-                }
-
-                $winners = $query->groupBy('bet_number')->get();
-
-                $result[$s] = [
-                    'win_digit' => $res->win_number,
-                    'winners' => $winners,
-                ];
-            } else {
-                $result[$s] = ['message' => 'No result found'];
-            }
+        if ($session && ! in_array($session, $sessions)) {
+            return response()->json(['message' => 'Invalid session'], 422);
         }
+
+        // Return both sessions if no specific session is requested
+        if (! $session) {
+            $result = [];
+
+            foreach ($sessions as $s) {
+                $res = DB::table('two_d_results')
+                    ->where('result_date', $date)
+                    ->where('session', $s)
+                    ->first();
+
+                if ($res && $res->win_number) {
+                    $query = DB::table('two_bets')
+                        ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
+                        ->where('game_date', $date)
+                        ->where('session', $s)
+                        ->where('bet_number', $res->win_number)
+                        ->where('win_lose', true);
+
+                    // Restrict by agent if not owner
+                    if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
+                        $query->where('agent_id', $user->id);
+                    }
+
+                    $winners = $query->groupBy('bet_number')->get();
+
+                    $result[$s] = [
+                        'win_digit' => $res->win_number,
+                        'winners' => $winners,
+                    ];
+                } else {
+                    $result[$s] = ['message' => 'No result found'];
+                }
+            }
+
+            return view('admin.two_digit.winner.index', [
+                'date' => $date,
+                'session' => $session ?? null,
+                'result' => $result ?? null,
+                'win_digit' => $winDigit ?? null,
+                'winners' => $winners ?? null,
+            ]);
+
+            // return response()->json([
+            //     'date' => $date,
+            //     'result' => $result, // ✅ Both sessions
+            // ]);
+        }
+
+        // ✅ Return only one session
+        $result = DB::table('two_d_results')
+            ->where('result_date', $date)
+            ->where('session', $session)
+            ->first();
+
+        if (! $result || ! $result->win_number) {
+            return response()->json(['message' => 'Winning result not found for this session/date'], 404);
+        }
+
+        $winDigit = $result->win_number;
+
+        $query = DB::table('two_bets')
+            ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
+            ->where('game_date', $date)
+            ->where('session', $session)
+            ->where('bet_number', $winDigit)
+            ->where('win_lose', true);
+
+        // 🔒 Restrict by agent
+        if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
+            $query->where('agent_id', $user->id);
+        }
+
+        $winners = $query->groupBy('bet_number')->get();
 
         return view('admin.two_digit.winner.index', [
             'date' => $date,
-            'session' => $session ?? null,
-            'result' => $result ?? null,
-            'win_digit' => $winDigit ?? null,
-            'winners' => $winners ?? null,
+            'results' => $result, // associative array with keys 'morning', 'evening'
         ]);
-        
-        // return response()->json([
-        //     'date' => $date,
-        //     'result' => $result, // ✅ Both sessions
-        // ]);
+
     }
 
-    // ✅ Return only one session
-    $result = DB::table('two_d_results')
-        ->where('result_date', $date)
-        ->where('session', $session)
-        ->first();
+    // public function dailyWinners(Request $request)
+    // {
+    //     $user = Auth::user();
+    //     $date = $request->input('date') ?? now()->format('Y-m-d');
+    //     $session = $request->input('session'); // 'morning' or 'evening'
 
-    if (!$result || !$result->win_number) {
-        return response()->json(['message' => 'Winning result not found for this session/date'], 404);
-    }
+    //     if (!in_array($session, ['morning', 'evening'])) {
+    //         return response()->json(['message' => 'Invalid session'], 422);
+    //     }
 
-    $winDigit = $result->win_number;
+    //     // ✅ Get win digit from two_d_results
+    //     $result = DB::table('two_d_results')
+    //         ->where('result_date', $date)
+    //         ->where('session', $session)
+    //         ->first();
 
-    $query = DB::table('two_bets')
-        ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
-        ->where('game_date', $date)
-        ->where('session', $session)
-        ->where('bet_number', $winDigit)
-        ->where('win_lose', true);
+    //     if (!$result || !$result->win_number) {
+    //         return response()->json(['message' => 'Winning result not found for this session/date'], 404);
+    //     }
 
-    // 🔒 Restrict by agent
-    if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
-        $query->where('agent_id', $user->id);
-    }
+    //     $winDigit = $result->win_number;
 
-    $winners = $query->groupBy('bet_number')->get();
+    //     $query = DB::table('two_bets')
+    //         ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
+    //         ->where('game_date', $date)
+    //         ->where('session', $session)
+    //         ->where('bet_number', $winDigit)
+    //         ->where('win_lose', true);
 
-    return view('admin.two_digit.winner.index', [
-        'date' => $date,
-        'results' => $result // associative array with keys 'morning', 'evening'
-    ]);
-    
-}
+    //     // 🔒 Restrict by agent
+    //     if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
+    //         $query->where('agent_id', $user->id);
+    //     }
 
+    //     $winners = $query->groupBy('bet_number')->get();
 
-// public function dailyWinners(Request $request)
-// {
-//     $user = Auth::user();
-//     $date = $request->input('date') ?? now()->format('Y-m-d');
-//     $session = $request->input('session'); // 'morning' or 'evening'
+    //     return view('admin.two_digit.winner.index', compact('winners'));
 
-//     if (!in_array($session, ['morning', 'evening'])) {
-//         return response()->json(['message' => 'Invalid session'], 422);
-//     }
+    //      // Return both sessions
 
-//     // ✅ Get win digit from two_d_results
-//     $result = DB::table('two_d_results')
-//         ->where('result_date', $date)
-//         ->where('session', $session)
-//         ->first();
+    //     // return response()->json([
+    //     //     'date' => $date,
+    //     //     'session' => $session,
+    //     //     'win_digit' => $winDigit,
+    //     //     'winners' => $winners,
+    //     // ]);
+    // }
 
-//     if (!$result || !$result->win_number) {
-//         return response()->json(['message' => 'Winning result not found for this session/date'], 404);
-//     }
-
-//     $winDigit = $result->win_number;
-
-//     $query = DB::table('two_bets')
-//         ->select('bet_number', DB::raw('SUM(bet_amount) as total_bet'), DB::raw('SUM(bet_amount * 80) as win_amount'))
-//         ->where('game_date', $date)
-//         ->where('session', $session)
-//         ->where('bet_number', $winDigit)
-//         ->where('win_lose', true);
-
-//     // 🔒 Restrict by agent
-//     if (in_array($user->type, [\App\Enums\UserType::Agent, \App\Enums\UserType::SubAgent])) {
-//         $query->where('agent_id', $user->id);
-//     }
-
-//     $winners = $query->groupBy('bet_number')->get();
-
-//     return view('admin.two_digit.winner.index', compact('winners'));
-
-//      // Return both sessions
-
-
-//     // return response()->json([
-//     //     'date' => $date,
-//     //     'session' => $session,
-//     //     'win_digit' => $winDigit,
-//     //     'winners' => $winners,
-//     // ]);
-// }
-
-
-    
 }

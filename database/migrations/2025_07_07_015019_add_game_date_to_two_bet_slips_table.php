@@ -17,7 +17,6 @@ return new class extends Migration
             $table->time('game_time')->nullable()->after('game_date');
             $table->foreignId('agent_id')->nullable()->constrained('users')->onDelete('set null')->after('user_id');
 
-
         });
     }
 

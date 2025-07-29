@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('report_transactions', function (Blueprint $table) {
             $table->enum('settled_status', ['pending', 'settled_win', 'settled_loss'])->default('pending')->after('member_account');
             $table->string('wager_code')->nullable()->after('settled_status');
-            
+
         });
     }
 

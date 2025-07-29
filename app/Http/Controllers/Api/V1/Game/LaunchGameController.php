@@ -3,32 +3,28 @@
 namespace App\Http\Controllers\Api\V1\Game;
 
 use App\Enums\SeamlessWalletCode;
+use App\Enums\TransactionName;
+use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Models\GameList;
 use App\Models\User;
 use App\Services\ApiResponseService;
 use App\Services\WalletService;
-use App\Enums\TransactionName;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str; // Make sure to use Http facade for making requests
-use App\Enums\UserType;
+use Illuminate\Support\Facades\Log; // Make sure to use Http facade for making requests
+use Illuminate\Support\Str;
 
 class LaunchGameController extends Controller
 {
-    
-
-
     /**
      * Provider Launch Game - receives request and responds with launch game URL
      * This is a provider endpoint that builds and returns game URLs to client sites
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function launchGameForClient(Request $request)
@@ -53,7 +49,7 @@ class LaunchGameController extends Controller
             return response()->json([
                 'code' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         }
 
@@ -61,12 +57,12 @@ class LaunchGameController extends Controller
         $memberAccount = $request->member_account;
         $requestedBalance = $request->balance;
         $clientUser = User::where('user_name', $memberAccount)->first();
-        
+
         // Initialize WalletService
-        $walletService = new WalletService();
-        
+        $walletService = new WalletService;
+
         // If no client user in our db users table, create automatically
-        if (!$clientUser) {
+        if (! $clientUser) {
             $clientUser = User::create([
                 'user_name' => $memberAccount,
                 'name' => $memberAccount,
@@ -77,16 +73,16 @@ class LaunchGameController extends Controller
                 'shan_agent_code' => $validatedData['agent_code'],
             ]);
             Log::info('Created new user for provider launch game', ['member_account' => $memberAccount]);
-            
+
             // Deposit initial balance for new user
             $walletService->deposit($clientUser, $requestedBalance, TransactionName::Deposit, [
                 'source' => 'provider_launch_game',
-                'description' => 'Initial balance for new user'
+                'description' => 'Initial balance for new user',
             ]);
-            
+
             Log::info('Deposited initial balance for new user', [
                 'member_account' => $memberAccount,
-                'balance' => $requestedBalance
+                'balance' => $requestedBalance,
             ]);
         } else {
             // For existing user, update balance if different
@@ -97,28 +93,28 @@ class LaunchGameController extends Controller
                     $depositAmount = $requestedBalance - $currentBalance;
                     $walletService->deposit($clientUser, $depositAmount, TransactionName::Deposit, [
                         'source' => 'provider_launch_game',
-                        'description' => 'Balance update for existing user'
+                        'description' => 'Balance update for existing user',
                     ]);
-                    
+
                     Log::info('Updated balance for existing user (deposit)', [
                         'member_account' => $memberAccount,
                         'current_balance' => $currentBalance,
                         'requested_balance' => $requestedBalance,
-                        'deposit_amount' => $depositAmount
+                        'deposit_amount' => $depositAmount,
                     ]);
                 } else {
                     // Withdraw excess amount
                     $withdrawAmount = $currentBalance - $requestedBalance;
                     $walletService->withdraw($clientUser, $withdrawAmount, TransactionName::Withdraw, [
                         'source' => 'provider_launch_game',
-                        'description' => 'Balance adjustment for existing user'
+                        'description' => 'Balance adjustment for existing user',
                     ]);
-                    
+
                     Log::info('Updated balance for existing user (withdraw)', [
                         'member_account' => $memberAccount,
                         'current_balance' => $currentBalance,
                         'requested_balance' => $requestedBalance,
-                        'withdraw_amount' => $withdrawAmount
+                        'withdraw_amount' => $withdrawAmount,
                     ]);
                 }
             }
@@ -137,7 +133,6 @@ class LaunchGameController extends Controller
         //     $validatedData['agent_code']
         // );
 
-       
         $launchGameUrl = sprintf(
             ' https://shan-web-3-test.vercel.app/?user_name=%s&balance=%s',
             urlencode($memberAccount),
@@ -155,7 +150,7 @@ class LaunchGameController extends Controller
             'balance' => $balance,
             'product_code' => $validatedData['product_code'],
             'game_type' => $validatedData['game_type'],
-            'launch_game_url' => $launchGameUrl
+            'launch_game_url' => $launchGameUrl,
         ]);
 
         // Return the launch game URL to client site
@@ -165,6 +160,4 @@ class LaunchGameController extends Controller
             'url' => $launchGameUrl,
         ]);
     }
-
-    
 }

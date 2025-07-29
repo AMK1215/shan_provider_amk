@@ -9,8 +9,8 @@ use App\Models\Admin\Banner;
 use App\Models\Admin\BannerAds;
 use App\Models\Admin\BannerText;
 use App\Models\Admin\Permission;
-use App\Models\Admin\ReportTransaction;
 use App\Models\Admin\Promotion;
+use App\Models\Admin\ReportTransaction;
 use App\Models\Admin\Role;
 use App\Models\Admin\TopTenWithdraw;
 use App\Models\PlaceBet;
@@ -65,7 +65,7 @@ class User extends Authenticatable implements Wallet
         'shan_agent_code',
         'shan_agent_name',
         'shan_secret_key',
-        'shan_callback_url'
+        'shan_callback_url',
     ];
 
     /**

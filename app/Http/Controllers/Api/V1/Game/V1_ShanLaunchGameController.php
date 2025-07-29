@@ -88,8 +88,6 @@ class ShanLaunchGameController extends Controller
             'expected_sign' => $expected_sign,
         ]);
 
-        
-
         // 3. Member must exist
         $user = User::where('user_name', $member_account)->first();
         if (! $user) {

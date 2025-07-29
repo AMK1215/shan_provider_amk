@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api\V2\Shan;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Enums\ShankomeeCode;
+use App\Http\Controllers\Controller;
 use App\Models\Operator;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ShankomeeGetBalanceController extends Controller
 {
@@ -40,10 +40,11 @@ class ShankomeeGetBalanceController extends Controller
                 'errors' => $validator->errors()->toArray(),
                 'payload' => $request->all(),
             ]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Validation error',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -51,13 +52,14 @@ class ShankomeeGetBalanceController extends Controller
 
         // 2. Check operator_code in database
         $operator = Operator::where('code', $request->operator_code)
-                            ->where('active', true)
-                            ->first();
+            ->where('active', true)
+            ->first();
 
-        if (!$operator) {
+        if (! $operator) {
             Log::warning('Shankomee GetBalance: Invalid operator_code', [
                 'operator_code' => $request->operator_code,
             ]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Invalid or inactive operator_code',
@@ -71,7 +73,7 @@ class ShankomeeGetBalanceController extends Controller
 
         // 3. Signature check using operator's secret_key from DB
         $secret_key = $operator->secret_key;
-        $expectedSign = md5($request->operator_code . $request->request_time . 'getbalance' . $secret_key);
+        $expectedSign = md5($request->operator_code.$request->request_time.'getbalance'.$secret_key);
 
         Log::info('Shankomee GetBalance: Signature verification', [
             'provided_sign' => $request->sign,
@@ -85,6 +87,7 @@ class ShankomeeGetBalanceController extends Controller
                 'provided_sign' => $request->sign,
                 'expected_sign' => $expectedSign,
             ]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Signature invalid',
@@ -95,9 +98,9 @@ class ShankomeeGetBalanceController extends Controller
 
         // 4. Validate product_codes from DB
         $allowed_product_codes = Product::where('status', 'ACTIVATED')
-                                      ->where('game_list_status', true)
-                                      ->pluck('product_code')
-                                      ->toArray();
+            ->where('game_list_status', true)
+            ->pluck('product_code')
+            ->toArray();
 
         Log::info('Shankomee GetBalance: Allowed product codes', [
             'allowed_codes' => $allowed_product_codes,
@@ -105,70 +108,70 @@ class ShankomeeGetBalanceController extends Controller
 
         $callbackUrl = $operator->callback_url ?? 'https://ponewine20x.xyz/api/shan/balance';
 
-    $results = [];
-    foreach ($request->batch_requests as $item) {
-        // Check if member_account exists in users table
-        $user = User::where('user_name', $item['member_account'])->first();
-        
-        if (!$user) {
-            // User does not exist in our database
-            Log::warning('Shankomee callback: User not found', [
-                'member_account' => $item['member_account'],
-                'callback_payload' => $item
-            ]);
-            $balance = null;
-            $status = 'user_not_found';
-        } else {
-            // User exists, get balance from database
-            $databaseBalance = $user->balanceFloat ?? 0;
-            $callbackBalance = $item['balance'] ?? 0;
-            
-            Log::info('Shankomee callback: Balance comparison', [
-                'member_account' => $item['member_account'],
-                'database_balance' => $databaseBalance,
-                'callback_balance' => $callbackBalance,
-                'difference' => $databaseBalance - $callbackBalance
-            ]);
-            
-            if ($databaseBalance < $callbackBalance) {
-                // Database balance is less than callback balance - potential issue
-                Log::warning('Shankomee callback: Database balance less than callback', [
+        $results = [];
+        foreach ($request->batch_requests as $item) {
+            // Check if member_account exists in users table
+            $user = User::where('user_name', $item['member_account'])->first();
+
+            if (! $user) {
+                // User does not exist in our database
+                Log::warning('Shankomee callback: User not found', [
                     'member_account' => $item['member_account'],
-                    'database_balance' => $databaseBalance,
-                    'callback_balance' => $callbackBalance
+                    'callback_payload' => $item,
                 ]);
-                $status = 'insufficient_balance';
-                $balance = $databaseBalance;
+                $balance = null;
+                $status = 'user_not_found';
             } else {
-                // Database balance is greater than or equal to callback balance - acceptable
-                Log::info('Shankomee callback: Balance check passed', [
+                // User exists, get balance from database
+                $databaseBalance = $user->balanceFloat ?? 0;
+                $callbackBalance = $item['balance'] ?? 0;
+
+                Log::info('Shankomee callback: Balance comparison', [
                     'member_account' => $item['member_account'],
                     'database_balance' => $databaseBalance,
-                    'callback_balance' => $callbackBalance
+                    'callback_balance' => $callbackBalance,
+                    'difference' => $databaseBalance - $callbackBalance,
                 ]);
-                $status = 'success';
-                $balance = $databaseBalance;
+
+                if ($databaseBalance < $callbackBalance) {
+                    // Database balance is less than callback balance - potential issue
+                    Log::warning('Shankomee callback: Database balance less than callback', [
+                        'member_account' => $item['member_account'],
+                        'database_balance' => $databaseBalance,
+                        'callback_balance' => $callbackBalance,
+                    ]);
+                    $status = 'insufficient_balance';
+                    $balance = $databaseBalance;
+                } else {
+                    // Database balance is greater than or equal to callback balance - acceptable
+                    Log::info('Shankomee callback: Balance check passed', [
+                        'member_account' => $item['member_account'],
+                        'database_balance' => $databaseBalance,
+                        'callback_balance' => $callbackBalance,
+                    ]);
+                    $status = 'success';
+                    $balance = $databaseBalance;
+                }
             }
+
+            $results[] = [
+                'member_account' => $item['member_account'],
+                'product_code' => $item['product_code'],
+                'balance' => $balance,
+                'currency' => $request->currency,
+                'status' => $status,
+            ];
         }
 
-        $results[] = [
-            'member_account' => $item['member_account'],
-            'product_code'   => $item['product_code'],
-            'balance'        => $balance,
-            'currency'       => $request->currency,
-            'status'         => $status,
-        ];
-    }
+        Log::info('Shankomee GetBalance: Response sent', [
+            'results' => $results,
+        ]);
 
-    Log::info('Shankomee GetBalance: Response sent', [
-        'results' => $results,
-    ]);
+        return response()->json([
+            'status' => 'success',
+            'data' => $results,
+        ]);
 
-    return response()->json([
-        'status' => 'success',
-        'data' => $results
-    ]);
-        
     }
 
     public function LaunchGame(Request $request)
@@ -182,7 +185,7 @@ class ShankomeeGetBalanceController extends Controller
         // Validate input
         $validator = Validator::make($request->all(), [
             'member_account' => 'required|string|max:50',
-            'operator_code'  => 'required|string', // if you want to validate operator as well
+            'operator_code' => 'required|string', // if you want to validate operator as well
         ]);
 
         if ($validator->fails()) {
@@ -190,10 +193,11 @@ class ShankomeeGetBalanceController extends Controller
                 'errors' => $validator->errors()->toArray(),
                 'payload' => $request->all(),
             ]);
+
             return response()->json([
-                'status'  => 'fail',
+                'status' => 'fail',
                 'message' => 'Validation error',
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -203,25 +207,26 @@ class ShankomeeGetBalanceController extends Controller
         $member_account = $request->member_account;
         $currency = 'MMK';
         $request_time = time();
-        
+
         // Get operator from database to use its secret_key
         $operator = Operator::where('code', $operator_code)
-                            ->where('active', true)
-                            ->first();
-        
-        if (!$operator) {
+            ->where('active', true)
+            ->first();
+
+        if (! $operator) {
             Log::warning('Shankomee LaunchGame: Invalid operator_code', [
                 'operator_code' => $operator_code,
             ]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Invalid or inactive operator_code',
             ], 403);
         }
-        
+
         $secret_key = $operator->secret_key;
-        $sign = md5($operator_code . $request_time . 'getbalance' . $secret_key);
-        
+        $sign = md5($operator_code.$request_time.'getbalance'.$secret_key);
+
         Log::info('Shankomee LaunchGame: Signature generation', [
             'operator_code' => $operator_code,
             'request_time' => $request_time,
@@ -238,14 +243,14 @@ class ShankomeeGetBalanceController extends Controller
             'batch_requests' => [
                 [
                     'member_account' => $member_account,
-                    'product_code'   => 100100, // Use the same product_code as in the example
-                    'balance'        => $userBalance, // Add the balance field
-                ]
+                    'product_code' => 100100, // Use the same product_code as in the example
+                    'balance' => $userBalance, // Add the balance field
+                ],
             ],
             'operator_code' => $operator_code,
-            'currency'      => $currency,
-            'request_time'  => $request_time,
-            'sign'          => $sign,
+            'currency' => $currency,
+            'request_time' => $request_time,
+            'sign' => $sign,
         ];
 
         Log::info('Shankomee LaunchGame: Internal API call payload', [
@@ -265,13 +270,14 @@ class ShankomeeGetBalanceController extends Controller
             'response_body' => $response->body(),
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('Failed to get balance from internal API', [
                 'url' => $getBalanceApiUrl,
                 'payload' => $getBalancePayload,
                 'response_status' => $response->status(),
                 'response_body' => $response->body(),
             ]);
+
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Unable to get balance',
@@ -287,7 +293,7 @@ class ShankomeeGetBalanceController extends Controller
 
         // Check if member exists in users table, create if not
         $member = User::where('user_name', $member_account)->first();
-        if (!$member) {
+        if (! $member) {
             $member = User::create([
                 'user_name' => $member_account,
                 'name' => $member_account,
@@ -298,7 +304,7 @@ class ShankomeeGetBalanceController extends Controller
         }
 
         // Build launch game URL
-        $launchGameUrl = 'https://goldendragon7.pro/?user_name=' . urlencode($member_account) . '&balance=' . $balance;
+        $launchGameUrl = 'https://goldendragon7.pro/?user_name='.urlencode($member_account).'&balance='.$balance;
 
         Log::info('Shankomee LaunchGame: Response sent', [
             'member_account' => $member_account,
@@ -308,7 +314,7 @@ class ShankomeeGetBalanceController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'launch_game_url' => $launchGameUrl
+            'launch_game_url' => $launchGameUrl,
         ]);
     }
 }

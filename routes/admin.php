@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\PlayerReportController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\Shan\ShanPlayerReportController;
 use App\Http\Controllers\Admin\SubAccountController;
 use App\Http\Controllers\Admin\TopTenWithdrawController;
 use App\Http\Controllers\Admin\TransferLogController;
@@ -26,7 +27,6 @@ use App\Http\Controllers\Admin\WinnerTextController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\Shan\ShanPlayerReportController;
 
 Route::group([
     'prefix' => 'admin',
@@ -238,8 +238,8 @@ Route::group([
     Route::get('twod/bet-slip-details/{slip_id}', [TwoDigitController::class, 'betSlipDetails'])->name('twod.bet-slip-details');
     Route::post('two-d-result/store', [TwoDigitController::class, 'storeTwoDResult'])->name('two-d-result.store');
     Route::get('twod/daily-ledger', [TwoDigitController::class, 'dailyLedger'])->name('twod.daily-ledger');
-    //Route::get('twod/daily-ledger-morning', [TwoDigitController::class, 'dailyLedgerMorning'])->name('twod.daily-ledger-morning');
-    //Route::get('twod/daily-ledger-evening', [TwoDigitController::class, 'dailyLedgerEvening'])->name('twod.daily-ledger-evening');
+    // Route::get('twod/daily-ledger-morning', [TwoDigitController::class, 'dailyLedgerMorning'])->name('twod.daily-ledger-morning');
+    // Route::get('twod/daily-ledger-evening', [TwoDigitController::class, 'dailyLedgerEvening'])->name('twod.daily-ledger-evening');
     Route::get('twod/daily-winners', [TwoDigitController::class, 'dailyWinners'])->name('twod.daily-winners');
     // two digit end
     // shan player report
