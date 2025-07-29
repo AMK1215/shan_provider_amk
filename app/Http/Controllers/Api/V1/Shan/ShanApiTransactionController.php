@@ -164,8 +164,25 @@ class ShanApiTransactionController extends Controller
             }
 
             // BANKER: Handle the explicit banker entry (whether system or player)
+            // $bankerUserName = $validated['banker']['player_id'];
+            // $banker = User::where('user_name', $bankerUserName)->first();
+
+            // BANKER: Determine if it's a system banker or a player banker
             $bankerUserName = $validated['banker']['player_id'];
             $banker = User::where('user_name', $bankerUserName)->first();
+
+            if (!$banker) {
+                // If the banker is not found, it's a critical error
+                Log::error('ShanTransaction: Banker user not found', ['banker_id' => $bankerUserName]);
+                return $this->error('Banker not found', 'Banker user not found in the system', 500);
+            }
+
+            Log::info('ShanTransaction: Using banker', [
+                'banker_id' => $banker->user_name,
+                'balance' => $banker->wallet->balanceFloat,
+            ]);
+            $bankerOldBalance = $banker->wallet->balanceFloat; // <--- DEFINED HERE
+            $bankerAmountChange = -$trueTotalPlayerNet; // Banker always opposite of player total net
 
             // If the banker is SYS001, it won't be in $validated['players'] array, so it needs separate processing.
             // If the banker is a player, they were already processed in the loop above.
