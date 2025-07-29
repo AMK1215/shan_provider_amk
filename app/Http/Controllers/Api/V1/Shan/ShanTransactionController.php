@@ -251,14 +251,22 @@ class ShanTransactionController extends Controller
 
         // Step 1: Validate
         $validated = $request->validate([
+            // 'banker' => 'required|array',
+            // 'banker.player_id' => 'required|string',
+            // 'players' => 'required|array',
+            // 'players.*.player_id' => 'required|string',
+            // 'players.*.bet_amount' => 'required|numeric|min:0',
+            // 'players.*.win_lose_status' => 'required|integer|in:0,1'
+            // Add game_type_id to validation if it's coming from the request
+            // 'game_type_id' => 'required|integer',
+
             'banker' => 'required|array',
             'banker.player_id' => 'required|string',
+            // 'banker.amount' => 'required|numeric', // <-- don't trust this field, ignore!
             'players' => 'required|array',
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
             'players.*.win_lose_status' => 'required|integer|in:0,1'
-            // Add game_type_id to validation if it's coming from the request
-            // 'game_type_id' => 'required|integer',
         ]);
 
         // --- Start of Agent Secret Key Retrieval ---
@@ -266,9 +274,9 @@ class ShanTransactionController extends Controller
         $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
         $player = User::where('user_name', $player_id)->first();
 
-        if (!$player) {
-            return $this->error('Player not found', 'Player not found', 404);
-        }
+        // if (!$player) {
+        //     return $this->error('Player not found', 'Player not found', 404);
+        // }
 
         $player_agent_code = $player->shan_agent_code; // Get the agent code associated with the player
 
@@ -288,9 +296,9 @@ class ShanTransactionController extends Controller
         //     // This means the agent was found, but their secret_key field is null or empty
         //     return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
         // }
-        if (!$callback_url_base) { // Check if callback URL is set
-            return $this->error('Callback URL not set for agent', 'Callback URL not set', 404);
-        }
+        // if (!$callback_url_base) { // Check if callback URL is set
+        //     return $this->error('Callback URL not set for agent', 'Callback URL not set', 404);
+        // }
         // --- End of Agent Secret Key Retrieval ---
 
         // CRITICAL SECURITY FIX: Mask secret key for logging in production
@@ -441,13 +449,14 @@ class ShanTransactionController extends Controller
             DB::commit();
 
             // client site player's balance update with call back url
-            $callback_url = $callback_url_base . '/client/balance-update'; // Construct full URL
+            //$callback_url = $callback_url_base . 'https://ponewine20x.xyz/api/client/balance-update'; // Construct full URL
+            $callback_url = 'https://ponewine20x.xyz/api/client/balance-update'; // Construct full URL
 
             // Prepare the callback payload
             $callbackPayload = [
                 'wager_code' => $wager_code,
                 // Ensure game_type_id is validated and available from $validated
-                'game_type_id' => $validated['game_type_id'] ?? null,
+                'game_type_id' => 15,
                 // Filter out the banker from the 'players' array for the client site
                 'players' => collect($results)->filter(fn($r) => $r['player_id'] !== $banker->user_name)->values()->all(),
                 'banker_balance' => $banker->wallet->balanceFloat, // Banker's final balance
