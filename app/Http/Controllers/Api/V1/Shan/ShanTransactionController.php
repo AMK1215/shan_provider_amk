@@ -253,15 +253,6 @@ class ShanTransactionController extends Controller
 
         // Step 1: Validate
         $validated = $request->validate([
-            // 'banker' => 'required|array',
-            // 'banker.player_id' => 'required|string',
-            // 'players' => 'required|array',
-            // 'players.*.player_id' => 'required|string',
-            // 'players.*.bet_amount' => 'required|numeric|min:0',
-            // 'players.*.win_lose_status' => 'required|integer|in:0,1'
-            // Add game_type_id to validation if it's coming from the request
-            // 'game_type_id' => 'required|integer',
-
             'banker' => 'required|array',
             'banker.player_id' => 'required|string',
             // 'banker.amount' => 'required|numeric', // <-- don't trust this field, ignore!
@@ -470,8 +461,8 @@ class ShanTransactionController extends Controller
 
             // --- CRITICAL SECURITY ADDITION: Generate signature ---
             // The client site will use its secret key to verify this signature.
-            $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
-            $callbackPayload['signature'] = $signature;
+            // $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
+            // $callbackPayload['signature'] = $signature;
 
             try {
                 $client = new Client();
