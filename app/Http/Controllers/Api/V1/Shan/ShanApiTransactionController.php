@@ -19,7 +19,6 @@ use GuzzleHttp\Exception\RequestException;
 use DateTimeImmutable;
 use DateTimeZone;
 
-
 class ShanApiTransactionController extends Controller
 {
     use HttpResponses;
@@ -39,7 +38,7 @@ class ShanApiTransactionController extends Controller
 
         $validated = $request->validate([
             'banker' => 'required|array',
-            'banker.player_id' => 'required|string', // This will be the ID of the banker (SYS001 or a player ID)
+            'banker.player_id' => 'required|string',
             'players' => 'required|array',
             'players.*.player_id' => 'required|string',
             'players.*.bet_amount' => 'required|numeric|min:0',
@@ -47,18 +46,11 @@ class ShanApiTransactionController extends Controller
             //'game_type_id' => 'required|integer',
         ]);
 
-        // --- Agent Secret Key Retrieval ---
-        // Get the player_id of one of the players (not the banker) to find the agent
-        // Assuming all players belong to the same agent in a given game round.
-        // If the 'players' array could be empty (e.g., only banker involved in some edge case),
-        // you'd need a different way to get the agent_code, perhaps from the banker or a direct request parameter.
-        // For now, assuming 'players' will always have at least one non-banker player.
         $samplePlayerId = collect($validated['players'])
                             ->firstWhere('player_id', '!=', $validated['banker']['player_id'])['player_id'] ?? null;
 
         Log::info('Sample Player ID', ['samplePlayerId' => $samplePlayerId]);
 
-        // If no non-banker player is found, fall back to the banker's agent code if the banker is also a player
         if (!$samplePlayerId) {
             $samplePlayerId = $validated['banker']['player_id'];
         }
@@ -70,9 +62,8 @@ class ShanApiTransactionController extends Controller
         }
 
         $player_agent_code = $player->shan_agent_code;
-        $agent = User::where('shan_agent_code', $player_agent_code)->first();
-
         Log::info('Player Agent Code', ['player_agent_code' => $player_agent_code]);
+        $agent = User::where('shan_agent_code', $player_agent_code)->first();
 
         // if (!$agent) {
         //     return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
@@ -80,6 +71,8 @@ class ShanApiTransactionController extends Controller
 
         $secret_key = $agent->shan_secret_key;
         $callback_url_base = $agent->shan_callback_url;
+
+        
 
         // if (!$secret_key) {
         //     return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
@@ -95,26 +88,26 @@ class ShanApiTransactionController extends Controller
         ]);
 
         $agent_balance = $agent->wallet->balanceFloat;
-        // if ($agent_balance < 0) {
-        //     return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
-        // }
+        if ($agent_balance < 0) {
+            return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
+        }
 
         Log::info('Agent balance', ['agent_balance' => $agent_balance]);
 
         do {
-            $wager_code = Str::random(32);
+            $wager_code = Str::random(12);
         } while (ReportTransaction::where('wager_code', $wager_code)->exists());
 
-        $results = []; // For the API response back to the game client (all participants)
-        $callbackPlayers = []; // For the callback payload (ONLY actual players, excluding banker)
+        // Initialize variables at the top of the try block
+        $results = [];
+        $callbackPlayers = [];
         $totalPlayerNet = 0;
+        $bankerOldBalance = 0;
+        $trueTotalPlayerNet = 0; // <--- INITIALIZE HERE AS WELL
 
         try {
             DB::beginTransaction();
 
-            // Process all participants (players and banker if they are also in 'players' array)
-            // The incoming 'players' array contains all non-banker participants
-            // and potentially the banker if the banker is also a player.
             foreach ($validated['players'] as $playerData) {
                 $participant = User::where('user_name', $playerData['player_id'])->first();
                 if (!$participant) {
@@ -126,7 +119,7 @@ class ShanApiTransactionController extends Controller
                 $winLose = $playerData['win_lose_status'];
 
                 $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
-                $totalPlayerNet += $amountChanged; // This accumulates net for all participants in 'players' array
+                $totalPlayerNet += $amountChanged;
 
                 if ($amountChanged > 0) {
                     $this->walletService->deposit($participant, $amountChanged, TransactionName::GameWin, [
@@ -144,17 +137,15 @@ class ShanApiTransactionController extends Controller
                     'user_id' => $participant->id, 'agent_id' => $participant->agent_id, 'member_account' => $participant->user_name,
                     'transaction_amount' => abs($amountChanged), 'status' => $winLose, 'bet_amount' => $betAmount,
                     'valid_amount' => $betAmount, 'before_balance' => $oldBalance, 'after_balance' => $participant->wallet->balanceFloat,
-                    'banker' => ($participant->user_name === $validated['banker']['player_id']) ? 1 : 0, // Mark as banker if this participant is the banker
+                    'banker' => ($participant->user_name === $validated['banker']['player_id']) ? 1 : 0,
                     'wager_code' => $wager_code, 'settled_status' => $winLose == 1 ? 'settled_win' : 'settled_loss',
                 ]);
 
-                // Add to results for the API response back to the game client (all participants)
                 $results[] = [
                     'player_id' => $participant->user_name,
                     'balance' => $participant->wallet->balanceFloat,
                 ];
 
-                // Add to callbackPlayers ONLY if this participant is NOT the banker
                 if ($participant->user_name !== $validated['banker']['player_id']) {
                     $callbackPlayers[] = [
                         'player_id' => $participant->user_name,
@@ -163,38 +154,23 @@ class ShanApiTransactionController extends Controller
                 }
             }
 
-            // BANKER: Handle the explicit banker entry (whether system or player)
-            // $bankerUserName = $validated['banker']['player_id'];
-            // $banker = User::where('user_name', $bankerUserName)->first();
-
-            // BANKER: Determine if it's a system banker or a player banker
             $bankerUserName = $validated['banker']['player_id'];
             $banker = User::where('user_name', $bankerUserName)->first();
 
             if (!$banker) {
-                // If the banker is not found, it's a critical error
                 Log::error('ShanTransaction: Banker user not found', ['banker_id' => $bankerUserName]);
                 return $this->error('Banker not found', 'Banker user not found in the system', 500);
             }
+
+            $bankerOldBalance = $banker->wallet->balanceFloat;
 
             Log::info('ShanTransaction: Using banker', [
                 'banker_id' => $banker->user_name,
                 'balance' => $banker->wallet->balanceFloat,
             ]);
-            $bankerOldBalance = $banker->wallet->balanceFloat; // <--- DEFINED HERE
-            $bankerAmountChange = -$trueTotalPlayerNet; // Banker always opposite of player total net
 
-            // If the banker is SYS001, it won't be in $validated['players'] array, so it needs separate processing.
-            // If the banker is a player, they were already processed in the loop above.
-            // We need to ensure the banker's balance change is correctly calculated and applied.
-
-            // The $totalPlayerNet already includes the net change for the player acting as banker
-            // if they were part of the $validated['players'] array.
-            // If the banker is SYS001, then $totalPlayerNet only represents the actual players.
-            // This logic needs to be robust for both cases.
-
-            // Let's refine the banker logic to handle SYS001 vs Player-Banker cleanly.
-            // We need to calculate the *true* total net of the non-banker players.
+            // Re-calculate trueTotalPlayerNet here, as it might be needed for the bankerAmountChange
+            // This loop is fine here, as $validated['players'] should always be available.
             $trueTotalPlayerNet = 0;
             foreach ($validated['players'] as $playerData) {
                 if ($playerData['player_id'] !== $bankerUserName) {
@@ -202,7 +178,6 @@ class ShanApiTransactionController extends Controller
                 }
             }
 
-            // The banker's change is the inverse of the true total player net
             $bankerAmountChange = -$trueTotalPlayerNet;
 
             if ($bankerAmountChange > 0) {
@@ -217,9 +192,6 @@ class ShanApiTransactionController extends Controller
 
             $banker->refresh();
 
-            // Ensure banker transaction is recorded if not already (e.g., if SYS001)
-            // If the banker was a player and processed in the loop, this would be a duplicate record.
-            // We need to check if a ReportTransaction for this banker and wager_code already exists.
             $existingBankerReport = ReportTransaction::where('user_id', $banker->id)
                                                     ->where('wager_code', $wager_code)
                                                     ->where('banker', 1)
@@ -233,20 +205,15 @@ class ShanApiTransactionController extends Controller
                     'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
                 ]);
             } else {
-                // Update existing banker report if needed (e.g., if amount changed)
-                // For simplicity, we'll just log that it was already handled.
                 Log::info('ShanTransaction: Banker transaction already recorded in loop.', [
                     'banker_id' => $banker->user_name, 'wager_code' => $wager_code
                 ]);
             }
 
-
-            // Add banker to results for the API response back to the game client
-            // Ensure this is only added once, or update if already present from 'players' loop
             $bankerResultExists = false;
-            foreach ($results as &$res) { // Use reference to modify array in place
+            foreach ($results as &$res) {
                 if ($res['player_id'] === $banker->user_name) {
-                    $res['balance'] = $banker->wallet->balanceFloat; // Update balance if already there
+                    $res['balance'] = $banker->wallet->balanceFloat;
                     $bankerResultExists = true;
                     break;
                 }
@@ -258,7 +225,6 @@ class ShanApiTransactionController extends Controller
                 ];
             }
 
-
             DB::commit();
 
             $callback_url = $callback_url_base . 'https://ponewine20x.xyz/api/shan/client/balance-update';
@@ -266,16 +232,16 @@ class ShanApiTransactionController extends Controller
             $callbackPayload = [
                 'wager_code' => $wager_code,
                 'game_type_id' => 15,
-                'players' => $callbackPlayers, // Use the new array that only contains actual players
-                'banker_balance' => $banker->wallet->balanceFloat, // This is the banker's final balance
+                'players' => $callbackPlayers,
+                'banker_balance' => $banker->wallet->balanceFloat,
                 'timestamp' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeImmutable::ISO8601),
-                'total_player_net' => $trueTotalPlayerNet, // Use true net for non-banker players
+                'total_player_net' => $trueTotalPlayerNet,
                 'banker_amount_change' => $bankerAmountChange,
             ];
 
-            // ksort($callbackPayload);
-            // $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
-            // $callbackPayload['signature'] = $signature;
+            ksort($callbackPayload);
+            $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
+            $callbackPayload['signature'] = $signature;
 
             try {
                 $client = new Client();
@@ -303,7 +269,6 @@ class ShanApiTransactionController extends Controller
                         'response_body' => $responseBody, 'payload' => $callbackPayload,
                         'wager_code' => $wager_code,
                     ]);
-                    // TODO: Implement a robust retry mechanism
                 }
 
             } catch (RequestException $e) {
@@ -312,17 +277,15 @@ class ShanApiTransactionController extends Controller
                     'payload' => $callbackPayload, 'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response',
                     'wager_code' => $wager_code,
                 ]);
-                // TODO: Implement a robust retry mechanism
             } catch (\Exception $e) {
                 Log::error('ShanTransaction: Callback to client site failed (General Exception)', [
                     'callback_url' => $callback_url, 'error' => $e->getMessage(),
                     'payload' => $callbackPayload, 'wager_code' => $wager_code,
                 ]);
-                // TODO: Implement a robust retry mechanism
             }
 
             Log::info('ShanTransaction: Transaction completed successfully (including callback attempt)', [
-                'wager_code' => $wager_code, 'total_player_net' => $trueTotalPlayerNet, // Log true player net
+                'wager_code' => $wager_code, 'total_player_net' => $trueTotalPlayerNet,
                 'banker_amount_change' => $bankerAmountChange, 'system_wallet_balance' => $banker->wallet->balanceFloat,
                 'results' => $results,
             ]);
@@ -338,5 +301,3 @@ class ShanApiTransactionController extends Controller
         }
     }
 }
-
-
