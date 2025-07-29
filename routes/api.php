@@ -34,6 +34,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\TwoDigit\TwoDigitBetController;
 use App\Http\Controllers\Api\V2\Shan\ShankomeeGetBalanceController;
+use App\Http\Controllers\Api\V1\Shan\ShanApiTransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,7 +65,7 @@ Route::prefix('v1/api/seamless')->group(function () {
     Route::post('pushbetdata', [PushBetDataController::class, 'pushBetData']);
 });
 
-Route::post('/transactions', [ShanTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
+Route::post('/transactions', [ShanApiTransactionController::class, 'ShanTransactionCreate'])->middleware('transaction');
 
 // Client launch game endpoint (no authentication required)
 Route::post('/client/launch-game', [LaunchGameController::class, 'launchGameForClient']);
