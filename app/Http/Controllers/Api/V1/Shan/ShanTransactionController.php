@@ -452,7 +452,7 @@ class ShanTransactionController extends Controller
 
             // client site player's balance update with call back url
             //$callback_url = $callback_url_base . 'https://ponewine20x.xyz/api/client/balance-update'; // Construct full URL
-            $callback_url = 'https://ponewine20x.xyz/api/client/balance-update'; // Construct full URL
+            $callback_url = 'https://ponewine20x.xyz/api/shan/client/balance-update'; // Construct full URL
 
             // Prepare the callback payload
             $callbackPayload = [
