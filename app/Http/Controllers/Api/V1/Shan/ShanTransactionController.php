@@ -470,7 +470,7 @@ class ShanTransactionController extends Controller
 
             // --- CRITICAL SECURITY ADDITION: Generate signature ---
             // The client site will use its secret key to verify this signature.
-            $signature = hash_hmac('sha256', json_encode($callbackPayload), $secret_key);
+            $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
             $callbackPayload['signature'] = $signature;
 
             try {
