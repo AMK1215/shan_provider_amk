@@ -119,15 +119,18 @@ class LaunchGameController extends Controller
             ]);
         } else {
             // For existing user, update agent relationship if needed
-            if ($clientUser->agent_id !== $agent->id) {
+            if ($clientUser->agent_id !== $agent->id || $clientUser->client_agent_id !== $agent->id) {
                 $clientUser->update([
                     'agent_id' => $agent->id,
                     'shan_agent_code' => $agentCode,
+                    'client_agent_name' => $agent_name,
+                    'client_agent_id' => $agent->id,
                 ]);
                 Log::info('Updated agent relationship for existing user', [
                     'member_account' => $memberAccount,
                     'old_agent_id' => $clientUser->agent_id,
                     'new_agent_id' => $agent->id,
+                    'client_agent_name' => $agent_name,
                 ]);
             }
 

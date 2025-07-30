@@ -100,7 +100,7 @@ class ShanTransactionController extends Controller
             
             // If no agent found by shan_agent_code, try by agent_id
             if (!$agent && $firstPlayer->agent_id) {
-                $agent = User::find($firstPlayer->agent_id);
+                $agent = User::find($firstPlayer->client_agent_id);
                 
                 // Verify it's actually an agent
                 if ($agent && $agent->type != 20) {
@@ -204,8 +204,8 @@ class ShanTransactionController extends Controller
                 Log::info('ShanTransaction: Processing player', [
                     'player_id' => $player->id,
                     'username' => $player->user_name,
-                    'agent_id' => $player->client_agent_id, // Use found agent ID instead of player's agent_id
-                    'agent_name' => $player->client_agent_name, // Use found agent ID instead of player's agent_id
+                    'agent_id' => $agent?->id,
+                    'agent_name' => $agent?->user_name,
                     'player_data' => $playerData,
                 ]);
 
@@ -261,7 +261,7 @@ class ShanTransactionController extends Controller
                 // Store transaction history with all required fields
                 ReportTransaction::create([
                     'user_id' => $player->id,
-                   // 'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+                    'agent_id' => $agent?->id, // Use found agent ID
                     'member_account' => $player->user_name,
                     'transaction_amount' => $amountChanged,
                     'status' => $winLoseStatus,
@@ -392,7 +392,7 @@ class ShanTransactionController extends Controller
                 // Store banker transaction
                 ReportTransaction::create([
                     'user_id' => $banker->id,
-                   // 'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+                    'agent_id' => $agent?->id, // Use found agent ID
                     'member_account' => $banker->user_name,
                     'transaction_amount' => abs($bankerAmountChange),
                     'status' => $bankerAmountChange >= 0 ? 1 : 0,
@@ -505,7 +505,7 @@ class ShanTransactionController extends Controller
         float $bankerAmountChange,
         string $secretKey
     ): void {
-        $callbackUrl = $callbackUrlBase . '/shan/client/balance-update';
+        $callbackUrl = $callbackUrlBase . '/api/shan/client/balance-update';
 
         $callbackPayload = [
             'wager_code' => $wagerCode,
