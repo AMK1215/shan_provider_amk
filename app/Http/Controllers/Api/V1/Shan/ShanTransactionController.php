@@ -78,26 +78,59 @@ class ShanTransactionController extends Controller
 
             // Step 4: Get agent information and system wallet
             $agent = null;
-            if ($firstPlayer->agent_id) {
+            
+            // First try to find agent by shan_agent_code from player
+            if ($firstPlayer->shan_agent_code) {
+                $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)
+                            ->where('type', 20) // Ensure it's an agent
+                            ->first();
+                
+                if ($agent) {
+                    Log::info('ShanTransaction: Found agent by shan_agent_code', [
+                        'player_id' => $firstPlayer->id,
+                        'player_username' => $firstPlayer->user_name,
+                        'shan_agent_code' => $firstPlayer->shan_agent_code,
+                        'agent_id' => $agent->id,
+                        'agent_username' => $agent->user_name,
+                    ]);
+                }
+            }
+            
+            // If no agent found by shan_agent_code, try by agent_id
+            if (!$agent && $firstPlayer->agent_id) {
                 $agent = User::find($firstPlayer->agent_id);
                 
-                // If agent not found, try to find by shan_agent_code
-                if (!$agent && $firstPlayer->shan_agent_code) {
-                    $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)->first();
-                    
-                    // If still not found, try to find any agent
-                    if (!$agent) {
-                        $agent = User::where('type', 20)->first(); // Get first agent
-                        
-                        if ($agent) {
-                            Log::warning('ShanTransaction: Player agent not found, using default agent', [
-                                'player_id' => $firstPlayer->id,
-                                'player_username' => $firstPlayer->user_name,
-                                'original_agent_id' => $firstPlayer->agent_id,
-                                'default_agent_id' => $agent->id,
-                                'default_agent_username' => $agent->user_name,
-                            ]);
-                        }
+                // Verify it's actually an agent
+                if ($agent && $agent->type != 20) {
+                    $agent = null; // Not a valid agent
+                }
+                
+                if ($agent) {
+                    Log::info('ShanTransaction: Found agent by agent_id', [
+                        'player_id' => $firstPlayer->id,
+                        'player_username' => $firstPlayer->user_name,
+                        'agent_id' => $agent->id,
+                        'agent_username' => $agent->user_name,
+                    ]);
+                }
+            }
+
+            // If still no agent found, try to find by common agent codes
+            if (!$agent) {
+                $commonAgentCodes = ['A3H4', 'A3H2']; // Common agent codes from production
+                foreach ($commonAgentCodes as $code) {
+                    $agent = User::where('shan_agent_code', $code)
+                                ->where('type', 20)
+                                ->first();
+                    if ($agent) {
+                        Log::warning('ShanTransaction: Using default agent by common code', [
+                            'player_id' => $firstPlayer->id,
+                            'player_username' => $firstPlayer->user_name,
+                            'agent_code' => $code,
+                            'agent_id' => $agent->id,
+                            'agent_username' => $agent->user_name,
+                        ]);
+                        break;
                     }
                 }
             }
@@ -130,6 +163,7 @@ class ShanTransactionController extends Controller
                 'agent_id' => $agent?->id,
                 'agent_username' => $agent?->user_name,
                 'agent_type' => $agent?->type,
+                'agent_shan_code' => $agent?->shan_agent_code,
                 'system_wallet_id' => $systemWallet->id,
                 'system_wallet_username' => $systemWallet->user_name,
                 'has_secret_key' => !empty($secretKey),
