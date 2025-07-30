@@ -151,23 +151,14 @@ class ShanTransactionController extends Controller
                 }
             }
 
-            // Get system wallet (default banker)
-            $systemWallet = User::adminUser();
-            if (!$systemWallet) {
-                Log::error('ShanTransaction: System wallet not found');
-                return $this->error('System wallet not found', 'System wallet (SYS001) not configured', 500);
-            }
-
             $secretKey = $agent?->shan_secret_key;
             $callbackUrlBase = $agent?->shan_callback_url;
 
-            Log::info('ShanTransaction: Agent and system wallet information', [
-               // 'agent_id' => $agent?->id,
+            Log::info('ShanTransaction: Agent information', [
+                'agent_id' => $agent?->id,
                 'agent_username' => $agent?->user_name,
                 'agent_type' => $agent?->type,
                 'agent_shan_code' => $agent?->shan_agent_code,
-                'system_wallet_id' => $systemWallet->id,
-                'system_wallet_username' => $systemWallet->user_name,
                 'has_secret_key' => !empty($secretKey),
                 'has_callback_url' => !empty($callbackUrlBase),
             ]);
@@ -186,8 +177,7 @@ class ShanTransactionController extends Controller
             $processedPlayers = [];
             $callbackPlayers = [];
 
-            // Capture system wallet balance BEFORE player transactions
-            $systemWalletBeforeBalance = $systemWallet->balanceFloat;
+
 
             // Initialize results array
             $results = [];
@@ -225,9 +215,9 @@ class ShanTransactionController extends Controller
 
                 // Update wallet based on win/lose status
                 if ($winLoseStatus == 1) {
-                    // Player wins - System wallet pays the player
+                    // Player wins - Agent pays the player
                     $this->walletService->forceTransfer(
-                        $systemWallet, // System wallet pays
+                        $banker, // Agent pays
                         $player,
                         $amountChanged,
                         TransactionName::Win,
@@ -239,10 +229,10 @@ class ShanTransactionController extends Controller
                         ]
                     );
                 } else {
-                    // Player loses - Player pays the system wallet
+                    // Player loses - Player pays the agent
                     $this->walletService->forceTransfer(
                         $player,
-                        $systemWallet, // Player pays system wallet
+                        $banker, // Player pays agent
                         $amountChanged,
                         TransactionName::Loss,
                         [
@@ -280,8 +270,8 @@ class ShanTransactionController extends Controller
                     'balance' => $afterBalance,
                 ];
 
-                // Add to callback players (exclude system wallet)
-                if ($player->user_name !== $systemWallet->user_name) {
+                // Add to callback players (exclude agent)
+                if ($player->user_name !== $banker->user_name) {
                     $callbackPlayers[] = [
                         'player_id' => $player->user_name,
                         'balance' => $afterBalance,
@@ -300,96 +290,50 @@ class ShanTransactionController extends Controller
                 ]);
             }
 
-            // Step 7: Handle banker (could be system wallet or specific player)
-            $bankerUserName = $validated['banker']['player_id'];
-            $banker = User::where('user_name', $bankerUserName)->first();
-
-            // If banker is not found or is system wallet, use system wallet as default
-            if (!$banker || $bankerUserName === $systemWallet->user_name) {
-                $banker = $systemWallet;
-                Log::info('ShanTransaction: Using system wallet as banker', [
-                    'banker_id' => $banker->id,
-                    'banker_username' => $banker->user_name,
-                ]);
-            } else {
-                Log::info('ShanTransaction: Using specific player as banker', [
-                    'banker_id' => $banker->id,
-                    'banker_username' => $banker->user_name,
-                ]);
+            // Step 7: Use agent as banker instead of system wallet
+            if (!$agent) {
+                Log::error('ShanTransaction: No agent found for transaction');
+                return $this->error('No agent found', 'No agent available for this transaction', 500);
             }
 
-            // Refresh system wallet balance after player transactions
-            // if ($banker->id === $systemWallet->id) {
-            //     $systemWallet->refresh();
-            // }
+            // Use agent as the banker
+            $banker = $agent;
+            Log::info('ShanTransaction: Using agent as banker', [
+                'banker_id' => $banker->id,
+                'banker_username' => $banker->user_name,
+                'agent_type' => $banker->type,
+            ]);
 
-            $systemWallet->refresh();
-
-
-            // Capture banker balance after player transactions
-            $bankerBeforeBalance = $banker->balanceFloat;
+            // Capture agent balance before player transactions
+            $agentBeforeBalance = $banker->balanceFloat;
             
             // Calculate banker amount change correctly
             // totalPlayerNet is the net change for all players combined
             // Banker's change is the opposite of players' net change
             $bankerAmountChange = -$totalPlayerNet; // Banker gains what players lose (opposite sign)
 
-            Log::info('ShanTransaction: Processing banker transaction', [
+            Log::info('ShanTransaction: Processing agent banker transaction', [
                 'banker_id' => $banker->id,
                 'banker_username' => $banker->user_name,
                 'total_player_net' => $totalPlayerNet,
                 'banker_amount_change' => $bankerAmountChange,
                 'banker_gains' => $bankerAmountChange > 0 ? 'Yes' : 'No',
-                'system_wallet_before_player_transactions' => $systemWalletBeforeBalance,
-                'system_wallet_after_player_transactions' => $bankerBeforeBalance,
-                'system_wallet_actual_change' => $bankerBeforeBalance - $systemWalletBeforeBalance,
+                'agent_before_player_transactions' => $agentBeforeBalance,
             ]);
 
-                // Update banker wallet - handle both system wallet and specific players
-                if ($banker->id === $systemWallet->id) {
-                    // System wallet is the banker - no additional transfer needed
-                    // The system wallet already received/payed in the player transactions above
-                    Log::info('ShanTransaction: System wallet is banker - no additional transfer needed', [
-                        'banker_id' => $banker->id,
-                        'total_player_net' => $totalPlayerNet,
-                        'banker_amount_change' => $bankerAmountChange,
-                    ]);
-                } else {
-                    // Specific player is the banker - transfer from/to system wallet
-                    if ($bankerAmountChange > 0) {
-                        // Banker receives money from system wallet
-                        $this->walletService->forceTransfer(
-                            $systemWallet,
-                            $banker,
-                            $bankerAmountChange,
-                            TransactionName::BankerDeposit,
-                            [
-                                'reason' => 'banker_receive',
-                                'game_type_id' => $gameTypeId,
-                                'wager_code' => $wagerCode,
-                            ]
-                        );
-                    } elseif ($bankerAmountChange < 0) {
-                        // Banker pays money to system wallet
-                        $this->walletService->forceTransfer(
-                            $banker,
-                            $systemWallet,
-                            abs($bankerAmountChange),
-                            TransactionName::BankerWithdraw,
-                            [
-                                'reason' => 'banker_payout',
-                                'game_type_id' => $gameTypeId,
-                                'wager_code' => $wagerCode,
-                            ]
-                        );
-                    }
-                }
+            // Agent is the banker - no additional transfer needed
+            // The agent already received/paid in the player transactions above
+            Log::info('ShanTransaction: Agent is banker - no additional transfer needed', [
+                'banker_id' => $banker->id,
+                'total_player_net' => $totalPlayerNet,
+                'banker_amount_change' => $bankerAmountChange,
+            ]);
 
-                // Refresh banker balance
+                // Refresh agent balance
                 $banker->refresh();
-                $bankerAfterBalance = $banker->balanceFloat;
+                $agentAfterBalance = $banker->balanceFloat;
 
-                // Store banker transaction
+                // Store agent banker transaction
                 ReportTransaction::create([
                     'user_id' => $banker->id,
                     'agent_id' => $agent?->id, // Use found agent ID
@@ -398,25 +342,25 @@ class ShanTransactionController extends Controller
                     'status' => $bankerAmountChange >= 0 ? 1 : 0,
                     'bet_amount' => null,
                     'valid_amount' => null,
-                    'before_balance' => $bankerBeforeBalance,
-                    'after_balance' => $bankerAfterBalance,
+                    'before_balance' => $agentBeforeBalance,
+                    'after_balance' => $agentAfterBalance,
                     'banker' => 1,
                     'wager_code' => $wagerCode,
                     'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
                 ]);
 
-                // Add banker to results
+                // Add agent banker to results
                 $results[] = [
                     'player_id' => $banker->user_name,
-                    'balance' => $bankerAfterBalance,
+                    'balance' => $agentAfterBalance,
                 ];
 
-                Log::info('ShanTransaction: Banker transaction completed', [
+                Log::info('ShanTransaction: Agent banker transaction completed', [
                     'banker_id' => $banker->id,
-                    'before_balance' => $bankerBeforeBalance,
-                    'after_balance' => $bankerAfterBalance,
+                    'before_balance' => $agentBeforeBalance,
+                    'after_balance' => $agentAfterBalance,
                     'amount_changed' => $bankerAmountChange,
-                    'actual_balance_change' => $bankerAfterBalance - $bankerBeforeBalance,
+                    'actual_balance_change' => $agentAfterBalance - $agentBeforeBalance,
                 ]);
 
                 DB::commit();
@@ -426,7 +370,7 @@ class ShanTransactionController extends Controller
                     'total_player_net' => $totalPlayerNet,
                     'banker_amount_change' => $bankerAmountChange,
                     'processed_players_count' => count($processedPlayers),
-                    'system_wallet_balance' => $systemWallet->balanceFloat,
+                    'agent_balance' => $banker->balanceFloat,
                 ]);
 
                 // Step 8: Send callback to client site
@@ -436,7 +380,7 @@ class ShanTransactionController extends Controller
                         $wagerCode,
                         $gameTypeId,
                         $callbackPlayers,
-                        $bankerAfterBalance,
+                        $agentAfterBalance,
                         $totalPlayerNet,
                         $bankerAmountChange,
                         $secretKey
@@ -459,11 +403,11 @@ class ShanTransactionController extends Controller
                     'players' => $processedPlayers,
                     'banker' => [
                         'player_id' => $banker->user_name,
-                        'balance' => $bankerAfterBalance,
+                        'balance' => $agentAfterBalance,
                     ],
-                    'system_wallet' => [
-                        'player_id' => $systemWallet->user_name,
-                        'balance' => $systemWallet->balanceFloat,
+                    'agent' => [
+                        'player_id' => $banker->user_name,
+                        'balance' => $agentAfterBalance,
                     ],
                 ], 'Transaction Successful');
 
@@ -500,7 +444,7 @@ class ShanTransactionController extends Controller
         string $wagerCode,
         int $gameTypeId,
         array $callbackPlayers,
-        float $bankerBalance,
+        float $agentBalance,
         float $totalPlayerNet,
         float $bankerAmountChange,
         string $secretKey
@@ -511,7 +455,7 @@ class ShanTransactionController extends Controller
             'wager_code' => $wagerCode,
             'game_type_id' => $gameTypeId,
             'players' => $callbackPlayers,
-            'banker_balance' => $bankerBalance,
+            'agent_balance' => $agentBalance,
             'timestamp' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeImmutable::ISO8601),
             'total_player_net' => $totalPlayerNet,
             'banker_amount_change' => $bankerAmountChange,
