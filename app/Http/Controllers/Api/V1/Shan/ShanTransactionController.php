@@ -316,9 +316,12 @@ class ShanTransactionController extends Controller
             }
 
             // Refresh system wallet balance after player transactions
-            if ($banker->id === $systemWallet->id) {
-                $systemWallet->refresh();
-            }
+            // if ($banker->id === $systemWallet->id) {
+            //     $systemWallet->refresh();
+            // }
+
+            $systemWallet->refresh();
+
 
             // Capture banker balance after player transactions
             $bankerBeforeBalance = $banker->balanceFloat;
