@@ -61,6 +61,8 @@ class LaunchGameController extends Controller
         // Get agent information from agent_code
         $agentCode = $validatedData['agent_code'];
         $agent = User::where('shan_agent_code', $agentCode)->first();
+        $agent_name = $agent->user_name;
+        Log::info('Agent name', ['agent_name' => $agent_name]);
 
         if (!$agent) {
             Log::error('Provider Launch Game: Agent not found', [
