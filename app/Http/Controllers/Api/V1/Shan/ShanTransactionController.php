@@ -469,7 +469,7 @@ class ShanTransactionController extends Controller
         float $bankerAmountChange,
         string $secretKey
     ): void {
-        $callbackUrl = $callbackUrlBase . '/api/shan/client/balance-update';
+        $callbackUrl = $callbackUrlBase . '/shan/client/balance-update';
 
         $callbackPayload = [
             'wager_code' => $wagerCode,
