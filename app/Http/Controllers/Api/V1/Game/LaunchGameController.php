@@ -96,6 +96,8 @@ class LaunchGameController extends Controller
                 'is_changed_password' => 1,
                 'shan_agent_code' => $agentCode,
                 'agent_id' => $agent->id, // Set the agent relationship
+                'client_agent_name' => $agent_name,
+                'client_agent_id' => $agent->id,
             ]);
             Log::info('Created new user for provider launch game', [
                 'member_account' => $memberAccount,

@@ -66,6 +66,8 @@ class User extends Authenticatable implements Wallet
         'shan_agent_name',
         'shan_secret_key',
         'shan_callback_url',
+        'client_agent_name',
+        'client_agent_id',
     ];
 
     /**
