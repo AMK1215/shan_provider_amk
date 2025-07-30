@@ -182,6 +182,23 @@ class ShanTransactionController extends Controller
             // Initialize results array
             $results = [];
 
+            // Step 7: Use agent as banker instead of system wallet
+            if (!$agent) {
+                Log::error('ShanTransaction: No agent found for transaction');
+                return $this->error('No agent found', 'No agent available for this transaction', 500);
+            }
+
+            // Use agent as the banker
+            $banker = $agent;
+            Log::info('ShanTransaction: Using agent as banker', [
+                'banker_id' => $banker->id,
+                'banker_username' => $banker->user_name,
+                'agent_type' => $banker->type,
+            ]);
+
+            // Capture agent balance before player transactions
+            $agentBeforeBalance = $banker->balanceFloat;
+
             try {
                 DB::beginTransaction();
 
@@ -289,23 +306,6 @@ class ShanTransactionController extends Controller
                     'amount_changed' => $amountChanged,
                 ]);
             }
-
-            // Step 7: Use agent as banker instead of system wallet
-            if (!$agent) {
-                Log::error('ShanTransaction: No agent found for transaction');
-                return $this->error('No agent found', 'No agent available for this transaction', 500);
-            }
-
-            // Use agent as the banker
-            $banker = $agent;
-            Log::info('ShanTransaction: Using agent as banker', [
-                'banker_id' => $banker->id,
-                'banker_username' => $banker->user_name,
-                'agent_type' => $banker->type,
-            ]);
-
-            // Capture agent balance before player transactions
-            $agentBeforeBalance = $banker->balanceFloat;
             
             // Calculate banker amount change correctly
             // totalPlayerNet is the net change for all players combined
