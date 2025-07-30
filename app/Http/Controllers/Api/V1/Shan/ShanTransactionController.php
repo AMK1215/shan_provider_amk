@@ -214,7 +214,11 @@ class ShanTransactionController extends Controller
                 $betAmount = $playerData['bet_amount'];
                 $winLoseStatus = $playerData['win_lose_status'];
                 
-                $totalPlayerNet += $amountChanged;
+                // Calculate net amount for this player based on win/lose status
+                // If player wins (status 1), amount_changed is positive for player (negative for banker)
+                // If player loses (status 0), amount_changed is negative for player (positive for banker)
+                $playerNetAmount = $winLoseStatus == 1 ? $amountChanged : -$amountChanged;
+                $totalPlayerNet += $playerNetAmount;
 
                 // Update wallet based on win/lose status
                 if ($winLoseStatus == 1) {
@@ -320,8 +324,8 @@ class ShanTransactionController extends Controller
             $bankerBeforeBalance = $banker->balanceFloat;
             
             // Calculate banker amount change correctly
-            // When players lose money (negative total), banker gains money (positive amount)
-            // When players win money (positive total), banker loses money (negative amount)
+            // totalPlayerNet is the net change for all players combined
+            // Banker's change is the opposite of players' net change
             $bankerAmountChange = -$totalPlayerNet; // Banker gains what players lose (opposite sign)
 
             Log::info('ShanTransaction: Processing banker transaction', [
