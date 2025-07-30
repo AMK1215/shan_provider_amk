@@ -15,527 +15,8 @@ use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash; // Import RequestException for specific error handling
-use Illuminate\Support\Facades\Log; // <--- ADD THIS LINE
-use Illuminate\Support\Str;     // <--- ADD THIS LINE FOR CONSISTENCY WITH UTC
-
-// class ShanTransactionController extends Controller
-// {
-//     use HttpResponses;
-
-//     protected WalletService $walletService;
-
-//     public function __construct(WalletService $walletService)
-//     {
-//         $this->walletService = $walletService;
-//     }
-
-//     public function ShanTransactionCreate(Request $request): JsonResponse
-//     {
-//         Log::info('ShanTransaction: Request received', [
-//             'payload' => $request->all(),
-//         ]);
-
-//         // Step 1: Validate
-//         $validated = $request->validate([
-//             'banker' => 'required|array',
-//             'banker.player_id' => 'required|string',
-//             // 'banker.amount' => 'required|numeric', // <-- don't trust this field, ignore!
-//             'players' => 'required|array',
-//             'players.*.player_id' => 'required|string',
-//             'players.*.bet_amount' => 'required|numeric|min:0',
-//             'players.*.win_lose_status' => 'required|integer|in:0,1'
-//         ]);
-
-//         // Log::info('ShanTransaction: Validated data', [
-//         //     'validated' => $validated,
-//         // ]);
-//          // --- Start of Agent Secret Key Retrieval ---
-//          $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
-//          $player = User::where('user_name', $player_id)->first();
-
-//          if (!$player) {
-//              return $this->error('Player not found', 'Player not found', 404);
-//          }
-
-//          $player_agent_code = $player->shan_agent_code; // Get the agent code associated with the player
-
-//          // Find the agent using the shan_agent_code
-//          $agent = User::where('shan_agent_code', $player_agent_code)
-//                       ->first();
-
-//          if (!$agent) {
-//              return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
-//          }
-
-//          // Now you can access the secret key directly from the $agent object
-//          $secret_key = $agent->shan_secret_key;
-
-//         //  if (!$secret_key) {
-//         //      // This means the agent was found, but their secret_key field is null or empty
-//         //      return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
-//         //  }
-//          // --- End of Agent Secret Key Retrieval ---
-
-//          Log::info('Agent Secret Key Retrieved', [
-//              'agent_username' => $agent->user_name,
-//              'secret_key' => $secret_key // Be cautious logging actual secret keys in production
-//          ]);
-
-//          // agent credit
-//          $agent_balance = $agent->wallet->balanceFloat;
-//          if ($agent_balance < 0) {
-//             return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
-//          }
-
-//          Log::info('Agent balance', [
-//             'agent_balance' => $agent_balance,
-//          ]);
-
-//         // Generate unique wager_code for idempotency
-//         do {
-//             $wager_code = Str::random(12);
-//         } while (ReportTransaction::where('wager_code', $wager_code)->exists());
-
-//         // Double-check: If wager_code is ever repeated, abort!
-//         if (ReportTransaction::where('wager_code', $wager_code)->exists()) {
-//             return $this->error('Duplicate transaction!', 'This round already settled.', 409);
-//         }
-
-//         $results = [];
-//         $totalPlayerNet = 0; // player net (win - lose) for this round
-
-//         try {
-//             DB::beginTransaction();
-
-//             // PLAYERS: Process each player, calculate total net win/loss
-//             foreach ($validated['players'] as $playerData) {
-//                 $player = User::where('user_name', $playerData['player_id'])->first();
-//                 if (!$player) continue;
-
-//                 $oldBalance = $player->wallet->balanceFloat;
-//                 $betAmount = $playerData['bet_amount'];
-//                 $winLose = $playerData['win_lose_status']; // 1 = win, 0 = lose
-
-//                 // Win = bet amount ထပ်တိုး, Lose = bet amount နုတ်
-//                 $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
-//                 $totalPlayerNet += $amountChanged;
-
-//                 // Wallet update
-//                 if ($amountChanged > 0) {
-//                     $this->walletService->deposit($player, $amountChanged, TransactionName::GameWin, [
-//                         'description' => 'Win from Shan game',
-//                         'wager_code' => $wager_code,
-//                         'bet_amount' => $betAmount,
-//                     ]);
-//                 } elseif ($amountChanged < 0) {
-//                     $this->walletService->withdraw($player, abs($amountChanged), TransactionName::GameLoss, [
-//                         'description' => 'Loss in Shan game',
-//                         'wager_code' => $wager_code,
-//                         'bet_amount' => $betAmount,
-//                     ]);
-//                 }
-
-//                 $player->refresh();
-
-//                 // Record transaction
-//                 ReportTransaction::create([
-//                     'user_id' => $player->id,
-//                     'agent_id' => $player->agent_id,
-//                     'member_account' => $player->user_name,
-//                     'transaction_amount' => abs($amountChanged),
-//                     'status' => $winLose,
-//                     'bet_amount' => $betAmount,
-//                     'valid_amount' => $betAmount,
-//                     'before_balance' => $oldBalance,
-//                     'after_balance' => $player->wallet->balanceFloat,
-//                     'banker' => 0,
-//                     'wager_code' => $wager_code,
-//                     'settled_status' => $winLose == 1 ? 'settled_win' : 'settled_loss',
-//                 ]);
-
-//                 $results[] = [
-//                     'player_id' => $player->user_name,
-//                     'balance' => $player->wallet->balanceFloat,
-//                 ];
-//             }
-
-//             // BANKER: Use the system wallet (admin user) as banker instead of individual banker users
-//             $banker = User::adminUser();
-//             if (!$banker) {
-//                 Log::error('ShanTransaction: System wallet (admin user) not found');
-//                 return $this->error('System wallet not found', 'Banker (system wallet) not configured', 500);
-//             }
-
-//             Log::info('ShanTransaction: Using system wallet as banker', [
-//                 'banker_id' => $banker->user_name,
-//                 'balance' => $banker->wallet->balanceFloat,
-//             ]);
-//             $bankerOldBalance = $banker->wallet->balanceFloat;
-//             $bankerAmountChange = -$totalPlayerNet; // Banker always opposite of player total net
-
-//             if ($bankerAmountChange > 0) {
-//                 $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
-//                     'description' => 'Banker receive (from all players)',
-//                     'wager_code' => $wager_code
-//                 ]);
-//             } elseif ($bankerAmountChange < 0) {
-//                 $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
-//                     'description' => 'Banker payout (to all players)',
-//                     'wager_code' => $wager_code
-//                 ]);
-//             }
-//             // If $bankerAmountChange == 0, do nothing
-
-//             $banker->refresh();
-
-//             ReportTransaction::create([
-//                 'user_id' => $banker->id,
-//                 'agent_id' => $banker->agent_id ?? null,
-//                 'member_account' => $banker->user_name,
-//                 'transaction_amount' => abs($bankerAmountChange),
-//                 'before_balance' => $bankerOldBalance,
-//                 'after_balance' => $banker->wallet->balanceFloat,
-//                 'banker' => 1,
-//                 'status' => $bankerAmountChange >= 0 ? 1 : 0,
-//                 'wager_code' => $wager_code,
-//                 'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
-//             ]);
-
-//             $results[] = [
-//                 'player_id' => $banker->user_name,
-//                 'balance' => $banker->wallet->balanceFloat,
-//             ];
-
-//             DB::commit();
-
-//             Log::info('ShanTransaction: Transaction completed successfully', [
-//                 'wager_code' => $wager_code,
-//                 'total_player_net' => $totalPlayerNet,
-//                 'banker_amount_change' => $bankerAmountChange,
-//                 'system_wallet_balance' => $banker->wallet->balanceFloat,
-//                 'results' => $results,
-//             ]);
-
-//         } catch (\Exception $e) {
-//             DB::rollBack();
-//             Log::error('ShanTransaction: Transaction failed', [
-//                 'error' => $e->getMessage(),
-//                 'trace' => $e->getTraceAsString(),
-//             ]);
-//             return $this->error('Transaction failed', $e->getMessage(), 500);
-//         }
-
-//         return $this->success($results, 'Transaction Successful');
-//     }
-// }
-
-// class ShanTransactionController extends Controller
-// {
-//     use HttpResponses;
-
-//     protected WalletService $walletService;
-
-//     public function __construct(WalletService $walletService)
-//     {
-//         $this->walletService = $walletService;
-//     }
-
-//     public function ShanTransactionCreate(Request $request): JsonResponse
-//     {
-//         Log::info('ShanTransaction: Request received', [
-//             'payload' => $request->all(),
-//         ]);
-
-//         // Step 1: Validate
-//         $validated = $request->validate([
-//             'banker' => 'required|array',
-//             'banker.player_id' => 'required|string',
-//             // 'banker.amount' => 'required|numeric', // <-- don't trust this field, ignore!
-//             'players' => 'required|array',
-//             'players.*.player_id' => 'required|string',
-//             'players.*.bet_amount' => 'required|numeric|min:0',
-//             'players.*.win_lose_status' => 'required|integer|in:0,1'
-//         ]);
-
-//         // --- Start of Agent Secret Key Retrieval ---
-//         // Corrected variable name from $validatedData to $validated
-//         $player_id = $validated['players'][0]['player_id']; // Get the first player's ID for agent lookup
-//         $player = User::where('user_name', $player_id)->first();
-
-//         // if (!$player) {
-//         //     return $this->error('Player not found', 'Player not found', 404);
-//         // }
-
-//         $player_agent_code = $player->shan_agent_code; // Get the agent code associated with the player
-
-//         // Find the agent using the shan_agent_code
-//         // Optional: Ensure it's an actual agent role using ->where('type', User::AGENT_ROLE)
-//         $agent = User::where('shan_agent_code', $player_agent_code)->first();
-
-//         // if (!$agent) {
-//         //     return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
-//         // }
-
-//         // Now you can access the secret key directly from the $agent object
-//         $secret_key = $agent->shan_secret_key;
-//         $callback_url_base = $agent->shan_callback_url; // Get the base callback URL
-
-//         // if (!$secret_key) {
-//         //     // This means the agent was found, but their secret_key field is null or empty
-//         //     return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
-//         // }
-//         // if (!$callback_url_base) { // Check if callback URL is set
-//         //     return $this->error('Callback URL not set for agent', 'Callback URL not set', 404);
-//         // }
-//         // --- End of Agent Secret Key Retrieval ---
-
-//         // CRITICAL SECURITY FIX: Mask secret key for logging in production
-//         Log::info('Agent Secret Key Retrieved', [
-//             'agent_username' => $agent->user_name,
-//             'secret_key' => Str::mask($secret_key, '*', 0, max(0, strlen($secret_key) - 4)), // Mask it!
-//             'callback_url_base' => $callback_url_base,
-
-//         ]);
-
-//         // agent credit
-//         $agent_balance = $agent->wallet->balanceFloat;
-//         // if ($agent_balance < 0) {
-//         //     return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
-//         // }
-
-//         Log::info('Agent balance', [
-//             'agent_balance' => $agent_balance,
-//         ]);
-
-//         // Generate unique wager_code for idempotency
-//         do {
-//             $wager_code = Str::random(12);
-//         } while (ReportTransaction::where('wager_code', $wager_code)->exists());
-
-//         // Redundant check, can be removed. The do-while loop ensures uniqueness.
-//         // if (ReportTransaction::where('wager_code', $wager_code)->exists()) {
-//         //     return $this->error('Duplicate transaction!', 'This round already settled.', 409);
-//         // }
-
-//         $results = [];
-//         $totalPlayerNet = 0; // player net (win - lose) for this round
-
-//         try {
-//             DB::beginTransaction();
-
-//             // PLAYERS: Process each player, calculate total net win/loss
-//             foreach ($validated['players'] as $playerData) {
-//                 // OPTIMIZATION: Fetch all players at once before the loop to avoid N+1 queries
-//                 // $playersCollection = User::whereIn('user_name', array_column($validated['players'], 'player_id'))->get()->keyBy('user_name');
-//                 // $player = $playersCollection->get($playerData['player_id']);
-
-//                 $player = User::where('user_name', $playerData['player_id'])->first();
-//                 if (!$player) {
-//                     // CRITICAL: Don't just continue. This can lead to inconsistent state.
-//                     // Throw an exception to rollback the entire transaction if a player is not found.
-//                     throw new \RuntimeException("Player not found: {$playerData['player_id']}. Transaction aborted.");
-//                 }
-
-//                 $oldBalance = $player->wallet->balanceFloat;
-//                 $betAmount = $playerData['bet_amount'];
-//                 $winLose = $playerData['win_lose_status']; // 1 = win, 0 = lose
-
-//                 // Win = bet amount ထပ်တိုး, Lose = bet amount နုတ်
-//                 $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
-//                 $totalPlayerNet += $amountChanged;
-
-//                 // Wallet update
-//                 if ($amountChanged > 0) {
-//                     $this->walletService->deposit($player, $amountChanged, TransactionName::GameWin, [
-//                         'description' => 'Win from Shan game',
-//                         'wager_code' => $wager_code,
-//                         'bet_amount' => $betAmount,
-//                     ]);
-//                 } elseif ($amountChanged < 0) {
-//                     $this->walletService->withdraw($player, abs($amountChanged), TransactionName::GameLoss, [
-//                         'description' => 'Loss in Shan game',
-//                         'wager_code' => $wager_code,
-//                         'bet_amount' => $betAmount,
-//                     ]);
-//                 }
-
-//                 $player->refresh();
-
-//                 // Record transaction
-//                 ReportTransaction::create([
-//                     'user_id' => $player->id,
-//                     'agent_id' => $player->agent_id,
-//                     'member_account' => $player->user_name,
-//                     'transaction_amount' => abs($amountChanged),
-//                     'status' => $winLose,
-//                     'bet_amount' => $betAmount,
-//                     'valid_amount' => $betAmount,
-//                     'before_balance' => $oldBalance,
-//                     'after_balance' => $player->wallet->balanceFloat,
-//                     'banker' => 0,
-//                     'wager_code' => $wager_code,
-//                     'settled_status' => $winLose == 1 ? 'settled_win' : 'settled_loss',
-//                 ]);
-
-//                 $results[] = [
-//                     'player_id' => $player->user_name,
-//                     'balance' => $player->wallet->balanceFloat,
-//                 ];
-//             }
-
-//             // BANKER: Use the system wallet (admin user) as banker instead of individual banker users
-//             $banker = User::adminUser();
-//             if (!$banker) {
-//                 Log::error('ShanTransaction: System wallet (admin user) not found');
-//                 return $this->error('System wallet not found', 'Banker (system wallet) not configured', 500);
-//             }
-
-//             Log::info('ShanTransaction: Using system wallet as banker', [
-//                 'banker_id' => $banker->user_name,
-//                 'balance' => $banker->wallet->balanceFloat,
-//             ]);
-//             $bankerOldBalance = $banker->wallet->balanceFloat;
-//             $bankerAmountChange = -$totalPlayerNet; // Banker always opposite of player total net
-
-//             if ($bankerAmountChange > 0) {
-//                 $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
-//                     'description' => 'Banker receive (from all players)',
-//                     'wager_code' => $wager_code
-//                 ]);
-//             } elseif ($bankerAmountChange < 0) {
-//                 $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
-//                     'description' => 'Banker payout (to all players)',
-//                     'wager_code' => $wager_code
-//                 ]);
-//             }
-//             // If $bankerAmountChange == 0, do nothing
-
-//             $banker->refresh();
-
-//             ReportTransaction::create([
-//                 'user_id' => $banker->id,
-//                 'agent_id' => $banker->agent_id ?? null,
-//                 'member_account' => $banker->user_name,
-//                 'transaction_amount' => abs($bankerAmountChange),
-//                 'before_balance' => $bankerOldBalance,
-//                 'after_balance' => $banker->wallet->balanceFloat,
-//                 'banker' => 1,
-//                 'status' => $bankerAmountChange >= 0 ? 1 : 0,
-//                 'wager_code' => $wager_code,
-//                 'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
-//             ]);
-
-//             $results[] = [
-//                 'player_id' => $banker->user_name,
-//                 'balance' => $banker->wallet->balanceFloat,
-//             ];
-
-//             // --- CRITICAL: DB::commit() MUST happen BEFORE sending callback ---
-//             // If the callback fails, you don't want to roll back your local transaction.
-//             // Your local transaction should be finalized first.
-//             DB::commit();
-
-//             // client site player's balance update with call back url
-//             //$callback_url = $callback_url_base . 'https://ponewine20x.xyz/api/client/balance-update'; // Construct full URL
-//             $callback_url = 'https://ponewine20x.xyz/api/shan/client/balance-update'; // Construct full URL
-
-//             // Prepare the callback payload
-//             $callbackPayload = [
-//                 'wager_code' => $wager_code,
-//                 // Ensure game_type_id is validated and available from $validated
-//                 'game_type_id' => 15,
-//                 // Filter out the banker from the 'players' array for the client site
-//                 'players' => collect($results)->filter(fn($r) => $r['player_id'] !== $banker->user_name)->values()->all(),
-//                 'banker_balance' => $banker->wallet->balanceFloat, // Banker's final balance
-//                 //'timestamp' => now()->toIso8601String(),
-//                 'timestamp' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeImmutable::ISO8601), // Current timestamp in ISO 8601 format
-//                 'total_player_net' => $totalPlayerNet,
-//                 'banker_amount_change' => $bankerAmountChange,
-//             ];
-
-//             // --- CRITICAL SECURITY ADDITION: Generate signature ---
-//             // The client site will use its secret key to verify this signature.
-//             // $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
-//             // $callbackPayload['signature'] = $signature;
-
-//             try {
-//                 $client = new Client();
-//                 $response = $client->post($callback_url, [
-//                     'json' => $callbackPayload,
-//                     'headers' => [
-//                         'Content-Type' => 'application/json',
-//                         'Accept' => 'application/json',
-//                         // Optional: Add an Authorization header if the client site requires it
-//                         // 'Authorization' => 'Bearer your_provider_token',
-//                     ],
-//                     'timeout' => 5, // Timeout for the request in seconds
-//                     'connect_timeout' => 5, // Connection timeout
-//                 ]);
-
-//                 $statusCode = $response->getStatusCode();
-//                 $responseBody = $response->getBody()->getContents();
-
-//                 if ($statusCode >= 200 && $statusCode < 300) {
-//                     Log::info('ShanTransaction: Callback to client site successful', [
-//                         'callback_url' => $callback_url,
-//                         'status_code' => $statusCode,
-//                         'response_body' => $responseBody,
-//                         'wager_code' => $wager_code, // Add wager_code to log for easier tracking
-//                     ]);
-//                 } else {
-//                     Log::error('ShanTransaction: Callback to client site failed with non-2xx status', [
-//                         'callback_url' => $callback_url,
-//                         'status_code' => $statusCode,
-//                         'response_body' => $responseBody,
-//                         'payload' => $callbackPayload,
-//                         'wager_code' => $wager_code,
-//                     ]);
-//                     // IMPORTANT: Implement a retry mechanism here for failed callbacks
-//                     // e.g., dispatch a job to a queue: dispatch(new SendCallbackJob($callback_url, $callbackPayload));
-//                 }
-
-//             } catch (RequestException $e) { // Use specific Guzzle exception
-//                 Log::error('ShanTransaction: Callback to client site failed (Guzzle RequestException)', [
-//                     'callback_url' => $callback_url,
-//                     'error' => $e->getMessage(),
-//                     'payload' => $callbackPayload,
-//                     'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response',
-//                     'wager_code' => $wager_code,
-//                 ]);
-//                 // IMPORTANT: Implement a retry mechanism
-//             } catch (\Exception $e) { // Catch any other general exceptions
-//                 Log::error('ShanTransaction: Callback to client site failed (General Exception)', [
-//                     'callback_url' => $callback_url,
-//                     'error' => $e->getMessage(),
-//                     'payload' => $callbackPayload,
-//                     'wager_code' => $wager_code,
-//                 ]);
-//                 // IMPORTANT: Implement a retry mechanism
-//             }
-
-//             // Log success for the main transaction only after callback attempt
-//             Log::info('ShanTransaction: Transaction completed successfully', [
-//                 'wager_code' => $wager_code,
-//                 'total_player_net' => $totalPlayerNet,
-//                 'banker_amount_change' => $bankerAmountChange,
-//                 'system_wallet_balance' => $banker->wallet->balanceFloat,
-//                 'results' => $results,
-//             ]);
-
-//             // This is the final response to the game client
-//             return $this->success($results, 'Transaction Successful');
-
-//         } catch (\Exception $e) {
-//             DB::rollBack(); // Rollback if any error occurs before DB::commit()
-//             Log::error('ShanTransaction: Transaction failed', [
-//                 'error' => $e->getMessage(),
-//                 'trace' => $e->getTraceAsString(),
-//             ]);
-//             return $this->error('Transaction failed', $e->getMessage(), 500);
-//         }
-//     }
-// }
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ShanTransactionController extends Controller
 {
@@ -552,243 +33,435 @@ class ShanTransactionController extends Controller
     {
         Log::info('ShanTransaction: Request received', [
             'payload' => $request->all(),
+            'headers' => $request->headers->all(),
         ]);
-
-        $validated = $request->validate([
-            'banker' => 'required|array',
-            'banker.player_id' => 'required|string',
-            'players' => 'required|array',
-            'players.*.player_id' => 'required|string',
-            'players.*.bet_amount' => 'required|numeric|min:0',
-            'players.*.win_lose_status' => 'required|integer|in:0,1',
-            // 'game_type_id' => 'required|integer', // Ensure this is validated if used in callback
-        ]);
-
-        $player_id = $validated['players'][0]['player_id'];
-        $player = User::where('user_name', $player_id)->first();
-
-        // if (!$player) {
-        //     return $this->error('Player not found', 'Player not found', 404);
-        // }
-
-        $player_agent_code = $player->shan_agent_code;
-        $agent = User::where('shan_agent_code', $player_agent_code)->first();
-
-        // if (!$agent) {
-        //     return $this->error('Agent not found for player\'s agent code', 'Agent not found', 404);
-        // }
-
-        $secret_key = $agent->shan_secret_key;
-        $callback_url_base = $agent->shan_callback_url;
-
-        // if (!$secret_key) {
-        //     return $this->error('Secret Key not set for agent', 'Secret Key not set', 404);
-        // }
-        // if (!$callback_url_base) {
-        //     return $this->error('Callback URL not set for agent', 'Callback URL not set', 404);
-        // }
-
-        Log::info('Agent Secret Key Retrieved', [
-            'agent_username' => $agent->user_name,
-            'secret_key_masked' => Str::mask($secret_key, '*', 0, max(0, strlen($secret_key) - 4)),
-            'callback_url_base' => $callback_url_base,
-        ]);
-
-        $agent_balance = $agent->wallet->balanceFloat;
-        // if ($agent_balance < 0) {
-        //     return $this->error('Agent balance is negative', 'Agent balance is negative', 404);
-        // }
-
-        Log::info('Agent balance', ['agent_balance' => $agent_balance]);
-
-        do {
-            $wager_code = Str::random(12);
-        } while (ReportTransaction::where('wager_code', $wager_code)->exists());
-
-        $results = []; // This will contain all processed participants for the API response
-        $callbackPlayers = []; // This will ONLY contain actual players for the callback payload
-        $totalPlayerNet = 0;
 
         try {
-            DB::beginTransaction();
-
-            // PLAYERS: Process each player, calculate total net win/loss
-            foreach ($validated['players'] as $playerData) {
-                $player = User::where('user_name', $playerData['player_id'])->first();
-                if (! $player) {
-                    throw new \RuntimeException("Player not found: {$playerData['player_id']}. Transaction aborted.");
-                }
-
-                $oldBalance = $player->wallet->balanceFloat;
-                $betAmount = $playerData['bet_amount'];
-                $winLose = $playerData['win_lose_status'];
-
-                $amountChanged = ($winLose == 1) ? $betAmount : -$betAmount;
-                $totalPlayerNet += $amountChanged;
-
-                if ($amountChanged > 0) {
-                    $this->walletService->deposit($player, $amountChanged, TransactionName::GameWin, [
-                        'description' => 'Win from Shan game', 'wager_code' => $wager_code, 'bet_amount' => $betAmount,
-                    ]);
-                } elseif ($amountChanged < 0) {
-                    $this->walletService->withdraw($player, abs($amountChanged), TransactionName::GameLoss, [
-                        'description' => 'Loss in Shan game', 'wager_code' => $wager_code, 'bet_amount' => $betAmount,
-                    ]);
-                }
-
-                $player->refresh();
-
-                ReportTransaction::create([
-                    'user_id' => $player->id,
-                    'agent_id' => $player->agent_id,
-                    'member_account' => $player->user_name,
-                    'transaction_amount' => abs($amountChanged),
-                    'status' => $winLose, 'bet_amount' => $betAmount,
-                    'valid_amount' => $betAmount,
-                    'before_balance' => $oldBalance,
-                    'after_balance' => $player->wallet->balanceFloat,
-                    'banker' => 0,
-                    'wager_code' => $wager_code,
-                    'settled_status' => $winLose == 1 ? 'settled_win' : 'settled_loss',
-                ]);
-
-                // Add to results for the API response back to the game client
-                $results[] = [
-                    'player_id' => $player->user_name,
-                    'balance' => $player->wallet->balanceFloat,
-                ];
-
-                // Add to callbackPlayers ONLY if this player is NOT the banker
-                // The banker is handled separately in the callback payload
-                if ($player->user_name !== $validated['banker']['player_id']) { // Check against the incoming banker_id
-                    $callbackPlayers[] = [
-                        'player_id' => $player->user_name,
-                        'balance' => $player->wallet->balanceFloat,
-                    ];
-                }
-            }
-
-            // BANKER: Determine if it's a system banker or a player banker
-            $bankerUserName = $validated['banker']['player_id'];
-            $banker = User::where('user_name', $bankerUserName)->first();
-
-            if (! $banker) {
-                // If the banker is not found, it's a critical error
-                Log::error('ShanTransaction: Banker user not found', ['banker_id' => $bankerUserName]);
-
-                return $this->error('Banker not found', 'Banker user not found in the system', 500);
-            }
-
-            Log::info('ShanTransaction: Using banker', [
-                'banker_id' => $banker->user_name,
-                'balance' => $banker->wallet->balanceFloat,
-            ]);
-            $bankerOldBalance = $banker->wallet->balanceFloat;
-            $bankerAmountChange = -$totalPlayerNet; // Banker always opposite of player total net
-
-            if ($bankerAmountChange > 0) {
-                $this->walletService->deposit($banker, $bankerAmountChange, TransactionName::BankerDeposit, [
-                    'description' => 'Banker receive (from all players)', 'wager_code' => $wager_code,
-                ]);
-            } elseif ($bankerAmountChange < 0) {
-                $this->walletService->withdraw($banker, abs($bankerAmountChange), TransactionName::BankerWithdraw, [
-                    'description' => 'Banker payout (to all players)', 'wager_code' => $wager_code,
-                ]);
-            }
-
-            $banker->refresh();
-
-            ReportTransaction::create([
-                'user_id' => $banker->id, 'agent_id' => $banker->agent_id ?? null, 'member_account' => $banker->user_name,
-                'transaction_amount' => abs($bankerAmountChange), 'before_balance' => $bankerOldBalance,
-                'after_balance' => $banker->wallet->balanceFloat, 'banker' => 1,
-                'status' => $bankerAmountChange >= 0 ? 1 : 0, 'wager_code' => $wager_code,
-                'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
+            // Step 1: Enhanced Validation with game_type_id
+            $validated = $request->validate([
+                'banker' => 'required|array',
+                'banker.player_id' => 'required|string',
+                'players' => 'required|array|min:1',
+                'players.*.player_id' => 'required|string',
+                'players.*.bet_amount' => 'required|numeric|min:0',
+                'players.*.win_lose_status' => 'required|integer|in:0,1',
+                'players.*.amount_changed' => 'required|numeric',
             ]);
 
-            // Add banker to results for the API response back to the game client
-            $results[] = [
-                'player_id' => $banker->user_name,
-                'balance' => $banker->wallet->balanceFloat,
-            ];
+            // Set game_type_id to 15 (always for Shan games)
+            $gameTypeId = 15;
 
-            DB::commit();
+            Log::info('ShanTransaction: Validation passed', [
+                'game_type_id' => $gameTypeId,
+                'player_count' => count($validated['players']),
+            ]);
 
-            $callback_url = $callback_url_base.'https://ponewine20x.xyz/api/shan/client/balance-update';
+            // Step 2: Check for duplicate transaction using wager_code
+            $wagerCode = $request->header('X-Wager-Code');
+            if ($wagerCode && ReportTransaction::where('wager_code', $wagerCode)->exists()) {
+                Log::warning('ShanTransaction: Duplicate transaction detected', [
+                    'wager_code' => $wagerCode,
+                ]);
+                return $this->error('Duplicate transaction', 'This transaction has already been processed', 409);
+            }
 
-            $callbackPayload = [
-                'wager_code' => $wager_code,
-                'game_type_id' => 15, // Use validated value
-                'players' => $callbackPlayers, // Use the new array that only contains actual players
-                'banker_balance' => $banker->wallet->balanceFloat,
-                'timestamp' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeImmutable::ISO8601),
-                'total_player_net' => $totalPlayerNet,
-                'banker_amount_change' => $bankerAmountChange,
-            ];
+            // Step 3: Get first player for agent lookup
+            $firstPlayerId = $validated['players'][0]['player_id'];
+            $firstPlayer = User::where('user_name', $firstPlayerId)->first();
 
-            // ksort($callbackPayload);
-            // $signature = hash_hmac('md5', json_encode($callbackPayload), $secret_key);
-            // $callbackPayload['signature'] = $signature;
+            if (!$firstPlayer) {
+                Log::error('ShanTransaction: First player not found', [
+                    'player_id' => $firstPlayerId,
+                ]);
+                return $this->error('Player not found', 'First player not found in system', 404);
+            }
+
+            // Step 4: Get agent information and system wallet
+            $agent = null;
+            if ($firstPlayer->agent_id) {
+                $agent = User::find($firstPlayer->agent_id);
+            }
+
+            // Get system wallet (default banker)
+            $systemWallet = User::adminUser();
+            if (!$systemWallet) {
+                Log::error('ShanTransaction: System wallet not found');
+                return $this->error('System wallet not found', 'System wallet (SYS001) not configured', 500);
+            }
+
+            $secretKey = $agent?->shan_secret_key;
+            $callbackUrlBase = $agent?->shan_callback_url;
+
+            Log::info('ShanTransaction: Agent and system wallet information', [
+                'agent_id' => $agent?->id,
+                'agent_username' => $agent?->user_name,
+                'system_wallet_id' => $systemWallet->id,
+                'system_wallet_username' => $systemWallet->user_name,
+                'has_secret_key' => !empty($secretKey),
+                'has_callback_url' => !empty($callbackUrlBase),
+            ]);
+
+            // Step 5: Generate unique wager_code if not provided
+            if (!$wagerCode) {
+                do {
+                    $wagerCode = Str::random(12);
+                } while (ReportTransaction::where('wager_code', $wagerCode)->exists());
+            }
+
+            Log::info('ShanTransaction: Using wager_code', ['wager_code' => $wagerCode]);
+
+            // Step 6: Process transactions
+            $results = [];
+            $callbackPlayers = [];
+            $totalPlayerNet = 0;
+            $processedPlayers = [];
 
             try {
-                $client = new Client;
-                $response = $client->post($callback_url, [
-                    'json' => $callbackPayload,
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                        'Accept' => 'application/json',
-                    ],
-                    'timeout' => 10,
-                    'connect_timeout' => 5,
-                ]);
+                DB::beginTransaction();
 
-                $statusCode = $response->getStatusCode();
-                $responseBody = $response->getBody()->getContents();
+                // Process each player
+                foreach ($validated['players'] as $playerData) {
+                    $player = User::where('user_name', $playerData['player_id'])->first();
+                    
+                    if (!$player) {
+                        throw new \RuntimeException("Player not found: {$playerData['player_id']}");
+                    }
 
-                if ($statusCode >= 200 && $statusCode < 300) {
-                    Log::info('ShanTransaction: Callback to client site successful', [
-                        'callback_url' => $callback_url, 'status_code' => $statusCode,
-                        'response_body' => $responseBody, 'wager_code' => $wager_code,
+                    Log::info('ShanTransaction: Processing player', [
+                        'player_id' => $player->id,
+                        'username' => $player->user_name,
+                        'agent_id' => $player->agent_id,
+                        'player_data' => $playerData,
                     ]);
-                } else {
-                    Log::error('ShanTransaction: Callback to client site failed with non-2xx status', [
-                        'callback_url' => $callback_url, 'status_code' => $statusCode,
-                        'response_body' => $responseBody, 'payload' => $callbackPayload,
-                        'wager_code' => $wager_code,
+
+                    // Capture balance before transaction
+                    $beforeBalance = $player->balanceFloat;
+                    
+                    // Use amount_changed from request instead of calculating
+                    $amountChanged = $playerData['amount_changed'];
+                    $betAmount = $playerData['bet_amount'];
+                    $winLoseStatus = $playerData['win_lose_status'];
+                    
+                    $totalPlayerNet += $amountChanged;
+
+                    // Update wallet based on win/lose status
+                    if ($winLoseStatus == 1) {
+                        // Player wins - System wallet pays the player
+                        $this->walletService->forceTransfer(
+                            $systemWallet, // System wallet pays
+                            $player,
+                            $amountChanged,
+                            TransactionName::Win,
+                            [
+                                'reason' => 'player_win',
+                                'game_type_id' => $gameTypeId,
+                                'wager_code' => $wagerCode,
+                                'bet_amount' => $betAmount,
+                            ]
+                        );
+                    } else {
+                        // Player loses - Player pays the system wallet
+                        $this->walletService->forceTransfer(
+                            $player,
+                            $systemWallet, // Player pays system wallet
+                            $amountChanged,
+                            TransactionName::Loss,
+                            [
+                                'reason' => 'player_lose',
+                                'game_type_id' => $gameTypeId,
+                                'wager_code' => $wagerCode,
+                                'bet_amount' => $betAmount,
+                            ]
+                        );
+                    }
+
+                    // Refresh player balance
+                    $player->refresh();
+                    $afterBalance = $player->balanceFloat;
+
+                    // Store transaction history with all required fields
+                    ReportTransaction::create([
+                        'user_id' => $player->id,
+                        'agent_id' => $player->agent_id,
+                        'member_account' => $player->user_name,
+                        'transaction_amount' => $amountChanged,
+                        'status' => $winLoseStatus,
+                        'bet_amount' => $betAmount,
+                        'valid_amount' => $betAmount,
+                        'before_balance' => $beforeBalance,
+                        'after_balance' => $afterBalance,
+                        'banker' => 0,
+                        'wager_code' => $wagerCode,
+                        'settled_status' => $winLoseStatus == 1 ? 'settled_win' : 'settled_loss',
                     ]);
-                    // TODO: Implement a robust retry mechanism
+
+                    // Add to results for API response
+                    $results[] = [
+                        'player_id' => $player->user_name,
+                        'balance' => $afterBalance,
+                    ];
+
+                    // Add to callback players (exclude system wallet)
+                    if ($player->user_name !== $systemWallet->user_name) {
+                        $callbackPlayers[] = [
+                            'player_id' => $player->user_name,
+                            'balance' => $afterBalance,
+                        ];
+                    }
+
+                    $processedPlayers[] = array_merge($playerData, [
+                        'current_balance' => $afterBalance,
+                    ]);
+
+                    Log::info('ShanTransaction: Player transaction completed', [
+                        'player_id' => $player->id,
+                        'before_balance' => $beforeBalance,
+                        'after_balance' => $afterBalance,
+                        'amount_changed' => $amountChanged,
+                    ]);
                 }
 
-            } catch (RequestException $e) {
-                Log::error('ShanTransaction: Callback to client site failed (Guzzle RequestException)', [
-                    'callback_url' => $callback_url, 'error' => $e->getMessage(),
-                    'payload' => $callbackPayload, 'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response',
-                    'wager_code' => $wager_code,
+                // Step 7: Handle banker (could be system wallet or specific player)
+                $bankerUserName = $validated['banker']['player_id'];
+                $banker = User::where('user_name', $bankerUserName)->first();
+
+                // If banker is not found or is system wallet, use system wallet as default
+                if (!$banker || $bankerUserName === $systemWallet->user_name) {
+                    $banker = $systemWallet;
+                    Log::info('ShanTransaction: Using system wallet as banker', [
+                        'banker_id' => $banker->id,
+                        'banker_username' => $banker->user_name,
+                    ]);
+                } else {
+                    Log::info('ShanTransaction: Using specific player as banker', [
+                        'banker_id' => $banker->id,
+                        'banker_username' => $banker->user_name,
+                    ]);
+                }
+
+                // Capture banker balance before transaction
+                $bankerBeforeBalance = $banker->balanceFloat;
+                $bankerAmountChange = -$totalPlayerNet; // Banker opposite of total player net
+
+                Log::info('ShanTransaction: Processing banker transaction', [
+                    'banker_id' => $banker->id,
+                    'banker_username' => $banker->user_name,
+                    'total_player_net' => $totalPlayerNet,
+                    'banker_amount_change' => $bankerAmountChange,
                 ]);
-                // TODO: Implement a robust retry mechanism
+
+                // Update banker wallet only if it's not the system wallet (to avoid double transactions)
+                if ($banker->id !== $systemWallet->id) {
+                    if ($bankerAmountChange > 0) {
+                        // Banker receives money from system wallet
+                        $this->walletService->forceTransfer(
+                            $systemWallet,
+                            $banker,
+                            $bankerAmountChange,
+                            TransactionName::BankerDeposit,
+                            [
+                                'reason' => 'banker_receive',
+                                'game_type_id' => $gameTypeId,
+                                'wager_code' => $wagerCode,
+                            ]
+                        );
+                    } elseif ($bankerAmountChange < 0) {
+                        // Banker pays money to system wallet
+                        $this->walletService->forceTransfer(
+                            $banker,
+                            $systemWallet,
+                            abs($bankerAmountChange),
+                            TransactionName::BankerWithdraw,
+                            [
+                                'reason' => 'banker_payout',
+                                'game_type_id' => $gameTypeId,
+                                'wager_code' => $wagerCode,
+                            ]
+                        );
+                    }
+                }
+
+                // Refresh banker balance
+                $banker->refresh();
+                $bankerAfterBalance = $banker->balanceFloat;
+
+                // Store banker transaction
+                ReportTransaction::create([
+                    'user_id' => $banker->id,
+                    'agent_id' => $banker->agent_id,
+                    'member_account' => $banker->user_name,
+                    'transaction_amount' => abs($bankerAmountChange),
+                    'status' => $bankerAmountChange >= 0 ? 1 : 0,
+                    'bet_amount' => null,
+                    'valid_amount' => null,
+                    'before_balance' => $bankerBeforeBalance,
+                    'after_balance' => $bankerAfterBalance,
+                    'banker' => 1,
+                    'wager_code' => $wagerCode,
+                    'settled_status' => $bankerAmountChange >= 0 ? 'settled_win' : 'settled_loss',
+                ]);
+
+                // Add banker to results
+                $results[] = [
+                    'player_id' => $banker->user_name,
+                    'balance' => $bankerAfterBalance,
+                ];
+
+                Log::info('ShanTransaction: Banker transaction completed', [
+                    'banker_id' => $banker->id,
+                    'before_balance' => $bankerBeforeBalance,
+                    'after_balance' => $bankerAfterBalance,
+                    'amount_changed' => $bankerAmountChange,
+                ]);
+
+                DB::commit();
+
+                Log::info('ShanTransaction: All transactions committed successfully', [
+                    'wager_code' => $wagerCode,
+                    'total_player_net' => $totalPlayerNet,
+                    'banker_amount_change' => $bankerAmountChange,
+                    'processed_players_count' => count($processedPlayers),
+                    'system_wallet_balance' => $systemWallet->balanceFloat,
+                ]);
+
+                // Step 8: Send callback to client site
+                if ($callbackUrlBase && $secretKey) {
+                    $this->sendCallbackToClient(
+                        $callbackUrlBase,
+                        $wagerCode,
+                        $gameTypeId,
+                        $callbackPlayers,
+                        $bankerAfterBalance,
+                        $totalPlayerNet,
+                        $bankerAmountChange,
+                        $secretKey
+                    );
+                } else {
+                    Log::warning('ShanTransaction: Skipping callback - missing URL or secret key', [
+                        'has_callback_url' => !empty($callbackUrlBase),
+                        'has_secret_key' => !empty($secretKey),
+                    ]);
+                }
+
+                Log::info('ShanTransaction: Transaction completed successfully', [
+                    'wager_code' => $wagerCode,
+                    'results' => $results,
+                ]);
+
+                return $this->success([
+                    'status' => 'success',
+                    'wager_code' => $wagerCode,
+                    'players' => $processedPlayers,
+                    'banker' => [
+                        'player_id' => $banker->user_name,
+                        'balance' => $bankerAfterBalance,
+                    ],
+                    'system_wallet' => [
+                        'player_id' => $systemWallet->user_name,
+                        'balance' => $systemWallet->balanceFloat,
+                    ],
+                ], 'Transaction Successful');
+
             } catch (\Exception $e) {
-                Log::error('ShanTransaction: Callback to client site failed (General Exception)', [
-                    'callback_url' => $callback_url, 'error' => $e->getMessage(),
-                    'payload' => $callbackPayload, 'wager_code' => $wager_code,
+                DB::rollBack();
+                Log::error('ShanTransaction: Transaction failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'wager_code' => $wagerCode ?? 'not_generated',
                 ]);
-                // TODO: Implement a robust retry mechanism
+                return $this->error('Transaction failed', $e->getMessage(), 500);
             }
 
-            Log::info('ShanTransaction: Transaction completed successfully (including callback attempt)', [
-                'wager_code' => $wager_code, 'total_player_net' => $totalPlayerNet,
-                'banker_amount_change' => $bankerAmountChange, 'system_wallet_balance' => $banker->wallet->balanceFloat,
-                'results' => $results,
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('ShanTransaction: Validation failed', [
+                'errors' => $e->errors(),
+                'payload' => $request->all(),
             ]);
-
-            return $this->success($results, 'Transaction Successful');
-
+            return $this->error('Validation failed', $e->getMessage(), 422);
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('ShanTransaction: Transaction failed', [
-                'error' => $e->getMessage(), 'trace' => $e->getTraceAsString(),
+            Log::error('ShanTransaction: Unexpected error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return $this->error('Unexpected error', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Send callback to client site
+     */
+    private function sendCallbackToClient(
+        string $callbackUrlBase,
+        string $wagerCode,
+        int $gameTypeId,
+        array $callbackPlayers,
+        float $bankerBalance,
+        float $totalPlayerNet,
+        float $bankerAmountChange,
+        string $secretKey
+    ): void {
+        $callbackUrl = $callbackUrlBase . '/api/shan/client/balance-update';
+
+        $callbackPayload = [
+            'wager_code' => $wagerCode,
+            'game_type_id' => $gameTypeId,
+            'players' => $callbackPlayers,
+            'banker_balance' => $bankerBalance,
+            'timestamp' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeImmutable::ISO8601),
+            'total_player_net' => $totalPlayerNet,
+            'banker_amount_change' => $bankerAmountChange,
+        ];
+
+        // Generate signature for security
+        ksort($callbackPayload);
+        $signature = hash_hmac('md5', json_encode($callbackPayload), $secretKey);
+        $callbackPayload['signature'] = $signature;
+
+        try {
+            $client = new Client();
+            $response = $client->post($callbackUrl, [
+                'json' => $callbackPayload,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'X-Transaction-Key' => 'yYpfrVcWmkwxWx7um0TErYHj4YcHOOWr',
+                ],
+                'timeout' => 10,
+                'connect_timeout' => 5,
             ]);
 
-            return $this->error('Transaction failed', $e->getMessage(), 500);
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            if ($statusCode >= 200 && $statusCode < 300) {
+                Log::info('ShanTransaction: Callback successful', [
+                    'callback_url' => $callbackUrl,
+                    'status_code' => $statusCode,
+                    'response_body' => $responseBody,
+                    'wager_code' => $wagerCode,
+                ]);
+            } else {
+                Log::error('ShanTransaction: Callback failed with non-2xx status', [
+                    'callback_url' => $callbackUrl,
+                    'status_code' => $statusCode,
+                    'response_body' => $responseBody,
+                    'wager_code' => $wagerCode,
+                ]);
+            }
+
+        } catch (RequestException $e) {
+            Log::error('ShanTransaction: Callback failed (RequestException)', [
+                'callback_url' => $callbackUrl,
+                'error' => $e->getMessage(),
+                'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response',
+                'wager_code' => $wagerCode,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('ShanTransaction: Callback failed (General Exception)', [
+                'callback_url' => $callbackUrl,
+                'error' => $e->getMessage(),
+                'wager_code' => $wagerCode,
+            ]);
         }
     }
 }

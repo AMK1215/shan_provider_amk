@@ -58,6 +58,28 @@ class LaunchGameController extends Controller
         $requestedBalance = $request->balance;
         $clientUser = User::where('user_name', $memberAccount)->first();
 
+        // Get agent information from agent_code
+        $agentCode = $validatedData['agent_code'];
+        $agent = User::where('shan_agent_code', $agentCode)->first();
+
+        if (!$agent) {
+            Log::error('Provider Launch Game: Agent not found', [
+                'agent_code' => $agentCode,
+                'member_account' => $memberAccount,
+            ]);
+            return response()->json([
+                'code' => 404,
+                'message' => 'Agent not found',
+            ], 404);
+        }
+
+        Log::info('Provider Launch Game: Agent found', [
+            'agent_id' => $agent->id,
+            'agent_username' => $agent->user_name,
+            'agent_code' => $agentCode,
+            'member_account' => $memberAccount,
+        ]);
+
         // Initialize WalletService
         $walletService = new WalletService;
 
@@ -70,21 +92,41 @@ class LaunchGameController extends Controller
                 'type' => UserType::Player->value,
                 'status' => 1,
                 'is_changed_password' => 1,
-                'shan_agent_code' => $validatedData['agent_code'],
+                'shan_agent_code' => $agentCode,
+                'agent_id' => $agent->id, // Set the agent relationship
             ]);
-            Log::info('Created new user for provider launch game', ['member_account' => $memberAccount]);
+            Log::info('Created new user for provider launch game', [
+                'member_account' => $memberAccount,
+                'agent_id' => $agent->id,
+                'agent_username' => $agent->user_name,
+            ]);
 
             // Deposit initial balance for new user
             $walletService->deposit($clientUser, $requestedBalance, TransactionName::Deposit, [
                 'source' => 'provider_launch_game',
                 'description' => 'Initial balance for new user',
+                'agent_id' => $agent->id,
             ]);
 
             Log::info('Deposited initial balance for new user', [
                 'member_account' => $memberAccount,
                 'balance' => $requestedBalance,
+                'agent_id' => $agent->id,
             ]);
         } else {
+            // For existing user, update agent relationship if needed
+            if ($clientUser->agent_id !== $agent->id) {
+                $clientUser->update([
+                    'agent_id' => $agent->id,
+                    'shan_agent_code' => $agentCode,
+                ]);
+                Log::info('Updated agent relationship for existing user', [
+                    'member_account' => $memberAccount,
+                    'old_agent_id' => $clientUser->agent_id,
+                    'new_agent_id' => $agent->id,
+                ]);
+            }
+
             // For existing user, update balance if different
             $currentBalance = $clientUser->balanceFloat;
             if ($currentBalance != $requestedBalance) {
@@ -94,6 +136,7 @@ class LaunchGameController extends Controller
                     $walletService->deposit($clientUser, $depositAmount, TransactionName::Deposit, [
                         'source' => 'provider_launch_game',
                         'description' => 'Balance update for existing user',
+                        'agent_id' => $agent->id,
                     ]);
 
                     Log::info('Updated balance for existing user (deposit)', [
@@ -101,6 +144,7 @@ class LaunchGameController extends Controller
                         'current_balance' => $currentBalance,
                         'requested_balance' => $requestedBalance,
                         'deposit_amount' => $depositAmount,
+                        'agent_id' => $agent->id,
                     ]);
                 } else {
                     // Withdraw excess amount
@@ -108,6 +152,7 @@ class LaunchGameController extends Controller
                     $walletService->withdraw($clientUser, $withdrawAmount, TransactionName::Withdraw, [
                         'source' => 'provider_launch_game',
                         'description' => 'Balance adjustment for existing user',
+                        'agent_id' => $agent->id,
                     ]);
 
                     Log::info('Updated balance for existing user (withdraw)', [
@@ -115,6 +160,7 @@ class LaunchGameController extends Controller
                         'current_balance' => $currentBalance,
                         'requested_balance' => $requestedBalance,
                         'withdraw_amount' => $withdrawAmount,
+                        'agent_id' => $agent->id,
                     ]);
                 }
             }
