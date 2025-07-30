@@ -160,7 +160,7 @@ class ShanTransactionController extends Controller
             $callbackUrlBase = $agent?->shan_callback_url;
 
             Log::info('ShanTransaction: Agent and system wallet information', [
-                'agent_id' => $agent?->id,
+               // 'agent_id' => $agent?->id,
                 'agent_username' => $agent?->user_name,
                 'agent_type' => $agent?->type,
                 'agent_shan_code' => $agent?->shan_agent_code,
@@ -202,7 +202,7 @@ class ShanTransactionController extends Controller
                 Log::info('ShanTransaction: Processing player', [
                     'player_id' => $player->id,
                     'username' => $player->user_name,
-                    'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+//'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
                     'player_data' => $playerData,
                 ]);
 
@@ -258,7 +258,7 @@ class ShanTransactionController extends Controller
                 // Store transaction history with all required fields
                 ReportTransaction::create([
                     'user_id' => $player->id,
-                    'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+                   // 'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
                     'member_account' => $player->user_name,
                     'transaction_amount' => $amountChanged,
                     'status' => $winLoseStatus,
@@ -389,7 +389,7 @@ class ShanTransactionController extends Controller
                 // Store banker transaction
                 ReportTransaction::create([
                     'user_id' => $banker->id,
-                    'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+                   // 'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
                     'member_account' => $banker->user_name,
                     'transaction_amount' => abs($bankerAmountChange),
                     'status' => $bankerAmountChange >= 0 ? 1 : 0,
