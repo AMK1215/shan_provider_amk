@@ -455,7 +455,8 @@ class ShanTransactionController extends Controller
             'wager_code' => $wagerCode,
             'game_type_id' => $gameTypeId,
             'players' => $callbackPlayers,
-            'agent_balance' => $agentBalance,
+            'banker_balance' => $agentBalance, // Keep banker_balance for client compatibility
+            'agent_balance' => $agentBalance,  // Also include agent_balance for clarity
             'timestamp' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeImmutable::ISO8601),
             'total_player_net' => $totalPlayerNet,
             'banker_amount_change' => $bankerAmountChange,
