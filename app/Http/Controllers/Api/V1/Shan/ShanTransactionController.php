@@ -80,74 +80,74 @@ class ShanTransactionController extends Controller
             $agent = null;
             
             // First try to find agent by shan_agent_code from player
-            if ($firstPlayer->shan_agent_code) {
-                $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)
-                            ->where('type', 20) // Ensure it's an agent
-                            ->first();
+            // if ($firstPlayer->shan_agent_code) {
+            //     $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)
+            //                 ->where('type', 20) // Ensure it's an agent
+            //                 ->first();
                 
-                if ($agent) {
-                    Log::info('ShanTransaction: Found agent by shan_agent_code', [
-                        'player_id' => $firstPlayer->id,
-                        'player_username' => $firstPlayer->user_name,
-                        'shan_agent_code' => $firstPlayer->shan_agent_code,
-                        'agent_id' => $agent->id,
-                        'agent_username' => $agent->user_name,
-                    ]);
-                }
-            }
+            //     if ($agent) {
+            //         Log::info('ShanTransaction: Found agent by shan_agent_code', [
+            //             'player_id' => $firstPlayer->id,
+            //             'player_username' => $firstPlayer->user_name,
+            //             'shan_agent_code' => $firstPlayer->shan_agent_code,
+            //             'agent_id' => $agent->id,
+            //             'agent_username' => $agent->user_name,
+            //         ]);
+            //     }
+            // }
             
             // If no agent found by shan_agent_code, try by agent_id
-            if (!$agent && $firstPlayer->agent_id) {
-                $agent = User::find($firstPlayer->agent_id);
+            // if (!$agent && $firstPlayer->agent_id) {
+            //     $agent = User::find($firstPlayer->agent_id);
                 
-                // Verify it's actually an agent
-                if ($agent && $agent->type != 20) {
-                    $agent = null; // Not a valid agent
-                }
+            //     // Verify it's actually an agent
+            //     if ($agent && $agent->type != 20) {
+            //         $agent = null; // Not a valid agent
+            //     }
                 
-                if ($agent) {
-                    Log::info('ShanTransaction: Found agent by agent_id', [
-                        'player_id' => $firstPlayer->id,
-                        'player_username' => $firstPlayer->user_name,
-                        'agent_id' => $agent->id,
-                        'agent_username' => $agent->user_name,
-                    ]);
-                }
-            }
+            //     if ($agent) {
+            //         Log::info('ShanTransaction: Found agent by agent_id', [
+            //             'player_id' => $firstPlayer->id,
+            //             'player_username' => $firstPlayer->user_name,
+            //             'agent_id' => $agent->id,
+            //             'agent_username' => $agent->user_name,
+            //         ]);
+            //     }
+            // }
 
             // If still no agent found, try to find by common agent codes
-            if (!$agent) {
-                $commonAgentCodes = ['A3H4', 'A3H2']; // Common agent codes from production
-                foreach ($commonAgentCodes as $code) {
-                    $agent = User::where('shan_agent_code', $code)
-                                ->where('type', 20)
-                                ->first();
-                    if ($agent) {
-                        Log::warning('ShanTransaction: Using default agent by common code', [
-                            'player_id' => $firstPlayer->id,
-                            'player_username' => $firstPlayer->user_name,
-                            'agent_code' => $code,
-                            'agent_id' => $agent->id,
-                            'agent_username' => $agent->user_name,
-                        ]);
-                        break;
-                    }
-                }
-            }
+            // if (!$agent) {
+            //     $commonAgentCodes = ['A3H4', 'A3H2']; // Common agent codes from production
+            //     foreach ($commonAgentCodes as $code) {
+            //         $agent = User::where('shan_agent_code', $code)
+            //                     ->where('type', 20)
+            //                     ->first();
+            //         if ($agent) {
+            //             Log::warning('ShanTransaction: Using default agent by common code', [
+            //                 'player_id' => $firstPlayer->id,
+            //                 'player_username' => $firstPlayer->user_name,
+            //                 'agent_code' => $code,
+            //                 'agent_id' => $agent->id,
+            //                 'agent_username' => $agent->user_name,
+            //             ]);
+            //             break;
+            //         }
+            //     }
+            // }
 
             // If still no agent found, get the first available agent
-            if (!$agent) {
-                $agent = User::where('type', 20)->first();
+            // if (!$agent) {
+            //     $agent = User::where('type', 20)->first();
                 
-                if ($agent) {
-                    Log::warning('ShanTransaction: No agent found for player, using default agent', [
-                        'player_id' => $firstPlayer->id,
-                        'player_username' => $firstPlayer->user_name,
-                        'default_agent_id' => $agent->id,
-                        'default_agent_username' => $agent->user_name,
-                    ]);
-                }
-            }
+            //     if ($agent) {
+            //         Log::warning('ShanTransaction: No agent found for player, using default agent', [
+            //             'player_id' => $firstPlayer->id,
+            //             'player_username' => $firstPlayer->user_name,
+            //             'default_agent_id' => $agent->id,
+            //             'default_agent_username' => $agent->user_name,
+            //         ]);
+            //     }
+            // }
 
             // Get system wallet (default banker)
             $systemWallet = User::adminUser();
