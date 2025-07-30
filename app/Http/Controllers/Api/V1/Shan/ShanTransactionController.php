@@ -80,6 +80,40 @@ class ShanTransactionController extends Controller
             $agent = null;
             if ($firstPlayer->agent_id) {
                 $agent = User::find($firstPlayer->agent_id);
+                
+                // If agent not found, try to find by shan_agent_code
+                if (!$agent && $firstPlayer->shan_agent_code) {
+                    $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)->first();
+                    
+                    // If still not found, try to find any agent
+                    if (!$agent) {
+                        $agent = User::where('type', 20)->first(); // Get first agent
+                        
+                        if ($agent) {
+                            Log::warning('ShanTransaction: Player agent not found, using default agent', [
+                                'player_id' => $firstPlayer->id,
+                                'player_username' => $firstPlayer->user_name,
+                                'original_agent_id' => $firstPlayer->agent_id,
+                                'default_agent_id' => $agent->id,
+                                'default_agent_username' => $agent->user_name,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // If still no agent found, get the first available agent
+            if (!$agent) {
+                $agent = User::where('type', 20)->first();
+                
+                if ($agent) {
+                    Log::warning('ShanTransaction: No agent found for player, using default agent', [
+                        'player_id' => $firstPlayer->id,
+                        'player_username' => $firstPlayer->user_name,
+                        'default_agent_id' => $agent->id,
+                        'default_agent_username' => $agent->user_name,
+                    ]);
+                }
             }
 
             // Get system wallet (default banker)
@@ -95,6 +129,7 @@ class ShanTransactionController extends Controller
             Log::info('ShanTransaction: Agent and system wallet information', [
                 'agent_id' => $agent?->id,
                 'agent_username' => $agent?->user_name,
+                'agent_type' => $agent?->type,
                 'system_wallet_id' => $systemWallet->id,
                 'system_wallet_username' => $systemWallet->user_name,
                 'has_secret_key' => !empty($secretKey),
