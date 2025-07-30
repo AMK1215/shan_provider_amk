@@ -308,9 +308,18 @@ class ShanTransactionController extends Controller
                     ]);
                 }
 
-                // Capture banker balance before transaction
+                // Refresh system wallet balance after player transactions
+                if ($banker->id === $systemWallet->id) {
+                    $systemWallet->refresh();
+                }
+
+                // Capture banker balance after player transactions
                 $bankerBeforeBalance = $banker->balanceFloat;
-                $bankerAmountChange = -$totalPlayerNet; // Banker opposite of total player net
+                
+                // Calculate banker amount change correctly
+                // When players lose money (negative total), banker gains money (positive amount)
+                // When players win money (positive total), banker loses money (negative amount)
+                $bankerAmountChange = -$totalPlayerNet; // Banker gains what players lose (opposite sign)
 
                 Log::info('ShanTransaction: Processing banker transaction', [
                     'banker_id' => $banker->id,
@@ -327,6 +336,7 @@ class ShanTransactionController extends Controller
                     Log::info('ShanTransaction: System wallet is banker - no additional transfer needed', [
                         'banker_id' => $banker->id,
                         'total_player_net' => $totalPlayerNet,
+                        'banker_amount_change' => $bankerAmountChange,
                     ]);
                 } else {
                     // Specific player is the banker - transfer from/to system wallet
@@ -390,6 +400,7 @@ class ShanTransactionController extends Controller
                     'before_balance' => $bankerBeforeBalance,
                     'after_balance' => $bankerAfterBalance,
                     'amount_changed' => $bankerAmountChange,
+                    'actual_balance_change' => $bankerAfterBalance - $bankerBeforeBalance,
                 ]);
 
                 DB::commit();
