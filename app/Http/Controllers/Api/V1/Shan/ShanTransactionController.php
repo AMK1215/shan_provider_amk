@@ -179,155 +179,161 @@ class ShanTransactionController extends Controller
 
             Log::info('ShanTransaction: Using wager_code', ['wager_code' => $wagerCode]);
 
-            // Step 6: Process transactions
-            $results = [];
-            $callbackPlayers = [];
+            // Step 6: Process each player's transaction
             $totalPlayerNet = 0;
             $processedPlayers = [];
+            $callbackPlayers = [];
+
+            // Capture system wallet balance BEFORE player transactions
+            $systemWalletBeforeBalance = $systemWallet->balanceFloat;
+
+            // Initialize results array
+            $results = [];
 
             try {
                 DB::beginTransaction();
 
-                // Process each player
                 foreach ($validated['players'] as $playerData) {
-                    $player = User::where('user_name', $playerData['player_id'])->first();
-                    
-                    if (!$player) {
-                        throw new \RuntimeException("Player not found: {$playerData['player_id']}");
-                    }
+                $player = User::where('user_name', $playerData['player_id'])->first();
+                if (!$player) {
+                    throw new \RuntimeException("Player not found: {$playerData['player_id']}");
+                }
 
-                    Log::info('ShanTransaction: Processing player', [
-                        'player_id' => $player->id,
-                        'username' => $player->user_name,
-                        'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
-                        'player_data' => $playerData,
-                    ]);
+                Log::info('ShanTransaction: Processing player', [
+                    'player_id' => $player->id,
+                    'username' => $player->user_name,
+                    'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+                    'player_data' => $playerData,
+                ]);
 
-                    // Capture balance before transaction
-                    $beforeBalance = $player->balanceFloat;
-                    
-                    // Use amount_changed from request instead of calculating
-                    $amountChanged = $playerData['amount_changed'];
-                    $betAmount = $playerData['bet_amount'];
-                    $winLoseStatus = $playerData['win_lose_status'];
-                    
-                    $totalPlayerNet += $amountChanged;
+                // Capture balance before transaction
+                $beforeBalance = $player->balanceFloat;
+                
+                // Use amount_changed from request instead of calculating
+                $amountChanged = $playerData['amount_changed'];
+                $betAmount = $playerData['bet_amount'];
+                $winLoseStatus = $playerData['win_lose_status'];
+                
+                $totalPlayerNet += $amountChanged;
 
-                    // Update wallet based on win/lose status
-                    if ($winLoseStatus == 1) {
-                        // Player wins - System wallet pays the player
-                        $this->walletService->forceTransfer(
-                            $systemWallet, // System wallet pays
-                            $player,
-                            $amountChanged,
-                            TransactionName::Win,
-                            [
-                                'reason' => 'player_win',
-                                'game_type_id' => $gameTypeId,
-                                'wager_code' => $wagerCode,
-                                'bet_amount' => $betAmount,
-                            ]
-                        );
-                    } else {
-                        // Player loses - Player pays the system wallet
-                        $this->walletService->forceTransfer(
-                            $player,
-                            $systemWallet, // Player pays system wallet
-                            $amountChanged,
-                            TransactionName::Loss,
-                            [
-                                'reason' => 'player_lose',
-                                'game_type_id' => $gameTypeId,
-                                'wager_code' => $wagerCode,
-                                'bet_amount' => $betAmount,
-                            ]
-                        );
-                    }
+                // Update wallet based on win/lose status
+                if ($winLoseStatus == 1) {
+                    // Player wins - System wallet pays the player
+                    $this->walletService->forceTransfer(
+                        $systemWallet, // System wallet pays
+                        $player,
+                        $amountChanged,
+                        TransactionName::Win,
+                        [
+                            'reason' => 'player_win',
+                            'game_type_id' => $gameTypeId,
+                            'wager_code' => $wagerCode,
+                            'bet_amount' => $betAmount,
+                        ]
+                    );
+                } else {
+                    // Player loses - Player pays the system wallet
+                    $this->walletService->forceTransfer(
+                        $player,
+                        $systemWallet, // Player pays system wallet
+                        $amountChanged,
+                        TransactionName::Loss,
+                        [
+                            'reason' => 'player_lose',
+                            'game_type_id' => $gameTypeId,
+                            'wager_code' => $wagerCode,
+                            'bet_amount' => $betAmount,
+                        ]
+                    );
+                }
 
-                    // Refresh player balance
-                    $player->refresh();
-                    $afterBalance = $player->balanceFloat;
+                // Refresh player balance
+                $player->refresh();
+                $afterBalance = $player->balanceFloat;
 
-                    // Store transaction history with all required fields
-                    ReportTransaction::create([
-                        'user_id' => $player->id,
-                        'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
-                        'member_account' => $player->user_name,
-                        'transaction_amount' => $amountChanged,
-                        'status' => $winLoseStatus,
-                        'bet_amount' => $betAmount,
-                        'valid_amount' => $betAmount,
-                        'before_balance' => $beforeBalance,
-                        'after_balance' => $afterBalance,
-                        'banker' => 0,
-                        'wager_code' => $wagerCode,
-                        'settled_status' => $winLoseStatus == 1 ? 'settled_win' : 'settled_loss',
-                    ]);
+                // Store transaction history with all required fields
+                ReportTransaction::create([
+                    'user_id' => $player->id,
+                    'agent_id' => $agent->id, // Use found agent ID instead of player's agent_id
+                    'member_account' => $player->user_name,
+                    'transaction_amount' => $amountChanged,
+                    'status' => $winLoseStatus,
+                    'bet_amount' => $betAmount,
+                    'valid_amount' => $betAmount,
+                    'before_balance' => $beforeBalance,
+                    'after_balance' => $afterBalance,
+                    'banker' => 0,
+                    'wager_code' => $wagerCode,
+                    'settled_status' => $winLoseStatus == 1 ? 'settled_win' : 'settled_loss',
+                ]);
 
-                    // Add to results for API response
-                    $results[] = [
+                // Add to results for API response
+                $results[] = [
+                    'player_id' => $player->user_name,
+                    'balance' => $afterBalance,
+                ];
+
+                // Add to callback players (exclude system wallet)
+                if ($player->user_name !== $systemWallet->user_name) {
+                    $callbackPlayers[] = [
                         'player_id' => $player->user_name,
                         'balance' => $afterBalance,
                     ];
-
-                    // Add to callback players (exclude system wallet)
-                    if ($player->user_name !== $systemWallet->user_name) {
-                        $callbackPlayers[] = [
-                            'player_id' => $player->user_name,
-                            'balance' => $afterBalance,
-                        ];
-                    }
-
-                    $processedPlayers[] = array_merge($playerData, [
-                        'current_balance' => $afterBalance,
-                    ]);
-
-                    Log::info('ShanTransaction: Player transaction completed', [
-                        'player_id' => $player->id,
-                        'before_balance' => $beforeBalance,
-                        'after_balance' => $afterBalance,
-                        'amount_changed' => $amountChanged,
-                    ]);
                 }
 
-                // Step 7: Handle banker (could be system wallet or specific player)
-                $bankerUserName = $validated['banker']['player_id'];
-                $banker = User::where('user_name', $bankerUserName)->first();
+                $processedPlayers[] = array_merge($playerData, [
+                    'current_balance' => $afterBalance,
+                ]);
 
-                // If banker is not found or is system wallet, use system wallet as default
-                if (!$banker || $bankerUserName === $systemWallet->user_name) {
-                    $banker = $systemWallet;
-                    Log::info('ShanTransaction: Using system wallet as banker', [
-                        'banker_id' => $banker->id,
-                        'banker_username' => $banker->user_name,
-                    ]);
-                } else {
-                    Log::info('ShanTransaction: Using specific player as banker', [
-                        'banker_id' => $banker->id,
-                        'banker_username' => $banker->user_name,
-                    ]);
-                }
+                Log::info('ShanTransaction: Player transaction completed', [
+                    'player_id' => $player->id,
+                    'before_balance' => $beforeBalance,
+                    'after_balance' => $afterBalance,
+                    'amount_changed' => $amountChanged,
+                ]);
+            }
 
-                // Refresh system wallet balance after player transactions
-                if ($banker->id === $systemWallet->id) {
-                    $systemWallet->refresh();
-                }
+            // Step 7: Handle banker (could be system wallet or specific player)
+            $bankerUserName = $validated['banker']['player_id'];
+            $banker = User::where('user_name', $bankerUserName)->first();
 
-                // Capture banker balance after player transactions
-                $bankerBeforeBalance = $banker->balanceFloat;
-                
-                // Calculate banker amount change correctly
-                // When players lose money (negative total), banker gains money (positive amount)
-                // When players win money (positive total), banker loses money (negative amount)
-                $bankerAmountChange = -$totalPlayerNet; // Banker gains what players lose (opposite sign)
-
-                Log::info('ShanTransaction: Processing banker transaction', [
+            // If banker is not found or is system wallet, use system wallet as default
+            if (!$banker || $bankerUserName === $systemWallet->user_name) {
+                $banker = $systemWallet;
+                Log::info('ShanTransaction: Using system wallet as banker', [
                     'banker_id' => $banker->id,
                     'banker_username' => $banker->user_name,
-                    'total_player_net' => $totalPlayerNet,
-                    'banker_amount_change' => $bankerAmountChange,
-                    'banker_gains' => $bankerAmountChange > 0 ? 'Yes' : 'No',
                 ]);
+            } else {
+                Log::info('ShanTransaction: Using specific player as banker', [
+                    'banker_id' => $banker->id,
+                    'banker_username' => $banker->user_name,
+                ]);
+            }
+
+            // Refresh system wallet balance after player transactions
+            if ($banker->id === $systemWallet->id) {
+                $systemWallet->refresh();
+            }
+
+            // Capture banker balance after player transactions
+            $bankerBeforeBalance = $banker->balanceFloat;
+            
+            // Calculate banker amount change correctly
+            // When players lose money (negative total), banker gains money (positive amount)
+            // When players win money (positive total), banker loses money (negative amount)
+            $bankerAmountChange = -$totalPlayerNet; // Banker gains what players lose (opposite sign)
+
+            Log::info('ShanTransaction: Processing banker transaction', [
+                'banker_id' => $banker->id,
+                'banker_username' => $banker->user_name,
+                'total_player_net' => $totalPlayerNet,
+                'banker_amount_change' => $bankerAmountChange,
+                'banker_gains' => $bankerAmountChange > 0 ? 'Yes' : 'No',
+                'system_wallet_before_player_transactions' => $systemWalletBeforeBalance,
+                'system_wallet_after_player_transactions' => $bankerBeforeBalance,
+                'system_wallet_actual_change' => $bankerBeforeBalance - $systemWalletBeforeBalance,
+            ]);
 
                 // Update banker wallet - handle both system wallet and specific players
                 if ($banker->id === $systemWallet->id) {
