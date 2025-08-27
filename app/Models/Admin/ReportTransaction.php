@@ -6,6 +6,7 @@ use App\Models\GameType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class ReportTransaction extends Model
 {
