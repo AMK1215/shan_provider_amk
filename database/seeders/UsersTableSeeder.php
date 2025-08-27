@@ -43,10 +43,10 @@ class UsersTableSeeder extends Seeder
             $agent = $this->createUser(
                 UserType::Agent,
                 "ShanKomee Agent $i",
-                'ShanKomeeAgent'.str_pad($i, 3, '0', STR_PAD_LEFT),
+                'SKA'.str_pad($i, 3, '0', STR_PAD_LEFT),
                 '091123456'.str_pad($i, 2, '0', STR_PAD_LEFT),
                 $owner->id,
-                'ShanKomeeAgent'.Str::random(6)
+                'SKA'.Str::random(6)
             );
             // Random initial balance between 1.5M to 2.5M
             $initialBalance = rand(1, 2) * 100_000;
@@ -57,10 +57,10 @@ class UsersTableSeeder extends Seeder
                 $player = $this->createUser(
                     UserType::Player,
                     "ShanKomee Player $i-$k",
-                    'ShanKomeePlayer'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
+                    'SKP'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     '091111111'.str_pad($i, 1, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     $agent->id,
-                    'ShanKomeePlayer'.Str::random(6)
+                    'SKP'.Str::random(6)
                 );
                 // Fixed initial balance of 10,000
                 $initialBalance = 10000;
