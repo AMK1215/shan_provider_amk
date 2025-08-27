@@ -455,7 +455,7 @@
                             </a>
                         </li>
                         @endcan
-                                <!-- @can('owner_access') -->
+                               
                                 <li class="nav-item menu-open">
                                     <a href="{{ route('admin.report.index') }}"
                                         class="nav-link {{ Route::current()->getName() == 'admin.report.index' ? 'active' : '' }}">
@@ -465,7 +465,7 @@
                                         </p>
                                     </a>
                                 </li>
-                                <!-- @endcan -->
+                                
 
                                 @can('player_view')
                                 <!-- <li class="nav-item">
