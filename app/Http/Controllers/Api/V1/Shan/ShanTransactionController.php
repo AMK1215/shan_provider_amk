@@ -42,7 +42,7 @@ class ShanTransactionController extends Controller
             // Step 1: Enhanced Validation with game_type_id
             $validated = $request->validate([
                 'banker' => 'nullable|array',
-                'banker.player_id' => 'required|string',
+                'banker.player_id' => 'nullable|string',
                 'players' => 'required|array|min:1',
                 'players.*.player_id' => 'required|string',
                 'players.*.bet_amount' => 'required|numeric|min:0',
