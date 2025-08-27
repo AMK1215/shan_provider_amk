@@ -31,4 +31,17 @@ class PlaceBet extends Model
     {
         return $this->belongsTo(User::class, 'member_account', 'user_name');
     }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_at = Carbon::now('Asia/Yangon');
+            $model->updated_at = Carbon::now('Asia/Yangon');
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = Carbon::now('Asia/Yangon');
+        });
+    }
 }

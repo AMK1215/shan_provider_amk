@@ -67,4 +67,18 @@ class ReportTransaction extends Model
     {
         return $this->belongsTo(User::class, 'agent_id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_at = Carbon::now('Asia/Yangon');
+            $model->updated_at = Carbon::now('Asia/Yangon');
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = Carbon::now('Asia/Yangon');
+        });
+    }
 }

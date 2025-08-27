@@ -455,7 +455,7 @@
                             </a>
                         </li>
                         @endcan
-                                @can('owner_access')
+                                <!-- @can('owner_access') -->
                                 <li class="nav-item menu-open">
                                     <a href="{{ route('admin.report.index') }}"
                                         class="nav-link {{ Route::current()->getName() == 'admin.report.index' ? 'active' : '' }}">
@@ -465,7 +465,7 @@
                                         </p>
                                     </a>
                                 </li>
-                                @endcan
+                                <!-- @endcan -->
 
                                 @can('player_view')
                                 <!-- <li class="nav-item">
@@ -490,17 +490,13 @@
                                     </p>
                                 </a>
                                 <ul class="nav nav-treeview">
-                                    
-
-                                        <li class="nav-item">
-                                                <a href="{{ route('admin.shan.player.report') }}"
-                                                class="nav-link {{ Route::current()->getName() == 'admin.shan.player.report' ? 'active' : '' }}">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Shan Player Report</p>
-                                            </a>
-                                        </li>
-
-                                    
+                                <li class="nav-item">
+                                        <a href="{{ route('admin.shan.player.report') }}"
+                                        class="nav-link {{ Route::current()->getName() == 'admin.shan.player.report' ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Shan Player Report</p>
+                                    </a>
+                                </li>
                                 </ul>
                             </li>
                                 @endcan
