@@ -9,6 +9,7 @@ use App\Http\Requests\AgentRequest;
 use App\Http\Requests\TransferLogRequest;
 // use App\Models\Admin\TransferLog;
 use App\Models\Admin\Permission;
+use App\Models\Operator;
 use App\Models\PaymentType;
 use App\Models\TransferLog;
 use App\Models\User;
@@ -179,6 +180,13 @@ class AgentController extends Controller
         );
 
         $agent = User::create($userPrepare);
+        $operator = Operator::create([
+            'code' => $inputs['shan_agent_code'],
+            'secret_key' => $inputs['shan_secret_key'],
+            'active' => 1,
+            'callback_url' => $inputs['shan_callback_url'],
+        ]);
+
         $agent->roles()->sync(self::AGENT_ROLE);
 
         $permissions = Permission::whereIn('group', ['agent', 'player_creation', 'deposit_withdraw', 'view_only'])->get();
