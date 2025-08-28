@@ -16,7 +16,7 @@ class ShanGetBalanceController extends Controller
         // Validate request
         $request->validate([
             'batch_requests' => 'required|array',
-            'operator_code' => 'required|string',
+            'operator_code' => 'nullable|string',
             'currency' => 'required|string', // Still required in the payload, but only MMK used
         ]);
 
