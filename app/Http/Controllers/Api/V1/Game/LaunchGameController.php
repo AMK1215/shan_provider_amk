@@ -186,8 +186,14 @@ class LaunchGameController extends Controller
         //     $validatedData['agent_code']
         // );
 
-        $launchGameUrl = sprintf(
-            ' https://shan-web-3-test.vercel.app/?user_name=%s&balance=%s',
+        // $launchGameUrl = sprintf(
+        //     ' https://shan-web-3-test.vercel.app/?user_name=%s&balance=%s',
+        //     urlencode($memberAccount),
+        //     $balance
+        // );
+
+         $launchGameUrl = sprintf(
+            'https://delight-shankomee.vercel.app//?user_name=%s&balance=%s',
             urlencode($memberAccount),
             $balance
         );
@@ -196,6 +202,7 @@ class LaunchGameController extends Controller
         //     'https://goldendragon7.pro/?user_name=%s&balance=%s',
         //     urlencode($memberAccount),
         //     $balance
+       // https://delight-shankomee.vercel.app/
         // );
 
         Log::info('Provider Launch Game URL generated', [
