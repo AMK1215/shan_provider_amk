@@ -55,6 +55,13 @@ class ShankomeeGetBalanceController extends Controller
             ->where('active', true)
             ->first();
 
+        Log::info('Shankomee GetBalance: Operator found', [
+            'operator_code' => $request->operator_code,
+            'operator_id' => $operator->id,
+            'operator_name' => $operator->name,
+            'operator_callback_url' => $operator->callback_url,
+        ]);
+
         if (! $operator) {
             Log::warning('Shankomee GetBalance: Invalid operator_code', [
                 'operator_code' => $request->operator_code,

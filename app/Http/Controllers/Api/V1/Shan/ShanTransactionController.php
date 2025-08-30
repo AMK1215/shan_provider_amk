@@ -119,11 +119,16 @@ class ShanTransactionController extends Controller
 
             // If still no agent found, try to find by common agent codes
             if (!$agent) {
-                $commonAgentCodes = ['A3H4', 'A3H2']; // Common agent codes from production
+                $commonAgentCodes = ['A3H4', 'A3H2', 'MK77']; // Common agent codes from production
                 foreach ($commonAgentCodes as $code) {
                     $agent = User::where('shan_agent_code', $code)
                                 ->where('type', 20)
                                 ->first();
+                    Log::info('ShanTransaction: Found agent by common code', [
+                        'agent_code' => $code,
+                        'agent_id' => $agent->id,
+                        'agent_username' => $agent->user_name,
+                    ]);
                     if ($agent) {
                         Log::warning('ShanTransaction: Using default agent by common code', [
                             'player_id' => $firstPlayer->id,
