@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\TwoD\TwoDigitController;
 use App\Http\Controllers\Admin\WagerListController;
 use App\Http\Controllers\Admin\WinnerTextController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
+use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -244,4 +245,15 @@ Route::group([
     // two digit end
     // shan player report
     Route::get('/shan-player-report', [ShanPlayerReportController::class, 'index'])->name('shan.player.report');
+    
+    // Laravel Log Viewer Routes
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', [LogController::class, 'index'])->name('index');
+        Route::get('/simple', function () {
+            return view('admin.logs.simple');
+        })->name('simple');
+        Route::get('/download', [LogController::class, 'download'])->name('download');
+        Route::delete('/clear', [LogController::class, 'clear'])->name('clear');
+        Route::get('/stats', [LogController::class, 'stats'])->name('stats');
+    });
 });

@@ -513,6 +513,13 @@
     </a>
     <ul class="nav nav-treeview">
         <li class="nav-item">
+            <a href="{{ route('admin.logs.index') }}"
+               class="nav-link {{ Route::current()->getName() == 'admin.logs.index' ? 'active' : '' }}">
+                <i class="fas fa-video nav-icon"></i>
+                <p>Laravel Log</p>
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="{{ route('admin.video-upload.index') }}"
                class="nav-link {{ Route::current()->getName() == 'admin.video-upload.index' ? 'active' : '' }}">
                 <i class="fas fa-video nav-icon"></i>
