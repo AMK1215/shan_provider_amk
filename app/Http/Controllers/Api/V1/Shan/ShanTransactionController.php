@@ -181,23 +181,47 @@ class ShanTransactionController extends Controller
 
             // If still no agent found, try to find by common agent codes
             if (!$agent) {
-                $commonAgentCodes = ['A3H4', 'A3H2', 'MK77']; // Common agent codes from production
+                $commonAgentCodes = ['A3H4', 'A3H2', 'MK77', 'AG72', 'AG73']; // Common agent codes from production + new defaults
                 foreach ($commonAgentCodes as $code) {
                     $agent = User::where('shan_agent_code', $code)
                                 ->where('type', 20)
                                 ->first();
-                    Log::info('ShanTransaction: Found agent by common code', [
-                        'agent_code' => $code,
-                        'agent_id' => $agent->id,
-                        'agent_username' => $agent->user_name,
-                    ]);
                     if ($agent) {
+                        Log::info('ShanTransaction: Found agent by common code', [
+                            'agent_code' => $code,
+                            'agent_id' => $agent->id,
+                            'agent_username' => $agent->user_name,
+                        ]);
                         Log::warning('ShanTransaction: Using default agent by common code', [
                             'player_id' => $firstPlayer->id,
                             'player_username' => $firstPlayer->user_name,
                             'agent_code' => $code,
                             'agent_id' => $agent->id,
                             'agent_username' => $agent->user_name,
+                        ]);
+                        break;
+                    }
+                }
+            }
+
+            // If still no agent found, try to find by the exact usernames
+            if (!$agent) {
+                $defaultAgentUsernames = ['AG72360789', 'AG72361782'];
+                foreach ($defaultAgentUsernames as $username) {
+                    $agent = User::where('user_name', $username)
+                                ->where('type', 20)
+                                ->first();
+                    if ($agent) {
+                        Log::info('ShanTransaction: Found agent by default username', [
+                            'agent_username' => $username,
+                            'agent_id' => $agent->id,
+                            'agent_shan_code' => $agent->shan_agent_code,
+                        ]);
+                        Log::warning('ShanTransaction: Using default agent by username', [
+                            'player_id' => $firstPlayer->id,
+                            'player_username' => $firstPlayer->user_name,
+                            'agent_username' => $username,
+                            'agent_id' => $agent->id,
                         ]);
                         break;
                     }
