@@ -124,33 +124,17 @@ class ShanTransactionController extends Controller
                 }
             }
 
-            // Step 4: Get agent information and system wallet
+            // Step 4: Get agent information - PRIORITIZE PLAYER'S ACTUAL AGENT
             $agent = null;
             
-            // Check if banker information can help us find the agent
-            $bankerPlayerId = $validated['banker']['player_id'] ?? null;
-            if ($bankerPlayerId) {
-                $bankerUser = User::where('user_name', $bankerPlayerId)->first();
-                if ($bankerUser && in_array($bankerUser->type, [10, 20])) {
-                    // The banker is an agent - use this as our agent
-                    $agent = $bankerUser;
-                    Log::info('ShanTransaction: Found agent from banker data', [
-                        'banker_player_id' => $bankerPlayerId,
-                        'agent_id' => $agent->id,
-                        'agent_username' => $agent->user_name,
-                        'agent_type' => $agent->type,
-                    ]);
-                }
-            }
-            
-            // If no agent found from banker, try to find agent by shan_agent_code from player
-            if (!$agent && $firstPlayer->shan_agent_code) {
+            // FIRST PRIORITY: Find agent by player's shan_agent_code (player's actual agent)
+            if ($firstPlayer->shan_agent_code) {
                 $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)
                             ->where('type', 20) // Ensure it's an agent
                             ->first();
                 
                 if ($agent) {
-                    Log::info('ShanTransaction: Found agent by shan_agent_code', [
+                    Log::info('ShanTransaction: Found PLAYER\'S ACTUAL AGENT by shan_agent_code', [
                         'player_id' => $firstPlayer->id,
                         'player_username' => $firstPlayer->user_name,
                         'shan_agent_code' => $firstPlayer->shan_agent_code,
@@ -160,9 +144,9 @@ class ShanTransactionController extends Controller
                 }
             }
             
-            // If no agent found by shan_agent_code, try by agent_id
+            // SECOND PRIORITY: Find agent by player's direct agent_id
             if (!$agent && $firstPlayer->agent_id) {
-                $agent = User::find($firstPlayer->client_agent_id);
+                $agent = User::find($firstPlayer->agent_id);
                 
                 // Verify it's actually an agent
                 if ($agent && $agent->type != 20) {
@@ -170,18 +154,38 @@ class ShanTransactionController extends Controller
                 }
                 
                 if ($agent) {
-                    Log::info('ShanTransaction: Found agent by agent_id', [
+                    Log::info('ShanTransaction: Found PLAYER\'S AGENT by agent_id', [
                         'player_id' => $firstPlayer->id,
                         'player_username' => $firstPlayer->user_name,
+                        'player_agent_id' => $firstPlayer->agent_id,
                         'agent_id' => $agent->id,
                         'agent_username' => $agent->user_name,
                     ]);
                 }
             }
 
-            // If still no agent found, try to find by common agent codes
+            // THIRD PRIORITY: Check if banker information contains an agent (but warn this is not ideal)
             if (!$agent) {
-                $commonAgentCodes = ['A3H4', 'A3H2', 'MK77', 'AG72', 'AG73']; // Common agent codes from production + new defaults
+                $bankerPlayerId = $validated['banker']['player_id'] ?? null;
+                if ($bankerPlayerId) {
+                    $bankerUser = User::where('user_name', $bankerPlayerId)->first();
+                    if ($bankerUser && in_array($bankerUser->type, [10, 20])) {
+                        $agent = $bankerUser;
+                        Log::warning('ShanTransaction: Using banker as agent (player has no agent!)', [
+                            'player_id' => $firstPlayer->id,
+                            'player_username' => $firstPlayer->user_name,
+                            'banker_player_id' => $bankerPlayerId,
+                            'agent_id' => $agent->id,
+                            'agent_username' => $agent->user_name,
+                            'warning' => 'Player should have their own agent, not use banker as agent',
+                        ]);
+                    }
+                }
+            }
+
+            // FOURTH PRIORITY: Try to find by common agent codes (fallback only)
+            if (!$agent) {
+                $commonAgentCodes = ['MK77', 'A3H4', 'A3H2']; // Prioritize MK77 since it's in your data
                 foreach ($commonAgentCodes as $code) {
                     $agent = User::where('shan_agent_code', $code)
                                 ->where('type', 20)
@@ -192,52 +196,32 @@ class ShanTransactionController extends Controller
                             'agent_id' => $agent->id,
                             'agent_username' => $agent->user_name,
                         ]);
-                        Log::warning('ShanTransaction: Using default agent by common code', [
+                        Log::warning('ShanTransaction: Using fallback agent by code (player has no proper agent!)', [
                             'player_id' => $firstPlayer->id,
                             'player_username' => $firstPlayer->user_name,
-                            'agent_code' => $code,
+                            'fallback_agent_code' => $code,
                             'agent_id' => $agent->id,
                             'agent_username' => $agent->user_name,
+                            'warning' => 'Player should be assigned to a proper agent',
                         ]);
                         break;
                     }
                 }
             }
 
-            // If still no agent found, try to find by the exact usernames
-            if (!$agent) {
-                $defaultAgentUsernames = ['AG72360789', 'AG72361782'];
-                foreach ($defaultAgentUsernames as $username) {
-                    $agent = User::where('user_name', $username)
-                                ->where('type', 20)
-                                ->first();
-                    if ($agent) {
-                        Log::info('ShanTransaction: Found agent by default username', [
-                            'agent_username' => $username,
-                            'agent_id' => $agent->id,
-                            'agent_shan_code' => $agent->shan_agent_code,
-                        ]);
-                        Log::warning('ShanTransaction: Using default agent by username', [
-                            'player_id' => $firstPlayer->id,
-                            'player_username' => $firstPlayer->user_name,
-                            'agent_username' => $username,
-                            'agent_id' => $agent->id,
-                        ]);
-                        break;
-                    }
-                }
-            }
 
-            // If still no agent found, get the first available agent
+
+            // LAST RESORT: Get any available agent (with strong warning)
             if (!$agent) {
                 $agent = User::where('type', 20)->first();
                 
                 if ($agent) {
-                    Log::warning('ShanTransaction: No agent found for player, using default agent', [
+                    Log::error('ShanTransaction: NO PROPER AGENT FOUND - using emergency fallback!', [
                         'player_id' => $firstPlayer->id,
                         'player_username' => $firstPlayer->user_name,
-                        'default_agent_id' => $agent->id,
-                        'default_agent_username' => $agent->user_name,
+                        'emergency_agent_id' => $agent->id,
+                        'emergency_agent_username' => $agent->user_name,
+                        'ERROR' => 'Player must be properly assigned to an agent!',
                     ]);
                 }
             }
