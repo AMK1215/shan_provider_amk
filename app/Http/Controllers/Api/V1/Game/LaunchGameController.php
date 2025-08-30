@@ -39,6 +39,7 @@ class LaunchGameController extends Controller
                 'member_account' => 'required|string',
                 'balance' => 'required|numeric|min:0',
                 'nickname' => 'nullable|string',
+                'callback_url' => 'nullable|string',
             ]);
 
             // Use MMK currency for all products

@@ -119,7 +119,7 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
 
 Route::group(['prefix' => 'shan'], function () {
     Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
-    // Route::post('launch-game', [ShanLaunchGameController::class, 'launch']);
+    
 });
 
 // provider shan api
@@ -128,18 +128,7 @@ Route::group(['prefix' => 'provider/shan'], function () {
     Route::post('ShanLaunchGame', [ShankomeeGetBalanceController::class, 'LaunchGame']);
 });
 
-Route::prefix('v1')->group(function () {
-    Route::prefix('game')->group(function () {
-        // Route::post('transactions', [ProviderTransactionCallbackController::class, 'handle']);
-        // Route::post('transactions', [ProviderTransactionCallbackController::class]);
-    });
-});
 
-// Route::post('/callback', ProviderTransactionCallbackController::class);.
-
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
 
 Route::post('/auth/login', [LoginController::class, 'login']);
 Route::post('/auth/logout', [LoginController::class, 'logout']);
