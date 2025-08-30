@@ -56,6 +56,9 @@ class ShanTransactionController extends Controller
             Log::info('ShanTransaction: Validation passed', [
                 'game_type_id' => $gameTypeId,
                 'player_count' => count($validated['players']),
+                'has_banker_data' => isset($validated['banker']),
+                'banker_player_id' => $validated['banker']['player_id'] ?? 'not_set',
+                'all_player_ids' => array_column($validated['players'], 'player_id'),
             ]);
 
             // Step 2: Check for duplicate transaction using wager_code
@@ -69,20 +72,79 @@ class ShanTransactionController extends Controller
 
             // Step 3: Get first player for agent lookup
             $firstPlayerId = $validated['players'][0]['player_id'];
+            
+            // Try to find as player first, then as agent if not found
             $firstPlayer = User::where('user_name', $firstPlayerId)->first();
-
+            
             if (!$firstPlayer) {
-                Log::error('ShanTransaction: First player not found', [
+                Log::warning('ShanTransaction: Player not found, checking if it\'s an agent', [
                     'player_id' => $firstPlayerId,
                 ]);
-                return $this->error('Player not found', 'First player not found in system', 404);
+                
+                // Check if this is actually an agent ID being passed as player
+                $possibleAgent = User::where('user_name', $firstPlayerId)
+                                   ->whereIn('type', [20, 10]) // Agent or Owner types
+                                   ->first();
+                
+                if ($possibleAgent) {
+                    Log::warning('ShanTransaction: First "player" is actually an agent, skipping to find real player', [
+                        'agent_like_player_id' => $firstPlayerId,
+                        'agent_type' => $possibleAgent->type,
+                    ]);
+                    
+                    // Find a real player from the remaining players
+                    $realPlayer = null;
+                    foreach ($validated['players'] as $playerData) {
+                        if ($playerData['player_id'] !== $firstPlayerId) {
+                            $realPlayer = User::where('user_name', $playerData['player_id'])
+                                            ->where('type', 40) // Player type
+                                            ->first();
+                            if ($realPlayer) {
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if ($realPlayer) {
+                        $firstPlayer = $realPlayer;
+                        Log::info('ShanTransaction: Found real player for agent lookup', [
+                            'original_first_player' => $firstPlayerId,
+                            'real_player_id' => $firstPlayer->user_name,
+                            'real_player_db_id' => $firstPlayer->id,
+                        ]);
+                    } else {
+                        Log::error('ShanTransaction: No real players found in transaction');
+                        return $this->error('No players found', 'No valid players found in transaction', 404);
+                    }
+                } else {
+                    Log::error('ShanTransaction: First player not found', [
+                        'player_id' => $firstPlayerId,
+                    ]);
+                    return $this->error('Player not found', 'First player not found in system', 404);
+                }
             }
 
             // Step 4: Get agent information and system wallet
             $agent = null;
             
-            // First try to find agent by shan_agent_code from player
-            if ($firstPlayer->shan_agent_code) {
+            // Check if banker information can help us find the agent
+            $bankerPlayerId = $validated['banker']['player_id'] ?? null;
+            if ($bankerPlayerId) {
+                $bankerUser = User::where('user_name', $bankerPlayerId)->first();
+                if ($bankerUser && in_array($bankerUser->type, [10, 20])) {
+                    // The banker is an agent - use this as our agent
+                    $agent = $bankerUser;
+                    Log::info('ShanTransaction: Found agent from banker data', [
+                        'banker_player_id' => $bankerPlayerId,
+                        'agent_id' => $agent->id,
+                        'agent_username' => $agent->user_name,
+                        'agent_type' => $agent->type,
+                    ]);
+                }
+            }
+            
+            // If no agent found from banker, try to find agent by shan_agent_code from player
+            if (!$agent && $firstPlayer->shan_agent_code) {
                 $agent = User::where('shan_agent_code', $firstPlayer->shan_agent_code)
                             ->where('type', 20) // Ensure it's an agent
                             ->first();
@@ -181,6 +243,7 @@ class ShanTransactionController extends Controller
             $totalPlayerNet = 0;
             $processedPlayers = [];
             $callbackPlayers = [];
+            $actualPlayersProcessed = 0;
 
 
 
@@ -209,9 +272,25 @@ class ShanTransactionController extends Controller
 
                 foreach ($validated['players'] as $playerData) {
                 $player = User::where('user_name', $playerData['player_id'])->first();
+                
                 if (!$player) {
+                    Log::warning('ShanTransaction: Player not found during processing', [
+                        'player_id' => $playerData['player_id'],
+                    ]);
                     throw new \RuntimeException("Player not found: {$playerData['player_id']}");
                 }
+                
+                // Skip if this is actually an agent (banker) - they'll be handled separately
+                if (in_array($player->type, [10, 20])) {
+                    Log::info('ShanTransaction: Skipping agent in player processing', [
+                        'player_id' => $player->user_name,
+                        'player_type' => $player->type,
+                        'is_banker' => true,
+                    ]);
+                    continue;
+                }
+                
+                $actualPlayersProcessed++;
 
                 Log::info('ShanTransaction: Processing player', [
                     'player_id' => $player->id,
@@ -375,6 +454,7 @@ class ShanTransactionController extends Controller
                     'total_player_net' => $totalPlayerNet,
                     'banker_amount_change' => $bankerAmountChange,
                     'processed_players_count' => count($processedPlayers),
+                    'actual_players_processed' => $actualPlayersProcessed,
                     'agent_balance' => $banker->balanceFloat,
                 ]);
 
