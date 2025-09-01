@@ -264,13 +264,32 @@ class ShanTransactionController extends Controller
                 return $this->error('No agent found', 'No agent available for this transaction', 500);
             }
 
-            // Use agent as the banker
-            $banker = $agent;
-            Log::info('ShanTransaction: Using agent as banker', [
-                'banker_id' => $banker->id,
-                'banker_username' => $banker->user_name,
-                'agent_type' => $banker->type,
-            ]);
+            // Determine who the actual banker is for this round
+            $banker = $agent; // Default to agent as banker
+            $isPlayerBanker = false;
+            
+            // Check if banker is specified in request and is a player
+            $bankerPlayerId = $validated['banker']['player_id'] ?? null;
+            if ($bankerPlayerId) {
+                $requestedBanker = User::where('user_name', $bankerPlayerId)->first();
+                if ($requestedBanker && $requestedBanker->type == 40) { // Player type
+                    $banker = $requestedBanker; // Use player as banker for this round
+                    $isPlayerBanker = true;
+                    Log::info('ShanTransaction: Using PLAYER as banker for this round', [
+                        'banker_id' => $banker->id,
+                        'banker_username' => $banker->user_name,
+                        'banker_type' => 'player',
+                        'agent_id' => $agent->id,
+                        'agent_username' => $agent->user_name,
+                    ]);
+                } else {
+                    Log::info('ShanTransaction: Using AGENT as banker', [
+                        'banker_id' => $banker->id,
+                        'banker_username' => $banker->user_name,
+                        'agent_type' => $banker->type,
+                    ]);
+                }
+            }
 
             // Capture agent balance before player transactions
             $agentBeforeBalance = $banker->balanceFloat;
@@ -288,14 +307,25 @@ class ShanTransactionController extends Controller
                     throw new \RuntimeException("Player not found: {$playerData['player_id']}");
                 }
                 
-                // Skip if this is actually an agent (banker) - they'll be handled separately
+                // Skip if this is an agent (not a player-banker)
                 if (in_array($player->type, [10, 20])) {
                     Log::info('ShanTransaction: Skipping agent in player processing', [
                         'player_id' => $player->user_name,
                         'player_type' => $player->type,
-                        'is_banker' => true,
+                        'is_agent' => true,
                     ]);
                     continue;
+                }
+                
+                // Check if this player is the banker for this round
+                $isThisPlayerBanker = $isPlayerBanker && $player->id === $banker->id;
+                if ($isThisPlayerBanker) {
+                    Log::info('ShanTransaction: Player is banker for this round - will be processed separately', [
+                        'player_id' => $player->user_name,
+                        'player_type' => $player->type,
+                        'is_banker_this_round' => true,
+                    ]);
+                    continue; // Skip in player loop, handle as banker
                 }
                 
                 $actualPlayersProcessed++;
@@ -425,10 +455,10 @@ class ShanTransactionController extends Controller
                 $banker->refresh();
                 $agentAfterBalance = $banker->balanceFloat;
 
-                // Store agent banker transaction
+                // Store banker transaction (could be agent or player banker)
                 ReportTransaction::create([
                     'user_id' => $banker->id,
-                    'agent_id' => $agent?->id, // Use found agent ID
+                    'agent_id' => $agent->id, // Always use the agent ID (even for player bankers)
                     'member_account' => $banker->user_name,
                     'transaction_amount' => abs($bankerAmountChange),
                     'status' => $bankerAmountChange >= 0 ? 1 : 0,
@@ -447,12 +477,15 @@ class ShanTransactionController extends Controller
                     'balance' => $agentAfterBalance,
                 ];
 
-                Log::info('ShanTransaction: Agent banker transaction completed', [
+                Log::info('ShanTransaction: Banker transaction completed', [
                     'banker_id' => $banker->id,
+                    'banker_username' => $banker->user_name,
+                    'banker_type' => $isPlayerBanker ? 'player' : 'agent',
                     'before_balance' => $agentBeforeBalance,
                     'after_balance' => $agentAfterBalance,
                     'amount_changed' => $bankerAmountChange,
                     'actual_balance_change' => $agentAfterBalance - $agentBeforeBalance,
+                    'game_continues' => true,
                 ]);
 
                 DB::commit();
@@ -497,11 +530,16 @@ class ShanTransactionController extends Controller
                     'banker' => [
                         'player_id' => $banker->user_name,
                         'balance' => $agentAfterBalance,
+                        'banker_type' => $isPlayerBanker ? 'player' : 'agent',
                     ],
                     'agent' => [
-                        'player_id' => $banker->user_name,
-                        'balance' => $agentAfterBalance,
+                        'player_id' => $agent->user_name,
+                        'balance' => $agent->balanceFloat,
                     ],
+                    'game_info' => [
+                        'is_player_banker' => $isPlayerBanker,
+                        'next_banker_rotation' => 'ready', // Indicate game can continue
+                    ]
                 ], 'Transaction Successful');
 
             } catch (\Exception $e) {
