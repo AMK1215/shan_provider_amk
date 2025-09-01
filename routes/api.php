@@ -120,18 +120,18 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
 
 Route::group(['prefix' => 'shan'], function () {
     Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
-    
-    // Agent management routes
-    Route::post('users-by-agent', [ShanAgentController::class, 'getUsersByAgent']);
-    Route::get('users-by-agent-one', [ShanAgentController::class, 'getUsersByAgentOne']);
-    Route::get('agents', [ShanAgentController::class, 'getAllAgentsWithUserCounts']);
-    Route::post('agent-details', [ShanAgentController::class, 'getAgentById']);
 });
 
 // provider shan api
 Route::group(['prefix' => 'provider/shan'], function () {
     Route::post('ShanGetBalances', [ShankomeeGetBalanceController::class, 'shangetbalance']);
     Route::post('ShanLaunchGame', [ShankomeeGetBalanceController::class, 'LaunchGame']);
+
+    // Agent management routes
+    Route::post('users-by-agent', [ShanAgentController::class, 'getUsersByAgent']);
+    Route::get('users-by-agent-one', [ShanAgentController::class, 'getUsersByAgentOne']);
+    Route::get('agents', [ShanAgentController::class, 'getAllAgentsWithUserCounts']);
+    Route::post('agent-details', [ShanAgentController::class, 'getAgentById']);
 });
 
 
