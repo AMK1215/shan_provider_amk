@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\Promotion\PromotionController as PromotionControllerAlias;
 use App\Http\Controllers\Api\V1\PromotionController;
 use App\Http\Controllers\Api\V1\Shan\ShanApiTransactionController;
+use App\Http\Controllers\Api\V1\Shan\ShanAgentController;
 use App\Http\Controllers\Api\V1\Shan\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\Shan\ShanTransactionController;
 use App\Http\Controllers\Api\V1\TwoDigit\TwoDigitBetController;
@@ -120,6 +121,11 @@ Route::group(['prefix' => 'shanreport', 'middleware' => ['auth:sanctum']], funct
 Route::group(['prefix' => 'shan'], function () {
     Route::post('getbalance', [ShanGetBalanceController::class, 'getBalance']);
     
+    // Agent management routes
+    Route::post('users-by-agent', [ShanAgentController::class, 'getUsersByAgent']);
+    Route::get('users-by-agent-one', [ShanAgentController::class, 'getUsersByAgentOne']);
+    Route::get('agents', [ShanAgentController::class, 'getAllAgentsWithUserCounts']);
+    Route::post('agent-details', [ShanAgentController::class, 'getAgentById']);
 });
 
 // provider shan api
