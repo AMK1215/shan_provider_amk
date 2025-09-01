@@ -268,11 +268,56 @@ class AgentController extends Controller
         // }
 
         $user = User::find($id);
+        
+        if (!$user) {
+            return redirect()->route('admin.agent.index')
+                ->with('error', 'Agent not found');
+        }
 
-        $user->update($request->all());
+        // Validate all the fields according to users table structure
+        $validatedData = $request->validate([
+            // Basic Information
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $id,
+            'profile' => 'nullable|string|max:2000',
+            'agent_logo' => 'nullable|string|max:255',
+            
+            // Financial Settings
+            'max_score' => 'nullable|numeric|min:0',
+            'commission' => 'nullable|numeric|min:0|max:100',
+            'payment_type_id' => 'nullable|exists:payment_types,id',
+            
+            // Banking Information
+            'account_name' => 'nullable|string|max:255',
+            'account_number' => 'nullable|string|max:255',
+            
+            // Contact & Site Information
+            'line_id' => 'nullable|string|max:255',
+            'referral_code' => 'nullable|string|max:255',
+            'site_name' => 'nullable|string|max:255',
+            'site_link' => 'nullable|url|max:255',
+            
+            // Shan Game Configuration
+            'shan_agent_code' => 'required|string|max:255|unique:users,shan_agent_code,' . $id,
+            'shan_agent_name' => 'nullable|string|max:255',
+            'shan_secret_key' => 'required|string|max:255',
+            'shan_callback_url' => 'required|url|max:255',
+            
+            // Status Settings
+            'status' => 'required|integer|in:0,1',
+            'is_changed_password' => 'required|integer|in:0,1',
+            'type' => 'required|string', // Don't allow changing type
+        ]);
+
+        // Remove sensitive fields that shouldn't be mass assigned
+        unset($validatedData['type']); // Keep original type
+        
+        // Update user with validated data
+        $user->update($validatedData);
 
         return redirect()->route('admin.agent.index')
-            ->with('success', 'Agent Updated successfully');
+            ->with('success', 'Agent updated successfully');
     }
 
     /**

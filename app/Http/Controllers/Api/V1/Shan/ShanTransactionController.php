@@ -213,14 +213,53 @@ class ShanTransactionController extends Controller
 
 
 
+            // SPECIAL CASE: If banker is a player (like SKP0101), use banker's agent
+            if (!$agent) {
+                $bankerPlayerId = $validated['banker']['player_id'] ?? null;
+                if ($bankerPlayerId) {
+                    $bankerUser = User::where('user_name', $bankerPlayerId)->first();
+                    if ($bankerUser && $bankerUser->type == 40) { // Player type
+                        // Try to get banker's agent
+                        if ($bankerUser->shan_agent_code) {
+                            $agent = User::where('shan_agent_code', $bankerUser->shan_agent_code)
+                                        ->where('type', 20)
+                                        ->first();
+                            
+                            if ($agent) {
+                                Log::info('ShanTransaction: Found agent from banker player', [
+                                    'banker_player_id' => $bankerPlayerId,
+                                    'banker_agent_code' => $bankerUser->shan_agent_code,
+                                    'agent_id' => $agent->id,
+                                    'agent_username' => $agent->user_name,
+                                ]);
+                            }
+                        }
+                        
+                        // Fallback to banker's agent_id
+                        if (!$agent && $bankerUser->agent_id) {
+                            $agent = User::find($bankerUser->agent_id);
+                            if ($agent) {
+                                Log::info('ShanTransaction: Found agent from banker agent_id', [
+                                    'banker_player_id' => $bankerPlayerId,
+                                    'banker_agent_id' => $bankerUser->agent_id,
+                                    'agent_id' => $agent->id,
+                                    'agent_username' => $agent->user_name,
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
             // LAST RESORT: Get any available agent (with strong warning)
             if (!$agent) {
                 $agent = User::where('type', 20)->first();
                 
                 if ($agent) {
                     Log::error('ShanTransaction: NO PROPER AGENT FOUND - using emergency fallback!', [
-                        'player_id' => $firstPlayer->id,
-                        'player_username' => $firstPlayer->user_name,
+                        'first_player_id' => $firstPlayer ? $firstPlayer->id : 'not_found',
+                        'first_player_username' => $firstPlayer ? $firstPlayer->user_name : 'not_found',
+                        'banker_player_id' => $validated['banker']['player_id'] ?? 'not_set',
                         'emergency_agent_id' => $agent->id,
                         'emergency_agent_username' => $agent->user_name,
                         'ERROR' => 'Player must be properly assigned to an agent!',
@@ -262,7 +301,12 @@ class ShanTransactionController extends Controller
 
             // Step 7: Use agent as banker instead of system wallet
             if (!$agent) {
-                Log::error('ShanTransaction: No agent found for transaction');
+                Log::error('ShanTransaction: No agent found for transaction', [
+                    'first_player_id' => $firstPlayerId,
+                    'banker_player_id' => $validated['banker']['player_id'] ?? 'not_set',
+                    'all_player_ids' => array_column($validated['players'], 'player_id'),
+                    'critical_error' => 'This causes game to stop - need proper agent assignment',
+                ]);
                 return $this->error('No agent found', 'No agent available for this transaction', 500);
             }
 
