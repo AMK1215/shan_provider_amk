@@ -59,6 +59,8 @@ class ShanTransactionController extends Controller
                 'has_banker_data' => isset($validated['banker']),
                 'banker_player_id' => $validated['banker']['player_id'] ?? 'not_set',
                 'all_player_ids' => array_column($validated['players'], 'player_id'),
+                'is_rotation_request' => isset($validated['banker']['player_id']),
+                'potential_issue' => $validated['banker']['player_id'] ?? 'not_set' === 'SKP0101' ? 'Always_same_banker_might_indicate_client_rotation_issue' : 'Different_banker_good',
             ]);
 
             // Step 2: Check for duplicate transaction using wager_code
@@ -281,14 +283,25 @@ class ShanTransactionController extends Controller
                         'banker_type' => 'player',
                         'agent_id' => $agent->id,
                         'agent_username' => $agent->user_name,
+                        'rotation_enabled' => true,
                     ]);
-                } else {
+                } else if ($requestedBanker && in_array($requestedBanker->type, [10, 20])) {
+                    // Agent as banker
+                    $banker = $requestedBanker;
+                    $isPlayerBanker = false;
                     Log::info('ShanTransaction: Using AGENT as banker', [
                         'banker_id' => $banker->id,
                         'banker_username' => $banker->user_name,
                         'agent_type' => $banker->type,
                     ]);
                 }
+            } else {
+                // No banker specified - this might be where the rotation issue occurs
+                Log::info('ShanTransaction: No banker specified in request - using agent as default', [
+                    'agent_id' => $agent->id,
+                    'agent_username' => $agent->user_name,
+                    'note' => 'Client should specify banker for proper rotation',
+                ]);
             }
 
             // Capture agent balance before player transactions
@@ -496,7 +509,11 @@ class ShanTransactionController extends Controller
                     'banker_amount_change' => $bankerAmountChange,
                     'processed_players_count' => count($processedPlayers),
                     'actual_players_processed' => $actualPlayersProcessed,
+                    'current_banker' => $banker->user_name,
+                    'banker_type' => $isPlayerBanker ? 'player' : 'agent',
                     'agent_balance' => $banker->balanceFloat,
+                    'game_status' => 'completed_ready_for_next_round',
+                    'rotation_enabled' => true,
                 ]);
 
                 // Step 8: Send callback to client site
@@ -538,7 +555,14 @@ class ShanTransactionController extends Controller
                     ],
                     'game_info' => [
                         'is_player_banker' => $isPlayerBanker,
+                        'current_banker' => $banker->user_name,
+                        'banker_type' => $isPlayerBanker ? 'player' : 'agent',
+                        'rotation_status' => 'ready',
                         'next_banker_rotation' => 'ready', // Indicate game can continue
+                        'game_continues' => true,
+                        'can_rotate_banker' => true,
+                        'suggested_next_bankers' => array_column($callbackPlayers, 'player_id'), // Other players who can be banker
+                        'rotation_note' => 'Client should rotate banker to different player for next round',
                     ]
                 ], 'Transaction Successful');
 
