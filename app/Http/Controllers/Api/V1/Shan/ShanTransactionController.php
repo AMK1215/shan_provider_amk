@@ -187,7 +187,7 @@ class ShanTransactionController extends Controller
 
             // FOURTH PRIORITY: Try to find by common agent codes (fallback only)
             if (!$agent) {
-                $commonAgentCodes = ['MK77', 'SCT931', 'A3H2']; // Prioritize MK77 since it's in your data
+                $commonAgentCodes = ['MK77', 'SCT931', 'AG72']; // Prioritize MK77 since it's in your data
                 foreach ($commonAgentCodes as $code) {
                     $agent = User::where('shan_agent_code', $code)
                                 ->where('type', 20)

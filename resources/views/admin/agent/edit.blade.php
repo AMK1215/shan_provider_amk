@@ -193,7 +193,7 @@
                             
                             <div class="form-group">
                                 <label>Shan Secret Key<span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" name="shan_secret_key" value="{{ $agent->shan_secret_key }}" required>
+                                <input type="text" class="form-control" name="shan_secret_key" value="{{ $agent->shan_secret_key }}" required>
                                 <small class="form-text text-muted">Secret key for secure Shan game transactions</small>
                                 @error('shan_secret_key')
                                     <div class="text-danger">{{ $message }}</div>
