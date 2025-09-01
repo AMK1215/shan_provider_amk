@@ -61,6 +61,7 @@ class LaunchGameController extends Controller
 
         // Get agent information from agent_code
         $agentCode = $validatedData['agent_code'];
+        $callbackUrl = $validatedData['callback_url'];
         $agent = User::where('shan_agent_code', $agentCode)->first();
         $agent_name = $agent->user_name;
         Log::info('Agent name', ['agent_name' => $agent_name]);
@@ -99,11 +100,15 @@ class LaunchGameController extends Controller
                 'agent_id' => $agent->id, // Set the agent relationship
                 'client_agent_name' => $agent_name,
                 'client_agent_id' => $agent->id,
+                'shan_callback_url' => $callbackUrl,
             ]);
             Log::info('Created new user for provider launch game', [
                 'member_account' => $memberAccount,
                 'agent_id' => $agent->id,
                 'agent_username' => $agent->user_name,
+                'agent_name' => $agent_name,
+                'agent_code' => $agentCode,
+                'callback_url' => $callbackUrl,
             ]);
 
             // Deposit initial balance for new user

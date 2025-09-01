@@ -11,6 +11,8 @@ php -r "file_put_contents('/var/www/shan_provider_amk/storage/logs/laravel.log',
 * * * * * cd /var/www/gsc_plus && php artisan schedule:run >> /dev/null 2>&1
 tail -f /var/log/mysql/error.log
 
+tail -f /var/www/shan_provider_amk/storage/logs/laravel.log
+
 sudo chown -R www-data:www-data /var/www/gsc_plus/storage
 sudo chown -R www-data:www-data /var/www/gsc_plus/bootstrap/cache
 sudo chmod -R 775 /var/www/gsc_plus/storage
