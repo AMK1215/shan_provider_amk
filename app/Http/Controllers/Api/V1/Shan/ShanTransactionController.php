@@ -175,23 +175,6 @@ class ShanTransactionController extends Controller
 
                 // Initialize results array
                 $results = [];
-                
-                // Track if banker is also a player in this transaction
-                $bankerIsPlayer = false;
-                $bankerPlayerData = null;
-                
-                // Check if banker is in the players array
-                foreach ($validated['players'] as $playerData) {
-                    if ($playerData['player_id'] === $banker->user_name) {
-                        $bankerIsPlayer = true;
-                        $bankerPlayerData = $playerData;
-                        Log::info('ShanTransaction: Banker is also a player in this transaction', [
-                            'banker_id' => $banker->user_name,
-                            'banker_player_data' => $playerData,
-                        ]);
-                        break;
-                    }
-                }
 
             // Step 7: Determine the actual banker
             $actualBanker = null;
@@ -237,6 +220,23 @@ class ShanTransactionController extends Controller
             }
             
             $banker = $actualBanker;
+            
+            // Step 7.5: Check if banker is also a player in this transaction
+            $bankerIsPlayer = false;
+            $bankerPlayerData = null;
+            
+            // Check if banker is in the players array
+            foreach ($validated['players'] as $playerData) {
+                if ($playerData['player_id'] === $banker->user_name) {
+                    $bankerIsPlayer = true;
+                    $bankerPlayerData = $playerData;
+                    Log::info('ShanTransaction: Banker is also a player in this transaction', [
+                        'banker_id' => $banker->user_name,
+                        'banker_player_data' => $playerData,
+                    ]);
+                    break;
+                }
+            }
 
             try {
                 DB::beginTransaction();
