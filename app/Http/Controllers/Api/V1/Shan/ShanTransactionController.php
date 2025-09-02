@@ -168,13 +168,30 @@ class ShanTransactionController extends Controller
 
             Log::info('ShanTransaction: Using wager_code', ['wager_code' => $wagerCode]);
 
-            // Step 6: Process each player's transaction
-            $totalPlayerNet = 0;
-            $processedPlayers = [];
-            $callbackPlayers = [];
+                            // Step 6: Process each player's transaction
+                $totalPlayerNet = 0;
+                $processedPlayers = [];
+                $callbackPlayers = [];
 
-            // Initialize results array
-            $results = [];
+                // Initialize results array
+                $results = [];
+                
+                // Track if banker is also a player in this transaction
+                $bankerIsPlayer = false;
+                $bankerPlayerData = null;
+                
+                // Check if banker is in the players array
+                foreach ($validated['players'] as $playerData) {
+                    if ($playerData['player_id'] === $banker->user_name) {
+                        $bankerIsPlayer = true;
+                        $bankerPlayerData = $playerData;
+                        Log::info('ShanTransaction: Banker is also a player in this transaction', [
+                            'banker_id' => $banker->user_name,
+                            'banker_player_data' => $playerData,
+                        ]);
+                        break;
+                    }
+                }
 
             // Step 7: Determine the actual banker
             $actualBanker = null;
@@ -355,6 +372,7 @@ class ShanTransactionController extends Controller
                     'banker_amount_change' => $bankerAmountChange,
                     'banker_gains' => $bankerAmountChange > 0 ? 'Yes' : 'No',
                     'banker_before_player_transactions' => $bankerBeforeBalance,
+                    'banker_is_player' => $bankerIsPlayer,
                 ]);
 
                 // Banker transaction processing
@@ -367,6 +385,28 @@ class ShanTransactionController extends Controller
                 // Refresh banker balance
                 $banker->refresh();
                 $bankerAfterBalance = $banker->balanceFloat;
+                
+                // If banker is also a player, their balance was already updated in the player loop
+                // We need to ensure their final balance is correct
+                if ($bankerIsPlayer && $bankerPlayerData) {
+                    Log::info('ShanTransaction: Banker is also a player, ensuring balance consistency', [
+                        'banker_id' => $banker->user_name,
+                        'banker_balance_after_player_processing' => $bankerAfterBalance,
+                        'expected_banker_balance' => $bankerBeforeBalance + $bankerAmountChange,
+                    ]);
+                    
+                    // The banker's balance should already be correct from the player processing
+                    // Just verify it matches our expectations
+                    $expectedBalance = $bankerBeforeBalance + $bankerAmountChange;
+                    if (abs($bankerAfterBalance - $expectedBalance) > 0.01) {
+                        Log::warning('ShanTransaction: Banker balance mismatch detected', [
+                            'banker_id' => $banker->user_name,
+                            'expected_balance' => $expectedBalance,
+                            'actual_balance' => $bankerAfterBalance,
+                            'difference' => $bankerAfterBalance - $expectedBalance,
+                        ]);
+                    }
+                }
 
                 // Store banker transaction
                 ReportTransaction::create([
@@ -392,14 +432,18 @@ class ShanTransactionController extends Controller
 
                 // Ensure banker is included in callback players (even if not in request players)
                 $bankerInCallbackPlayers = false;
-                foreach ($callbackPlayers as $callbackPlayer) {
+                $bankerCallbackIndex = -1;
+                
+                foreach ($callbackPlayers as $index => $callbackPlayer) {
                     if ($callbackPlayer['player_id'] === $banker->user_name) {
                         $bankerInCallbackPlayers = true;
+                        $bankerCallbackIndex = $index;
                         break;
                     }
                 }
                 
                 if (!$bankerInCallbackPlayers) {
+                    // Banker not in callback players, add them
                     $callbackPlayers[] = [
                         'player_id' => $banker->user_name,
                         'balance' => $bankerAfterBalance,
@@ -407,6 +451,16 @@ class ShanTransactionController extends Controller
                     Log::info('ShanTransaction: Added banker to callback players', [
                         'banker_id' => $banker->user_name,
                         'banker_balance' => $bankerAfterBalance,
+                        'callback_players_count' => count($callbackPlayers),
+                    ]);
+                } else {
+                    // Banker is in callback players, but we need to ensure their balance is correct
+                    // Update the existing entry with the final banker balance
+                    $callbackPlayers[$bankerCallbackIndex]['balance'] = $bankerAfterBalance;
+                    Log::info('ShanTransaction: Updated existing banker balance in callback players', [
+                        'banker_id' => $banker->user_name,
+                        'old_balance' => $callbackPlayers[$bankerCallbackIndex]['balance'],
+                        'new_balance' => $bankerAfterBalance,
                         'callback_players_count' => count($callbackPlayers),
                     ]);
                 }
@@ -431,37 +485,48 @@ class ShanTransactionController extends Controller
 
                 // Step 8: Send callback to client site
                 if ($callbackUrlBase && $secretKey) {
-                    // Final check: ensure all players are in callback
-                    $finalCallbackPlayers = $callbackPlayers;
-                    
-                    // Double-check that banker is included
-                    $bankerInFinalCallback = false;
-                    foreach ($finalCallbackPlayers as $player) {
-                        if ($player['player_id'] === $banker->user_name) {
-                            $bankerInFinalCallback = true;
-                            break;
-                        }
+                                    // Final check: ensure all players are in callback
+                $finalCallbackPlayers = $callbackPlayers;
+                
+                // Double-check that banker is included
+                $bankerInFinalCallback = false;
+                $bankerFinalIndex = -1;
+                foreach ($finalCallbackPlayers as $index => $player) {
+                    if ($player['player_id'] === $banker->user_name) {
+                        $bankerInFinalCallback = true;
+                        $bankerFinalIndex = $index;
+                        break;
                     }
-                    
-                    if (!$bankerInFinalCallback) {
-                        $finalCallbackPlayers[] = [
-                            'player_id' => $banker->user_name,
-                            'balance' => $bankerAfterBalance,
-                        ];
-                        Log::warning('ShanTransaction: Banker was missing from final callback, added', [
-                            'banker_id' => $banker->user_name,
-                            'banker_balance' => $bankerAfterBalance,
-                        ]);
-                    }
-                    
-                    Log::info('ShanTransaction: Preparing callback', [
-                        'callback_players' => $finalCallbackPlayers,
+                }
+                
+                if (!$bankerInFinalCallback) {
+                    $finalCallbackPlayers[] = [
+                        'player_id' => $banker->user_name,
+                        'balance' => $bankerAfterBalance,
+                    ];
+                    Log::warning('ShanTransaction: Banker was missing from final callback, added', [
+                        'banker_id' => $banker->user_name,
                         'banker_balance' => $bankerAfterBalance,
-                        'total_player_net' => $totalPlayerNet,
-                        'banker_amount_change' => $bankerAmountChange,
-                        'callback_players_count' => count($finalCallbackPlayers),
-                        'banker_included' => $bankerInFinalCallback,
                     ]);
+                } else {
+                    // Ensure the banker's balance is correct in the final callback
+                    $finalCallbackPlayers[$bankerFinalIndex]['balance'] = $bankerAfterBalance;
+                    Log::info('ShanTransaction: Final callback banker balance verified', [
+                        'banker_id' => $banker->user_name,
+                        'final_balance' => $bankerAfterBalance,
+                        'callback_index' => $bankerFinalIndex,
+                    ]);
+                }
+                
+                Log::info('ShanTransaction: Preparing callback', [
+                    'callback_players' => $finalCallbackPlayers,
+                    'banker_balance' => $bankerAfterBalance,
+                    'total_player_net' => $totalPlayerNet,
+                    'banker_amount_change' => $bankerAmountChange,
+                    'callback_players_count' => count($finalCallbackPlayers),
+                    'banker_included' => $bankerInFinalCallback,
+                    'banker_is_player' => $bankerIsPlayer,
+                ]);
                     
                     $this->sendCallbackToClient(
                         $callbackUrlBase,
