@@ -199,7 +199,7 @@ class LaunchGameController extends Controller
         // );
 
          $launchGameUrl = sprintf(
-            'https://delight-shankomee.vercel.app//?user_name=%s&balance=%s',
+            'https://delight-myanmar-shan-ko-mee.vercel.app/?user_name=%s&balance=%s',
             urlencode($memberAccount),
             $balance
         );

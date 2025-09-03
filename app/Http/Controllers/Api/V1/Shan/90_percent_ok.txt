@@ -39,10 +39,6 @@ class ShanTransactionController extends Controller
      * CRITICAL: SKP0101 is the provider site's default player and MUST always be included
      * in the callback to prevent the game from stopping. This player represents the system's
      * bank/agent balance and is essential for continuous game operation.
-     * 
-     * TEMPORARY WORKAROUND: Due to a Java game server bug in banker rotation logic,
-     * SKP0101 is forced to always be the banker until the game server is fixed.
-     * This prevents NullPointerException crashes during banker changes.
      */
     public function ShanTransactionCreate(Request $request): JsonResponse
     {
@@ -194,27 +190,6 @@ class ShanTransactionController extends Controller
             $actualBanker = null;
             $bankerBeforeBalance = 0;
             
-            // TEMPORARY WORKAROUND: Force SKP0101 to always be the banker
-            // This prevents the Java game server from crashing due to banker rotation bug
-            $skp0101User = User::where('user_name', 'SKP0101')->first();
-            if ($skp0101User) {
-                $actualBanker = $skp0101User;
-                $bankerBeforeBalance = $skp0101User->balanceFloat;
-                
-                Log::info('ShanTransaction: Using SKP0101 as permanent banker (workaround for game server bug)', [
-                    'banker_id' => $actualBanker->id,
-                    'banker_username' => $actualBanker->user_name,
-                    'banker_type' => $actualBanker->type,
-                    'banker_balance' => $bankerBeforeBalance,
-                    'note' => 'This prevents the Java game server from crashing during banker rotation',
-                ]);
-            } else {
-                Log::error('ShanTransaction: SKP0101 not found - cannot continue');
-                return $this->error('System error', 'Provider default player not found', 500);
-            }
-            
-            // ORIGINAL LOGIC (commented out until Java game server is fixed)
-            /*
             // Check if there's a designated banker in the request
             if (isset($validated['banker']['player_id'])) {
                 $designatedBanker = User::where('user_name', $validated['banker']['player_id'])->first();
@@ -247,10 +222,12 @@ class ShanTransactionController extends Controller
                 $actualBanker = $agent;
                 $bankerBeforeBalance = $agent->balanceFloat;
                 
-                Log::error('ShanTransaction: No agent found for transaction');
-                return $this->error('No agent found', 'No agent available for this transaction', 500);
+                Log::info('ShanTransaction: Using agent as banker', [
+                    'banker_id' => $actualBanker->id,
+                    'banker_username' => $actualBanker->user_name,
+                    'agent_type' => $actualBanker->type,
+                ]);
             }
-            */
             
             $banker = $actualBanker;
             

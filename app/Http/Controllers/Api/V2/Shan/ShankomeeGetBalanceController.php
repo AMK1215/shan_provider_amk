@@ -311,7 +311,7 @@ class ShankomeeGetBalanceController extends Controller
         }
 
         // Build launch game URL
-        $launchGameUrl = 'https://goldendragon7.pro/?user_name='.urlencode($member_account).'&balance='.$balance;
+        $launchGameUrl = 'https://delight-myanmar-shan-ko-mee.vercel.app/?user_name='.urlencode($member_account).'&balance='.$balance;
 
         Log::info('Shankomee LaunchGame: Response sent', [
             'member_account' => $member_account,
