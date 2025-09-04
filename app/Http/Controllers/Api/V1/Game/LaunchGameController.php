@@ -193,7 +193,7 @@ class LaunchGameController extends Controller
         // );
 
         $launchGameUrl = sprintf(
-            ' https://shan-web-3-test.vercel.app/?user_name=%s&balance=%s',
+            'https://shan-ko-mee-mm.vercel.app/?user_name=%s&balance=%s',
             urlencode($memberAccount),
             $balance
         );
