@@ -497,6 +497,13 @@
                                         <p>Shan Player Report</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                        <a href="{{ route('admin.shan.player.report.grouped') }}"
+                                        class="nav-link {{ Route::current()->getName() == 'admin.shan.player.report.grouped' ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Grouped by Member Account</p>
+                                    </a>
+                                </li>
                                 </ul>
                             </li>
                                 
