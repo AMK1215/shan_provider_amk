@@ -134,10 +134,12 @@ Route::group(['prefix' => 'provider/shan'], function () {
     Route::get('agents', [ShanAgentController::class, 'getAllAgentsWithUserCounts']);
     Route::post('agent-details', [ShanAgentController::class, 'getAgentById']);
     
-    // Report transaction routes
+    
+});
+
+// Report transaction routes
     Route::post('report-transactions', [ShanAgentReportTransactionController::class, 'getReportTransactions']);
     Route::post('member-transactions', [ShanAgentReportTransactionController::class, 'getMemberTransactions']);
-});
 
 
 
