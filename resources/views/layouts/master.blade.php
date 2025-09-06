@@ -237,7 +237,7 @@
                                     </p>
                                 </a>
                             </li> -->
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                             <a href="{{ route('admin.reports.daily_win_loss') }}"
                                 class="nav-link {{ Route::currentRouteName() == 'admin.reports.daily_win_loss' ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-chart-line"></i>
@@ -245,7 +245,7 @@
                                     Daily Win/Loss
                                 </p>
                             </a>
-                        </li>
+                        </li> -->
 
                        
                         @endcan
@@ -445,7 +445,7 @@
                                     </a>
                                 </li> -->
                                 @can('agent_access')
-                                <li class="nav-item">
+                                <!-- <li class="nav-item">
                             <a href="{{ route('admin.player_report.summary') }}"
                                 class="nav-link {{ Route::currentRouteName() == 'admin.player_report.summary' ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-chart-line"></i>
@@ -453,10 +453,10 @@
                                     Win/Lose Report
                                 </p>
                             </a>
-                        </li>
+                        </li> -->
                         @endcan
                                 @can('owner_access')
-                                <li class="nav-item menu-open">
+                                <!-- <li class="nav-item menu-open">
                                     <a href="{{ route('admin.report.index') }}"
                                         class="nav-link {{ Route::current()->getName() == 'admin.report.index' ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
@@ -464,7 +464,7 @@
                                             Win/Lose Report
                                         </p>
                                     </a>
-                                </li>
+                                </li> -->
                                 @endcan
 
                                 @can('player_view')
