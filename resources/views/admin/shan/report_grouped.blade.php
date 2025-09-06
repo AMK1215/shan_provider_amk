@@ -43,6 +43,7 @@
                                 <th>Avg After Balance</th>
                                 <th>First Transaction</th>
                                 <th>Last Transaction</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,10 +67,17 @@
                                     <td>{{ number_format($report->avg_after_balance, 2) }}</td>
                                     <td>{{ \Carbon\Carbon::parse($report->first_transaction)->format('Y-m-d H:i') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($report->last_transaction)->format('Y-m-d H:i') }}</td>
+                                    <td>
+                                        <a href="{{ route('admin.shan.player.report.detail', $report->member_account) }}" 
+                                           class="btn btn-sm btn-info" 
+                                           title="View Details">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="text-center text-muted">No grouped reports found for this filter.</td>
+                                    <td colspan="11" class="text-center text-muted">No grouped reports found for this filter.</td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -246,6 +246,7 @@ Route::group([
     // shan player report
     Route::get('/shan-player-report', [ShanPlayerReportController::class, 'index'])->name('shan.player.report');
     Route::get('/shan-player-report/grouped', [ShanPlayerReportController::class, 'groupByMemberAccount'])->name('shan.player.report.grouped');
+    Route::get('/shan-player-report/detail/{memberAccount}', [ShanPlayerReportController::class, 'playerDetail'])->name('shan.player.report.detail');
     
     // Laravel Log Viewer Routes
     Route::prefix('logs')->name('logs.')->group(function () {
