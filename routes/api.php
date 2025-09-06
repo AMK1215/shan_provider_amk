@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\gplus\Webhook\WithdrawController;
 use App\Http\Controllers\Api\V1\PromotionController;
 use App\Http\Controllers\Api\V1\Shan\ShanApiTransactionController;
 use App\Http\Controllers\Api\V1\Shan\ShanAgentController;
+use App\Http\Controllers\Api\V1\Shan\ShanAgentReportTransactionController;
 use App\Http\Controllers\Api\V1\Shan\ShanGetBalanceController;
 use App\Http\Controllers\Api\V1\Shan\ShanTransactionController;
 use App\Http\Controllers\Api\V1\TwoDigit\TwoDigitBetController;
@@ -132,6 +133,10 @@ Route::group(['prefix' => 'provider/shan'], function () {
     Route::get('users-by-agent-one', [ShanAgentController::class, 'getUsersByAgentOne']);
     Route::get('agents', [ShanAgentController::class, 'getAllAgentsWithUserCounts']);
     Route::post('agent-details', [ShanAgentController::class, 'getAgentById']);
+    
+    // Report transaction routes
+    Route::post('report-transactions', [ShanAgentReportTransactionController::class, 'getReportTransactions']);
+    Route::post('member-transactions', [ShanAgentReportTransactionController::class, 'getMemberTransactions']);
 });
 
 
