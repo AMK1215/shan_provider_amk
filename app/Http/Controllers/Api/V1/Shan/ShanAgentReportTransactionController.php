@@ -24,7 +24,7 @@ class ShanAgentReportTransactionController extends Controller
         try {
             // Validate the request
             $validator = Validator::make($request->all(), [
-                'agent_code' => 'required|string|exists:users,user_name',
+                'agent_code' => 'required|string|exists:users,shan_agent_code',
                 'date_from' => 'nullable|date',
                 'date_to' => 'nullable|date',
                 'member_account' => 'nullable|string',
@@ -45,8 +45,8 @@ class ShanAgentReportTransactionController extends Controller
             $memberAccount = $request->input('member_account');
             $groupBy = $request->input('group_by', 'both');
 
-            // Get the agent by agent_code (user_name)
-            $agent = User::where('user_name', $agentCode)
+            // Get the agent by agent_code (shan_agent_code)
+            $agent = User::where('shan_agent_code', $agentCode)
                         ->where('type', 20) // Ensure it's an agent
                         ->first();
 
@@ -101,7 +101,7 @@ class ShanAgentReportTransactionController extends Controller
             return $this->success([
                 'agent_info' => [
                     'agent_id' => $agent->id,
-                    'agent_code' => $agent->user_name,
+                    'agent_code' => $agent->shan_agent_code,
                     'agent_name' => $agent->name,
                 ],
                 'filters' => [
@@ -231,7 +231,7 @@ class ShanAgentReportTransactionController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'agent_code' => 'required|string|exists:users,user_name',
+                'agent_code' => 'required|string|exists:users,shan_agent_code',
                 'member_account' => 'required|string',
                 'date_from' => 'nullable|date',
                 'date_to' => 'nullable|date',
@@ -253,7 +253,7 @@ class ShanAgentReportTransactionController extends Controller
             $limit = $request->input('limit', 50);
 
             // Get the agent
-            $agent = User::where('user_name', $agentCode)
+            $agent = User::where('shan_agent_code', $agentCode)
                         ->where('type', 20)
                         ->first();
 
@@ -288,7 +288,7 @@ class ShanAgentReportTransactionController extends Controller
             return $this->success([
                 'agent_info' => [
                     'agent_id' => $agent->id,
-                    'agent_code' => $agent->user_name,
+                    'agent_code' => $agent->shan_agent_code,
                     'agent_name' => $agent->name,
                 ],
                 'member_account' => $memberAccount,
