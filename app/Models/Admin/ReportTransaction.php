@@ -23,6 +23,7 @@ class ReportTransaction extends Model
     protected $fillable = [
         'user_id',
         'agent_id',
+        'agent_code',
         'member_account',
         'transaction_amount',
         'bet_amount',

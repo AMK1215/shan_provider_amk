@@ -343,6 +343,7 @@ class ShanTransactionController extends Controller
                     ReportTransaction::create([
                         'user_id' => $player->id,
                         'agent_id' => $agent?->id,
+                        'agent_code' => $agent->shan_agent_code,
                         'member_account' => $player->user_name,
                         'transaction_amount' => $amountChanged,
                         'status' => $winLoseStatus,
@@ -445,6 +446,7 @@ class ShanTransactionController extends Controller
                 ReportTransaction::create([
                     'user_id' => $banker->id,
                     'agent_id' => $agent->id,
+                    'agent_code' => $agent->shan_agent_code,
                     'member_account' => $banker->user_name,
                     'transaction_amount' => abs($bankerAmountChange),
                     'status' => $bankerAmountChange >= 0 ? 1 : 0,
